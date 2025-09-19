@@ -1,20 +1,19 @@
-import { useLocalSearchParams } from "expo-router";
-import { useState, useEffect } from "react";
+import { Image } from "expo-image";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
-  View,
   TouchableOpacity,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { Image } from "expo-image";
-import { Stack } from "expo-router";
 
+import { ChartAPI } from "@/api/client";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { ChartAPI } from "@/api/client";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
 
 export default function ChartDetailScreen() {
@@ -191,24 +190,26 @@ export default function ChartDetailScreen() {
 
             {/* Difficulty Selector */}
             <View style={styles.difficultyContainer}>
-              {chart[selectedType]?.difficulties.map((diff) => (
-                <TouchableOpacity
-                  key={diff.type}
-                  style={[
-                    styles.difficultyBadge,
-                    { backgroundColor: getDifficultyColor(diff.type) },
-                    selectedDifficulty !== diff.type && styles.dimmedButton,
-                  ]}
-                  onPress={() => setSelectedDifficulty(diff.type)}
-                >
-                  <ThemedText style={styles.difficultyText}>
-                    {formatLevelDisplay(typeof diff.level === 'number' ? {jp: diff.level} : diff.level)}
-                  </ThemedText>
-                  {/* <ThemedText style={styles.difficultyType}>
-                    {diff.type.charAt(0).toUpperCase() + diff.type.slice(1)}
-                  </ThemedText> */}
-                </TouchableOpacity>
-              ))}
+              {chart[selectedType]?.difficulties
+                .sort((a, b) => {
+                  const difficultyOrder = ["basic", "advanced", "expert", "master", "remaster"];
+                  return difficultyOrder.indexOf(a.type) - difficultyOrder.indexOf(b.type);
+                })
+                .map((diff) => (
+                  <TouchableOpacity
+                    key={diff.type}
+                    style={[
+                      styles.difficultyBadge,
+                      { backgroundColor: getDifficultyColor(diff.type) },
+                      selectedDifficulty !== diff.type && styles.dimmedButton,
+                    ]}
+                    onPress={() => setSelectedDifficulty(diff.type)}
+                  >
+                    <ThemedText style={styles.difficultyText}>
+                      {formatLevelDisplay(typeof diff.level === 'number' ? {jp: diff.level} : diff.level)}
+                    </ThemedText>
+                  </TouchableOpacity>
+                ))}
             </View>
 
             {/* Posts Section - To be implemented */}

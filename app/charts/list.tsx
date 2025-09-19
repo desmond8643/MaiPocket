@@ -1,25 +1,21 @@
-import { useLocalSearchParams } from "expo-router";
-import { useState, useEffect } from "react";
+import { Image } from "expo-image";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   StyleSheet,
-  TouchableOpacity,
   TextInput,
-  View,
-  ActivityIndicator,
-  ScrollView,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Image } from "expo-image";
-import { router } from "expo-router";
-import { Stack } from "expo-router";
 
+import { ChartAPI } from "@/api/client";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { ChartAPI } from "@/api/client";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
 
 export default function ChartListScreen() {
@@ -91,20 +87,32 @@ export default function ChartListScreen() {
       deluxe: [],
     };
 
+    // Function to sort difficulties
+    const sortByDifficultyOrder = (difficulties: SimpleDifficulty[]) => {
+      const difficultyOrder = ["basic", "advanced", "expert", "master", "remaster"];
+      return difficulties.sort((a, b) => {
+        return difficultyOrder.indexOf(a.type) - difficultyOrder.indexOf(b.type);
+      });
+    };
+
     // Get difficulties from standard version
     if (chart.standard && chart.standard.difficulties) {
-      result.standard = chart.standard.difficulties.map((diff) => ({
-        type: diff.type,
-        level: diff.level,
-      }));
+      result.standard = sortByDifficultyOrder(
+        chart.standard.difficulties.map((diff) => ({
+          type: diff.type,
+          level: diff.level,
+        }))
+      );
     }
 
     // Get difficulties from deluxe version
     if (chart.deluxe && chart.deluxe.difficulties) {
-      result.deluxe = chart.deluxe.difficulties.map((diff) => ({
-        type: diff.type,
-        level: diff.level,
-      }));
+      result.deluxe = sortByDifficultyOrder(
+        chart.deluxe.difficulties.map((diff) => ({
+          type: diff.type,
+          level: diff.level,
+        }))
+      );
     }
 
     return result;
@@ -245,7 +253,7 @@ export default function ChartListScreen() {
       {/* <SafeAreaView style={styles.container}> */}
         <Stack.Screen
           options={{
-            title: value ? value.toString() : "Charts",
+            title: value ? `${value.toString()}${!loading ? ` (${charts.length})`: ""}` : "Charts",
             headerBackTitle: "Categories",
           }}
         />

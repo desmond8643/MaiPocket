@@ -68,7 +68,8 @@ const CATEGORIES = {
     "1",
   ],
   version: [
-    { display: "PRiSM+", value: "PRiSM+" },
+    { display: "CiRCLE", value: "CiRCLE" },
+    { display: "PRiSM+ (彩)", value: "PRiSM+" },
     { display: "PRiSM (鏡)", value: "PRiSM" },
     { display: "BUDDiES+ (宴)", value: "BUDDiES+" },
     { display: "BUDDiES (双)", value: "BUDDiES" },
