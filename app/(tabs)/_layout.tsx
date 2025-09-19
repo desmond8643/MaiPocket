@@ -6,12 +6,10 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 
 export default function TabLayout() {
-  
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#AE75DA', // Custom red color
+        tabBarActiveTintColor: '#AE75DA', // Custom purple color
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
@@ -35,13 +33,6 @@ export default function TabLayout() {
         options={{
           title: 'Charts',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="music.note.list" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="social"
-        options={{
-          title: 'Social',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bubble.left.fill" color={color} />,
         }}
       />
       <Tabs.Screen

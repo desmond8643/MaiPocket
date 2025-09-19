@@ -4,11 +4,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
+  // SafeAreaView,
   TextInput,
   View,
   ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 
@@ -96,6 +97,7 @@ const CATEGORIES = {
 };
 
 export default function ChartsScreen() {
+
   const colorScheme = useColorScheme();
   const [activeFilterType, setActiveFilterType] = useState<
     "genre" | "level" | "version"
@@ -110,17 +112,18 @@ export default function ChartsScreen() {
   // Remove the useEffect that fetches categories
 
   // Render each category item
-  const renderCategoryItem = ({ item }: { item: string | { display: string; value: string } }) => {
+  const renderCategoryItem = ({
+    item,
+  }: {
+    item: string | { display: string; value: string };
+  }) => {
     // Handle different item formats
-    const displayText = typeof item === 'string' ? item : item.display;
-    const itemValue = typeof item === 'string' ? item : item.value;
-    
+    const displayText = typeof item === "string" ? item : item.display;
+    const itemValue = typeof item === "string" ? item : item.value;
+
     return (
       <TouchableOpacity
-        style={[
-          styles.categoryCard,
-          { backgroundColor: colorScheme === "dark" ? "#333333" : "#FFFFFF" },
-        ]}
+        style={styles.categoryCard}
         onPress={() => {
           // Handle special case for level ranges
           if (activeFilterType === "level") {
@@ -163,7 +166,12 @@ export default function ChartsScreen() {
           }
         }}
       >
-        <ThemedView style={styles.categoryContent}>
+        <ThemedView
+          style={[
+            styles.categoryContent,
+            { backgroundColor: colorScheme === "dark" ? "#2A2D2F" : "white" },
+          ]}
+        >
           <ThemedText type="defaultSemiBold" style={styles.categoryTitle}>
             {displayText}
           </ThemedText>
@@ -225,54 +233,75 @@ export default function ChartsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Search and Filter Header */}
-        <ThemedView style={styles.searchContainer}>
-          <ThemedView style={styles.searchInputContainer}>
-            <IconSymbol
-              name="magnifyingglass"
-              size={20}
-              color="#888888"
-              style={styles.searchIcon}
-            />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search charts..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={() => {
-                if (searchQuery.trim()) {
-                  router.push({
-                    pathname: `/charts/search`,
-                    params: { query: searchQuery },
-                  });
-                }
-              }}
-            />
+    <ThemedView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {/* Search and Filter Header */}
+          <ThemedView style={styles.searchContainer}>
+            <ThemedView
+              style={[
+                styles.searchInputContainer,
+                {
+                  backgroundColor:
+                    colorScheme === "dark" ? "#333333" : "#F0F0F0",
+                },
+              ]}
+            >
+              <IconSymbol
+                name="magnifyingglass"
+                size={20}
+                color="#888888"
+                style={styles.searchIcon}
+              />
+              <TextInput
+                style={[
+                  styles.searchInput,
+                  {
+                    color:
+                      colorScheme === "dark"
+                        ? Colors.dark.text
+                        : Colors.light.text,
+                  },
+                ]}
+                placeholder="Search charts..."
+                placeholderTextColor={colorScheme === "dark" ? "#999" : "#888"}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={() => {
+                  if (searchQuery.trim()) {
+                    router.push({
+                      pathname: `/charts/search`,
+                      params: { query: searchQuery },
+                    });
+                  }
+                }}
+              />
+            </ThemedView>
           </ThemedView>
-        </ThemedView>
 
-        {/* Filter Type Selector */}
-        <FlatList
-          horizontal
-          data={FILTER_TYPES}
-          renderItem={renderFilterTypeButton}
-          keyExtractor={(item) => item.id}
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterTypeList}
-        />
+          {/* Filter Type Selector */}
+          <FlatList
+            horizontal
+            data={FILTER_TYPES}
+            renderItem={renderFilterTypeButton}
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            style={styles.filterTypeList}
+          />
 
-        {/* Category List - simplified to directly use CATEGORIES */}
-        <FlatList
-          data={CATEGORIES[activeFilterType]}
-          renderItem={renderCategoryItem}
-          keyExtractor={(item) => typeof item === 'string' ? item : item.value}
-          scrollEnabled={false}
-          contentContainerStyle={styles.categoryList}
-        />
-      </ScrollView>
-    </SafeAreaView>
+          {/* Category List - simplified to directly use CATEGORIES */}
+          <FlatList
+            data={CATEGORIES[activeFilterType]}
+            renderItem={renderCategoryItem}
+            keyExtractor={(item) =>
+              typeof item === "string" ? item : item.value
+            }
+            scrollEnabled={false}
+            contentContainerStyle={styles.categoryList}
+          />
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
@@ -293,7 +322,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F0F0F0",
     borderRadius: 8,
     paddingHorizontal: 12,
     height: 40,
@@ -360,6 +388,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     padding: 16,
+    borderRadius: 16,
   },
   categoryTitle: {
     fontSize: 16,

@@ -208,7 +208,8 @@ export default function ChartSearchScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ThemedView style={{ flex: 1 }}>
+      {/* <SafeAreaView style={styles.container}> */}
       <Stack.Screen
         options={{
           title: `Search: ${query}`,
@@ -275,7 +276,8 @@ export default function ChartSearchScreen() {
           }
         />
       )}
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </ThemedView>
   );
 }
 
@@ -340,9 +342,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   resultsCount: {
-    marginBottom: 16,
+    marginVertical: 16,
     fontSize: 14,
     color: "#888888",
+    paddingHorizontal: 8
+
   },
   chartsList: {
     paddingBottom: 20,
@@ -409,7 +413,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   deluxeLabel: {
-    backgroundColor: "white",
+    backgroundColor: "transparent",
     borderRadius: 16,
     paddingVertical: 8,
     paddingHorizontal: 12,

@@ -88,36 +88,6 @@ export default function ChartDetailScreen() {
     // fetchPosts(chart._id, selectedType, selectedDifficulty);
   }, [chart, selectedType, selectedDifficulty]);
 
-  if (loading) {
-    return (
-      <ThemedView style={styles.loadingContainer}>
-        <ActivityIndicator
-          size="large"
-          color={Colors[colorScheme ?? "light"].tint}
-        />
-        <ThemedText style={styles.loadingText}>
-          Loading chart details...
-        </ThemedText>
-      </ThemedView>
-    );
-  }
-
-  if (error) {
-    return (
-      <ThemedView style={styles.errorContainer}>
-        <ThemedText style={styles.errorText}>{error}</ThemedText>
-      </ThemedView>
-    );
-  }
-
-  if (!chart) {
-    return (
-      <ThemedView style={styles.errorContainer}>
-        <ThemedText style={styles.errorText}>Chart not found</ThemedText>
-      </ThemedView>
-    );
-  }
-
   const getDifficultyColor = (type: string) => {
     switch (type) {
       case "basic":
@@ -136,102 +106,126 @@ export default function ChartDetailScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <>
       <Stack.Screen
         options={{
-          title: chart.title,
+          headerTitle: chart ? chart.title : "Chart Details",
           headerBackTitle: "Charts",
         }}
       />
-
-      {/* Chart Info Section */}
-      <View style={styles.chartHeader}>
-        <Image
-          source={{ uri: chart.image }}
-          style={styles.chartImage}
-          contentFit="cover"
-        />
-        <View style={styles.chartInfo}>
-          <ThemedText type="defaultSemiBold" style={styles.title}>
-            {chart.title}
-          </ThemedText>
-          <ThemedText style={styles.artist}>{chart.artist}</ThemedText>
-          <ThemedText style={styles.category}>{chart.category}</ThemedText>
-          <ThemedText style={styles.bpm}>BPM: {chart.bpm || "N/A"}</ThemedText>
-        </View>
-      </View>
-
-      {/* Chart Type Selector */}
-      <View style={styles.selectorContainer}>
-        {chart.standard && (
-          <TouchableOpacity
-            style={[
-              styles.typeSelector,
-              styles.standardLabel,
-              selectedType !== "standard" && styles.dimmedButton,
-            ]}
-            onPress={() => setSelectedType("standard")}
-          >
-            <ThemedText style={styles.standardLabelText}>
-              スタンダード
+      
+      <ThemedView style={{ flex: 1 }}>
+        {loading ? (
+          <ThemedView style={styles.loadingContainer}>
+            <ActivityIndicator
+              size="large"
+              color={Colors[colorScheme ?? "light"].tint}
+            />
+            <ThemedText style={styles.loadingText}>
+              Loading chart details...
             </ThemedText>
-          </TouchableOpacity>
-        )}
-
-        {chart.deluxe && (
-          <TouchableOpacity
-            style={[
-              styles.typeSelector,
-              styles.deluxeLabel,
-              selectedType !== "deluxe" && styles.dimmedButton,
-            ]}
-            onPress={() => setSelectedType("deluxe")}
-          >
-            <ThemedText>
-              <ThemedText style={[styles.deluxeLabelText, { color: "#FF0000" }]}>で</ThemedText>
-              <ThemedText style={[styles.deluxeLabelText, { color: "#FF8C00" }]}>ら</ThemedText>
-              <ThemedText style={[styles.deluxeLabelText, { color: "#FFD93D" }]}>っ</ThemedText>
-              <ThemedText style={[styles.deluxeLabelText, { color: "#7ADAA5" }]}>く</ThemedText>
-              <ThemedText style={[styles.deluxeLabelText, { color: "#3396D3" }]}>す</ThemedText>
-            </ThemedText>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Difficulty Selector */}
-      <View style={styles.difficultyContainer}>
-        {chart[selectedType]?.difficulties.map((diff) => (
-          <TouchableOpacity
-            key={diff.type}
-            style={[
-              styles.difficultyBadge,
-              { backgroundColor: getDifficultyColor(diff.type) },
-              selectedDifficulty !== diff.type && styles.dimmedButton,
-            ]}
-            onPress={() => setSelectedDifficulty(diff.type)}
-          >
-            <ThemedText style={styles.difficultyText}>
-              {formatLevelDisplay(typeof diff.level === 'number' ? {jp: diff.level} : diff.level)}
-            </ThemedText>
-            {/* <ThemedText style={styles.difficultyType}>
-              {diff.type.charAt(0).toUpperCase() + diff.type.slice(1)}
-            </ThemedText> */}
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Posts Section - To be implemented */}
-      <View style={styles.postsSection}>
-        <ThemedText style={styles.sectionTitle}>Posts</ThemedText>
-        {posts.length > 0 ? (
-          <ThemedText>Posts will be shown here</ThemedText>
+          </ThemedView>
+        ) : error ? (
+          <ThemedView style={styles.errorContainer}>
+            <ThemedText style={styles.errorText}>{error}</ThemedText>
+          </ThemedView>
+        ) : !chart ? (
+          <ThemedView style={styles.errorContainer}>
+            <ThemedText style={styles.errorText}>Chart not found</ThemedText>
+          </ThemedView>
         ) : (
-          <ThemedText style={styles.noPosts}>
-            No posts yet for this chart
-          </ThemedText>
+          <ScrollView style={styles.container}>
+            {/* Chart Info Section */}
+            <View style={styles.chartHeader}>
+              <Image
+                source={{ uri: chart.image }}
+                style={styles.chartImage}
+                contentFit="cover"
+              />
+              <View style={styles.chartInfo}>
+                <ThemedText type="defaultSemiBold" style={styles.title}>
+                  {chart.title}
+                </ThemedText>
+                <ThemedText style={styles.artist}>{chart.artist}</ThemedText>
+                <ThemedText style={styles.category}>{chart.category}</ThemedText>
+                <ThemedText style={styles.bpm}>BPM: {chart.bpm || "N/A"}</ThemedText>
+              </View>
+            </View>
+
+            {/* Chart Type Selector */}
+            <View style={styles.selectorContainer}>
+              {chart.standard && (
+                <TouchableOpacity
+                  style={[
+                    styles.typeSelector,
+                    styles.standardLabel,
+                    selectedType !== "standard" && styles.dimmedButton,
+                  ]}
+                  onPress={() => setSelectedType("standard")}
+                >
+                  <ThemedText style={styles.standardLabelText}>
+                    スタンダード
+                  </ThemedText>
+                </TouchableOpacity>
+              )}
+
+              {chart.deluxe && (
+                <TouchableOpacity
+                  style={[
+                    styles.typeSelector,
+                    styles.deluxeLabel,
+                    selectedType !== "deluxe" && styles.dimmedButton,
+                  ]}
+                  onPress={() => setSelectedType("deluxe")}
+                >
+                  <ThemedText>
+                    <ThemedText style={[styles.deluxeLabelText, { color: "#FF0000" }]}>で</ThemedText>
+                    <ThemedText style={[styles.deluxeLabelText, { color: "#FF8C00" }]}>ら</ThemedText>
+                    <ThemedText style={[styles.deluxeLabelText, { color: "#FFD93D" }]}>っ</ThemedText>
+                    <ThemedText style={[styles.deluxeLabelText, { color: "#7ADAA5" }]}>く</ThemedText>
+                    <ThemedText style={[styles.deluxeLabelText, { color: "#3396D3" }]}>す</ThemedText>
+                  </ThemedText>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Difficulty Selector */}
+            <View style={styles.difficultyContainer}>
+              {chart[selectedType]?.difficulties.map((diff) => (
+                <TouchableOpacity
+                  key={diff.type}
+                  style={[
+                    styles.difficultyBadge,
+                    { backgroundColor: getDifficultyColor(diff.type) },
+                    selectedDifficulty !== diff.type && styles.dimmedButton,
+                  ]}
+                  onPress={() => setSelectedDifficulty(diff.type)}
+                >
+                  <ThemedText style={styles.difficultyText}>
+                    {formatLevelDisplay(typeof diff.level === 'number' ? {jp: diff.level} : diff.level)}
+                  </ThemedText>
+                  {/* <ThemedText style={styles.difficultyType}>
+                    {diff.type.charAt(0).toUpperCase() + diff.type.slice(1)}
+                  </ThemedText> */}
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Posts Section - To be implemented */}
+            <View style={styles.postsSection}>
+              <ThemedText style={styles.sectionTitle}>Posts</ThemedText>
+              {posts.length > 0 ? (
+                <ThemedText>Posts will be shown here</ThemedText>
+              ) : (
+                <ThemedText style={styles.noPosts}>
+                  No posts yet for this chart
+                </ThemedText>
+              )}
+            </View>
+          </ScrollView>
         )}
-      </View>
-    </ScrollView>
+      </ThemedView>
+    </>
   );
 }
 

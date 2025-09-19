@@ -4,11 +4,12 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   TextInput,
   View,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Stack } from "expo-router";
@@ -64,7 +65,8 @@ export default function ChartListScreen() {
       return;
     }
 
-    const filtered = originalCharts.filter( // Filter from original charts
+    const filtered = originalCharts.filter(
+      // Filter from original charts
       (chart) =>
         chart.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (chart.artist &&
@@ -117,7 +119,7 @@ export default function ChartListScreen() {
   const formatLevelDisplay = (levelObj: LevelObject) => {
     // Default to JP level, fallback to international if JP isn't available
     const levelValue = levelObj.jp || levelObj.international || 0;
-    
+
     return Math.round((levelValue % 1) * 100) / 100 >= 0.6
       ? `${Math.floor(levelValue)}+`
       : `${Math.floor(levelValue)}`;
@@ -132,10 +134,12 @@ export default function ChartListScreen() {
           styles.chartCard,
           { backgroundColor: colorScheme === "dark" ? "#333333" : "#FFFFFF" },
         ]}
-        onPress={() => router.push({
-          pathname: '/charts/[id]',
-          params: { id: item._id }
-        })}
+        onPress={() =>
+          router.push({
+            pathname: "/charts/[id]",
+            params: { id: item._id },
+          })
+        }
       >
         <View style={styles.topSection}>
           <Image
@@ -237,94 +241,99 @@ export default function ChartListScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: value ? value.toString() : "Charts",
-          headerBackTitle: "Categories",
-        }}
-      />
-
-      <ThemedView style={styles.searchContainer}>
-        <ThemedView
-          style={[
-            styles.searchInputContainer,
-            { backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0" },
-          ]}
-        >
-          <IconSymbol
-            name="magnifyingglass"
-            size={20}
-            color="#888888"
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={[
-              styles.searchInput,
-              { color: colorScheme === "dark" ? "#FFFFFF" : "#000000" },
-            ]}
-            placeholder="Search charts..."
-            placeholderTextColor={
-              colorScheme === "dark" ? "#AAAAAA" : "#888888"
-            }
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </ThemedView>
-      </ThemedView>
-
-      {loading ? (
-        <ThemedView style={styles.loadingContainer}>
-          <ActivityIndicator
-            size="large"
-            color={Colors[colorScheme ?? "light"].tint}
-          />
-          <ThemedText style={styles.loadingText}>Loading charts...</ThemedText>
-        </ThemedView>
-      ) : error ? (
-        <ThemedView style={styles.errorContainer}>
-          <IconSymbol
-            name="exclamationmark.triangle"
-            size={40}
-            color="#FF3B30"
-          />
-          <ThemedText style={styles.errorText}>{error}</ThemedText>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={() => {
-              setLoading(true);
-              setError(null);
-              // Re-fetch charts
-              ChartAPI.getChartsByCategory(type.toString(), value.toString())
-                .then((data) => {
-                  setCharts(data);
-                  setLoading(false);
-                })
-                .catch((err) => {
-                  console.error(`Error fetching charts for ${value}:`, err);
-                  setError("Failed to load charts. Please try again.");
-                  setLoading(false);
-                });
-            }}
-          >
-            <ThemedText style={styles.retryButtonText}>Retry</ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
-      ) : charts.length === 0 ? (
-        <ThemedView style={styles.emptyContainer}>
-          <IconSymbol name="music.note" size={60} color="#CCCCCC" />
-          <ThemedText style={styles.emptyText}>No charts found</ThemedText>
-        </ThemedView>
-      ) : (
-        <FlatList
-          data={charts}
-          renderItem={renderChartItem}
-          keyExtractor={(item) => item._id}
-          numColumns={1}
-          contentContainerStyle={styles.chartsList}
+    <ThemedView style={{ flex: 1 }}>
+      {/* <SafeAreaView style={styles.container}> */}
+        <Stack.Screen
+          options={{
+            title: value ? value.toString() : "Charts",
+            headerBackTitle: "Categories",
+          }}
         />
-      )}
-    </SafeAreaView>
+        <ThemedView style={styles.searchContainer}>
+          <ThemedView
+            style={[
+              styles.searchInputContainer,
+              {
+                backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0",
+              },
+            ]}
+          >
+            <IconSymbol
+              name="magnifyingglass"
+              size={20}
+              color="#888888"
+              style={styles.searchIcon}
+            />
+            <TextInput
+              style={[
+                styles.searchInput,
+                { color: colorScheme === "dark" ? "#FFFFFF" : "#000000" },
+              ]}
+              placeholder="Search charts..."
+              placeholderTextColor={
+                colorScheme === "dark" ? "#AAAAAA" : "#888888"
+              }
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </ThemedView>
+        </ThemedView>
+
+        {loading ? (
+          <ThemedView style={styles.loadingContainer}>
+            <ActivityIndicator
+              size="large"
+              color={Colors[colorScheme ?? "light"].tint}
+            />
+            <ThemedText style={styles.loadingText}>
+              Loading charts...
+            </ThemedText>
+          </ThemedView>
+        ) : error ? (
+          <ThemedView style={styles.errorContainer}>
+            <IconSymbol
+              name="exclamationmark.triangle"
+              size={40}
+              color="#FF3B30"
+            />
+            <ThemedText style={styles.errorText}>{error}</ThemedText>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => {
+                setLoading(true);
+                setError(null);
+                // Re-fetch charts
+                ChartAPI.getChartsByCategory(type.toString(), value.toString())
+                  .then((data) => {
+                    setCharts(data);
+                    setLoading(false);
+                  })
+                  .catch((err) => {
+                    console.error(`Error fetching charts for ${value}:`, err);
+                    setError("Failed to load charts. Please try again.");
+                    setLoading(false);
+                  });
+              }}
+            >
+              <ThemedText style={styles.retryButtonText}>Retry</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        ) : charts.length === 0 ? (
+          <ThemedView style={styles.emptyContainer}>
+            <IconSymbol name="music.note" size={60} color="#CCCCCC" />
+            <ThemedText style={styles.emptyText}>No charts found</ThemedText>
+          </ThemedView>
+        ) : (
+          <FlatList
+            data={charts}
+            renderItem={renderChartItem}
+            keyExtractor={(item) => item._id}
+            numColumns={1}
+            contentContainerStyle={styles.chartsList}
+          />
+        )}
+      {/* </SafeAreaView> */}
+    </ThemedView>
   );
 }
 
@@ -348,12 +357,15 @@ function getDifficultyColor(type: string) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    paddingBottom: 16,
+    
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
+    paddingHorizontal: 8,
+    marginTop: 16
   },
   searchInputContainer: {
     flex: 1,
