@@ -1,12 +1,19 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { Image } from "expo-image";
-import { Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
+  Linking,
+  Modal,
+  Platform,
   ScrollView,
   StyleSheet,
+  ToastAndroid,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
@@ -18,6 +25,7 @@ import { Chart } from "@/types/chart";
 
 export default function ChartDetailScreen() {
   const { id } = useLocalSearchParams();
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const [chart, setChart] = useState<Chart | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,6 +37,43 @@ export default function ChartDetailScreen() {
     null
   );
   const [posts, setPosts] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    right: 0,
+  });
+  const headerBtnRef = useRef<any>(null);
+
+  // Function to open YouTube search
+  const openYouTubeSearch = () => {
+    if (!chart) return;
+
+    setShowDropdown(false);
+    const searchQuery = encodeURIComponent(`${chart.title} maimai`);
+    const youtubeUrl = `https://www.youtube.com/results?search_query=${searchQuery}`;
+    Linking.openURL(youtubeUrl).catch(err => console.error("Error opening YouTube:", err));
+  };
+
+  // Function to handle copy title
+  const handleCopyTitle = () => {
+    if (!chart) return;
+    setShowDropdown(false);
+    copyToClipboard(chart.title);
+  };
+
+  const openDropdown = () => {
+    if (headerBtnRef.current) {
+      headerBtnRef.current.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
+        setDropdownPosition({
+          top: pageY + height,
+          right: 20,
+        });
+        setShowDropdown(true);
+      });
+    } else {
+      setShowDropdown(true);
+    }
+  };
 
   // Fetch chart data
   useEffect(() => {
@@ -45,12 +90,20 @@ export default function ChartDetailScreen() {
         // Set default selections
         if (data.standard && data.standard.difficulties.length > 0) {
           setSelectedType("standard");
-          const masterDiff = data.standard.difficulties.find((d: { type: string }) => d.type === "master");
-          setSelectedDifficulty(masterDiff ? masterDiff.type : data.standard.difficulties[0].type);
+          const masterDiff = data.standard.difficulties.find(
+            (d: { type: string }) => d.type === "master"
+          );
+          setSelectedDifficulty(
+            masterDiff ? masterDiff.type : data.standard.difficulties[0].type
+          );
         } else if (data.deluxe && data.deluxe.difficulties.length > 0) {
           setSelectedType("deluxe");
-          const masterDiff = data.deluxe.difficulties.find((d: { type: string }) => d.type === "master");
-          setSelectedDifficulty(masterDiff ? masterDiff.type : data.deluxe.difficulties[0].type);
+          const masterDiff = data.deluxe.difficulties.find(
+            (d: { type: string }) => d.type === "master"
+          );
+          setSelectedDifficulty(
+            masterDiff ? masterDiff.type : data.deluxe.difficulties[0].type
+          );
         }
 
         // You'd need to implement this API method
@@ -104,15 +157,103 @@ export default function ChartDetailScreen() {
     }
   };
 
+  // Function to handle copying text to clipboard
+  const copyToClipboard = async (text: string) => {
+    await Clipboard.setStringAsync(text);
+
+    // Show feedback based on platform
+    if (Platform.OS === "android") {
+      ToastAndroid.show("Title copied to clipboard", ToastAndroid.SHORT);
+    } else {
+      // For iOS, show an alert instead of visual feedback
+      Alert.alert("Copied", "Title copied to clipboard");
+    }
+  };
+
   return (
     <>
       <Stack.Screen
         options={{
           headerTitle: chart ? chart.title : "Chart Details",
           headerBackTitle: "Charts",
+          headerRight: () => (
+            <TouchableOpacity
+              ref={headerBtnRef}
+              onPress={openDropdown}
+              style={styles.headerButton}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <MaterialIcons
+                name="more-vert"
+                size={24}
+                color={Colors[colorScheme ?? "light"].text}
+              />
+            </TouchableOpacity>
+          ),
         }}
       />
-      
+
+      {/* Dropdown Menu Modal */}
+      <Modal
+        visible={showDropdown}
+        transparent={true}
+        animationType="none"
+        onRequestClose={() => setShowDropdown(false)}
+      >
+        <TouchableOpacity
+          style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.2)' }]}
+          activeOpacity={1}
+          onPress={() => setShowDropdown(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={[
+              styles.dropdownContainer,
+              {
+                backgroundColor: Colors[colorScheme ?? "light"].background,
+                borderColor: Colors[colorScheme ?? "light"].background,
+                position: "absolute",
+                top: dropdownPosition.top,
+                right: dropdownPosition.right,
+              },
+            ]}
+          >
+            <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={handleCopyTitle}
+            >
+              <MaterialIcons
+                name="content-copy"
+                size={22}
+                color={Colors[colorScheme ?? "light"].text}
+              />
+              <ThemedText style={styles.dropdownText}>Copy Title</ThemedText>
+            </TouchableOpacity>
+
+            <View
+              style={[
+                styles.dropdownSeparator,
+                { backgroundColor: Colors[colorScheme ?? "light"].background },
+              ]}
+            />
+
+            <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={openYouTubeSearch}
+            >
+              <MaterialIcons
+                name="search"
+                size={22}
+                color={Colors[colorScheme ?? "light"].text}
+              />
+              <ThemedText style={styles.dropdownText}>
+                Search on YouTube
+              </ThemedText>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
       <ThemedView style={{ flex: 1 }}>
         {loading ? (
           <ThemedView style={styles.loadingContainer}>
@@ -142,12 +283,21 @@ export default function ChartDetailScreen() {
                 contentFit="cover"
               />
               <View style={styles.chartInfo}>
-                <ThemedText type="defaultSemiBold" style={styles.title}>
-                  {chart.title}
-                </ThemedText>
+                <TouchableOpacity
+                  onPress={() => copyToClipboard(chart.title)}
+                  activeOpacity={0.7}
+                >
+                  <ThemedText type="defaultSemiBold" style={styles.title}>
+                    {chart.title}
+                  </ThemedText>
+                </TouchableOpacity>
                 <ThemedText style={styles.artist}>{chart.artist}</ThemedText>
-                <ThemedText style={styles.category}>{chart.category}</ThemedText>
-                <ThemedText style={styles.bpm}>BPM: {chart.bpm || "N/A"}</ThemedText>
+                <ThemedText style={styles.category}>
+                  {chart.category}
+                </ThemedText>
+                <ThemedText style={styles.bpm}>
+                  BPM: {chart.bpm || "N/A"}
+                </ThemedText>
               </View>
             </View>
 
@@ -178,11 +328,31 @@ export default function ChartDetailScreen() {
                   onPress={() => setSelectedType("deluxe")}
                 >
                   <ThemedText>
-                    <ThemedText style={[styles.deluxeLabelText, { color: "#FF0000" }]}>で</ThemedText>
-                    <ThemedText style={[styles.deluxeLabelText, { color: "#FF8C00" }]}>ら</ThemedText>
-                    <ThemedText style={[styles.deluxeLabelText, { color: "#FFD93D" }]}>っ</ThemedText>
-                    <ThemedText style={[styles.deluxeLabelText, { color: "#7ADAA5" }]}>く</ThemedText>
-                    <ThemedText style={[styles.deluxeLabelText, { color: "#3396D3" }]}>す</ThemedText>
+                    <ThemedText
+                      style={[styles.deluxeLabelText, { color: "#FF0000" }]}
+                    >
+                      で
+                    </ThemedText>
+                    <ThemedText
+                      style={[styles.deluxeLabelText, { color: "#FF8C00" }]}
+                    >
+                      ら
+                    </ThemedText>
+                    <ThemedText
+                      style={[styles.deluxeLabelText, { color: "#FFD93D" }]}
+                    >
+                      っ
+                    </ThemedText>
+                    <ThemedText
+                      style={[styles.deluxeLabelText, { color: "#7ADAA5" }]}
+                    >
+                      く
+                    </ThemedText>
+                    <ThemedText
+                      style={[styles.deluxeLabelText, { color: "#3396D3" }]}
+                    >
+                      す
+                    </ThemedText>
                   </ThemedText>
                 </TouchableOpacity>
               )}
@@ -192,8 +362,17 @@ export default function ChartDetailScreen() {
             <View style={styles.difficultyContainer}>
               {chart[selectedType]?.difficulties
                 .sort((a, b) => {
-                  const difficultyOrder = ["basic", "advanced", "expert", "master", "remaster"];
-                  return difficultyOrder.indexOf(a.type) - difficultyOrder.indexOf(b.type);
+                  const difficultyOrder = [
+                    "basic",
+                    "advanced",
+                    "expert",
+                    "master",
+                    "remaster",
+                  ];
+                  return (
+                    difficultyOrder.indexOf(a.type) -
+                    difficultyOrder.indexOf(b.type)
+                  );
                 })
                 .map((diff) => (
                   <TouchableOpacity
@@ -206,7 +385,11 @@ export default function ChartDetailScreen() {
                     onPress={() => setSelectedDifficulty(diff.type)}
                   >
                     <ThemedText style={styles.difficultyText}>
-                      {formatLevelDisplay(typeof diff.level === 'number' ? {jp: diff.level} : diff.level)}
+                      {formatLevelDisplay(
+                        typeof diff.level === "number"
+                          ? { jp: diff.level }
+                          : diff.level
+                      )}
                     </ThemedText>
                   </TouchableOpacity>
                 ))}
@@ -214,7 +397,28 @@ export default function ChartDetailScreen() {
 
             {/* Posts Section - To be implemented */}
             <View style={styles.postsSection}>
-              <ThemedText style={styles.sectionTitle}>Posts</ThemedText>
+              <View style={styles.postsSectionHeader}>
+                <ThemedText style={styles.sectionTitle}>Posts</ThemedText>
+                <TouchableOpacity
+                  style={styles.addPostButton}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/charts/create-post",
+                      params: {
+                        chartId: chart._id,
+                        chartType: selectedType,
+                        difficulty: selectedDifficulty,
+                      },
+                    })
+                  }
+                >
+                  <MaterialIcons name="add" size={18} color="#FFFFFF" />
+                  <ThemedText style={styles.addPostButtonText}>
+                    Add Post
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+
               {posts.length > 0 ? (
                 <ThemedText>Posts will be shown here</ThemedText>
               ) : (
@@ -326,10 +530,15 @@ const styles = StyleSheet.create({
   postsSection: {
     marginBottom: 24,
   },
+  postsSectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 16,
   },
   noPosts: {
     textAlign: "center",
@@ -388,5 +597,56 @@ const styles = StyleSheet.create({
   },
   dimmedButton: {
     opacity: 0.6,
+  },
+  headerButton: {
+    padding: 4,
+    marginRight: 0,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    // Remove justifyContent: "center" to prevent vertical centering
+  },
+  dropdownContainer: {
+    borderRadius: 8,
+    minWidth: 180,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 1,
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  dropdownText: {
+    marginLeft: 12,
+    fontSize: 16,
+  },
+  dropdownSeparator: {
+    height: 1,
+    marginHorizontal: 16,
+  },
+  addPostButton: {
+    backgroundColor: Colors.light.tint,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  addPostButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    marginLeft: 8,
   },
 });
