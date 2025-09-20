@@ -1,5 +1,5 @@
-import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from "axios";
 
 // Change this to your actual backend URL
 const BASE_URL = "https://maipocket-backend.vercel.app";
@@ -70,6 +70,57 @@ export const ChartAPI = {
       return response.data;
     } catch (error) {
       console.error("Error fetching chart details:", error);
+      throw error;
+    }
+  },
+
+  // Create a post for a chart
+  createPost: async (postData: {
+    content: string;
+    tags: string[];
+    chartId: string | object;
+    chartType: string | object;
+    chartDifficulty: string | object;
+    anonymous: boolean;
+  }) => {
+    try {
+      // Format the data properly
+      const formattedData = {
+        content: postData.content,
+        tags: postData.tags,
+        chartId: typeof postData.chartId === 'string' ? postData.chartId : String(postData.chartId),
+        chartType: typeof postData.chartType === 'string' ? postData.chartType : String(postData.chartType),
+        chartDifficulty: typeof postData.chartDifficulty === 'string' ? 
+          postData.chartDifficulty : String(postData.chartDifficulty),
+        anonymous: postData.anonymous
+      };
+
+      const response = await apiClient.post('/posts', formattedData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating post:', error);
+      throw error;
+    }
+  },
+
+  // Get posts for a chart
+  getPostsForChart: async (chartId: string) => {
+    try {
+      const response = await apiClient.get(`/posts/chart/${chartId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching posts for chart:', error);
+      throw error;
+    }
+  },
+
+  // Like a post
+  likePost: async (postId: string) => {
+    try {
+      const response = await apiClient.post(`/posts/${postId}/like`);
+      return response.data;
+    } catch (error) {
+      console.error('Error liking post:', error);
       throw error;
     }
   },

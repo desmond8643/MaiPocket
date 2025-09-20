@@ -16,7 +16,7 @@ import {
   View
 } from "react-native";
 
-import { ChartAPI } from "@/api/client";
+import { AuthAPI, ChartAPI } from "@/api/client";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
@@ -401,16 +401,29 @@ export default function ChartDetailScreen() {
                 <ThemedText style={styles.sectionTitle}>Posts</ThemedText>
                 <TouchableOpacity
                   style={styles.addPostButton}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/charts/create-post",
-                      params: {
-                        chartId: chart._id,
-                        chartType: selectedType,
-                        difficulty: selectedDifficulty,
-                      },
-                    })
-                  }
+                  onPress={async () => {
+                    const isLoggedIn = await AuthAPI.isLoggedIn();
+                    
+                    if (isLoggedIn) {
+                      router.push({
+                        pathname: "/charts/create-post",
+                        params: {
+                          chartId: chart._id,
+                          chartType: selectedType,
+                          difficulty: selectedDifficulty,
+                        },
+                      });
+                    } else {
+                      // Redirect to login with return URL parameters
+                      router.push({
+                        pathname: "/auth/login",
+                        params: { 
+                          returnTo: "charts", 
+                          chartId: chart._id 
+                        },
+                      });
+                    }
+                  }}
                 >
                   <MaterialIcons name="add" size={18} color="#FFFFFF" />
                   <ThemedText style={styles.addPostButtonText}>
