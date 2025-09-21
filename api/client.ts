@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Change this to your actual backend URL
 const BASE_URL = "https://maipocket-backend.vercel.app";
-
+// const BASE_URL = "http://localhost:3001"
 const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: {
@@ -121,6 +121,19 @@ export const ChartAPI = {
       return response.data;
     } catch (error) {
       console.error('Error liking post:', error);
+      throw error;
+    }
+  },
+
+  getPostsByChart: async (chartId: string, chartType: string, difficulty: string) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/posts/chart/${chartId}`, {
+        params: { chartType, difficulty },
+        withCredentials: true
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error getting posts by chart:", error);
       throw error;
     }
   },

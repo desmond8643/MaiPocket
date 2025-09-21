@@ -220,7 +220,7 @@ export default function CreatePostScreen() {
                   placeholder="What do you think about this chart?"
                   placeholderTextColor={Colors[colorScheme ?? "light"].text + '80'}
                   multiline
-                  maxLength={280}
+                  maxLength={500}
                   value={postContent}
                   onChangeText={(text) => {
                     setPostContent(text);
@@ -229,7 +229,7 @@ export default function CreatePostScreen() {
                 />
                 
                 <ThemedText style={styles.charCounter}>
-                  {characterCount}/280
+                  {characterCount}/500
                 </ThemedText>
                 
                 {/* Tags Selection */}

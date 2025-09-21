@@ -13,7 +13,7 @@ import {
   StyleSheet,
   ToastAndroid,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 import { AuthAPI, ChartAPI } from "@/api/client";
@@ -21,7 +21,10 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { Chart } from "@/types/chart";
+import { Chart, Post } from "@/types/chart";
+import { User } from "@/types/user";
+import { Ionicons } from "@expo/vector-icons";
+import { format } from "date-fns";
 
 export default function ChartDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -36,13 +39,21 @@ export default function ChartDetailScreen() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(
     null
   );
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({
     top: 0,
     right: 0,
   });
   const headerBtnRef = useRef<any>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [optionsPostId, setOptionsPostId] = useState<string | null>(null);
+  const [showPostOptionsDropdown, setShowPostOptionsDropdown] = useState(false);
+  const [postOptionsPosition, setPostOptionsPosition] = useState({
+    top: 0,
+    right: 0,
+  });
+  const [postsLoading, setPostsLoading] = useState(false);
 
   // Function to open YouTube search
   const openYouTubeSearch = () => {
@@ -51,7 +62,9 @@ export default function ChartDetailScreen() {
     setShowDropdown(false);
     const searchQuery = encodeURIComponent(`${chart.title} maimai`);
     const youtubeUrl = `https://www.youtube.com/results?search_query=${searchQuery}`;
-    Linking.openURL(youtubeUrl).catch(err => console.error("Error opening YouTube:", err));
+    Linking.openURL(youtubeUrl).catch((err) =>
+      console.error("Error opening YouTube:", err)
+    );
   };
 
   // Function to handle copy title
@@ -63,15 +76,46 @@ export default function ChartDetailScreen() {
 
   const openDropdown = () => {
     if (headerBtnRef.current) {
-      headerBtnRef.current.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
-        setDropdownPosition({
-          top: pageY + height,
-          right: 20,
-        });
-        setShowDropdown(true);
-      });
+      headerBtnRef.current.measure(
+        (
+          x: number,
+          y: number,
+          width: number,
+          height: number,
+          pageX: number,
+          pageY: number
+        ) => {
+          setDropdownPosition({
+            top: pageY + height,
+            right: 20,
+          });
+          setShowDropdown(true);
+        }
+      );
     } else {
       setShowDropdown(true);
+    }
+  };
+
+  // Add this function inside the ChartDetailScreen component
+  const fetchPosts = async (
+    chartId: string,
+    chartType: string,
+    difficulty: string
+  ) => {
+    setPostsLoading(true);
+    try {
+      const response = await ChartAPI.getPostsByChart(
+        chartId,
+        chartType,
+        difficulty
+      );
+      setPosts(response);
+    } catch (err) {
+      console.error("Error fetching posts:", err);
+      setPosts([]);
+    } finally {
+      setPostsLoading(false);
     }
   };
 
@@ -136,8 +180,7 @@ export default function ChartDetailScreen() {
     if (!chart || !selectedDifficulty) return;
 
     // Fetch posts for the selected chart type and difficulty
-    // You'd need to implement this API method
-    // fetchPosts(chart._id, selectedType, selectedDifficulty);
+    fetchPosts(chart._id, selectedType, selectedDifficulty);
   }, [chart, selectedType, selectedDifficulty]);
 
   const getDifficultyColor = (type: string) => {
@@ -170,6 +213,87 @@ export default function ChartDetailScreen() {
     }
   };
 
+  const handleShowPostOptions = (postId: string, event: any) => {
+    setOptionsPostId(postId);
+
+    if (event.target) {
+      event.target.measure(
+        (
+          x: number,
+          y: number,
+          width: number,
+          height: number,
+          pageX: number,
+          pageY: number
+        ) => {
+          setPostOptionsPosition({
+            top: pageY + height,
+            right: 20,
+          });
+          setShowPostOptionsDropdown(true);
+        }
+      );
+    } else {
+      setShowPostOptionsDropdown(true);
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    try {
+      await ChartAPI.deletePost(postId);
+      // Remove the post from the list
+      setPosts(posts.filter((p) => p.id !== postId));
+    } catch (err) {
+      console.error("Error deleting post:", err);
+      Alert.alert("Error", "Failed to delete post");
+    }
+  };
+
+  const handleLikePost = async (postId: string) => {
+    try {
+      const isLoggedIn = await AuthAPI.isLoggedIn();
+
+      if (isLoggedIn) {
+        const updatedPost = await ChartAPI.likePost(postId);
+        // Update the posts list with the updated like count
+        setPosts(
+          posts.map((p) =>
+            p.id === postId
+              ? { ...p, likes: updatedPost.likes, hasLiked: !p.hasLiked }
+              : p
+          )
+        );
+      } else {
+        // Redirect to login
+        router.push({
+          pathname: "/auth/login",
+          // params: {
+          //   returnTo: "charts",
+          //   chartId: chart._id,
+          // },
+        });
+      }
+    } catch (err) {
+      console.error("Error liking post:", err);
+    }
+  };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userData = await AuthAPI.getCurrentUser();
+        setUser(userData);
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  console.log(user);
+  console.log(posts);
+
   return (
     <>
       <Stack.Screen
@@ -201,7 +325,10 @@ export default function ChartDetailScreen() {
         onRequestClose={() => setShowDropdown(false)}
       >
         <TouchableOpacity
-          style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.2)' }]}
+          style={[
+            styles.modalOverlay,
+            { backgroundColor: "rgba(0, 0, 0, 0.2)" },
+          ]}
           activeOpacity={1}
           onPress={() => setShowDropdown(false)}
         >
@@ -248,6 +375,50 @@ export default function ChartDetailScreen() {
               />
               <ThemedText style={styles.dropdownText}>
                 Search on YouTube
+              </ThemedText>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Post Options Dropdown */}
+      <Modal
+        visible={showPostOptionsDropdown}
+        transparent={true}
+        animationType="none"
+        onRequestClose={() => setShowPostOptionsDropdown(false)}
+      >
+        <TouchableOpacity
+          style={[
+            styles.modalOverlay,
+            { backgroundColor: "rgba(0, 0, 0, 0.2)" },
+          ]}
+          activeOpacity={1}
+          onPress={() => setShowPostOptionsDropdown(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={[
+              styles.dropdownContainer,
+              {
+                backgroundColor: Colors[colorScheme ?? "light"].background,
+                borderColor: Colors[colorScheme ?? "light"].background,
+                position: "absolute",
+                top: postOptionsPosition.top,
+                right: postOptionsPosition.right,
+              },
+            ]}
+          >
+            <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={() => {
+                setShowPostOptionsDropdown(false);
+                handleDeletePost(optionsPostId as string);
+              }}
+            >
+              <MaterialIcons name="delete" size={22} color="#E53935" />
+              <ThemedText style={[styles.dropdownText, { color: "#E53935" }]}>
+                Delete Post
               </ThemedText>
             </TouchableOpacity>
           </TouchableOpacity>
@@ -395,7 +566,7 @@ export default function ChartDetailScreen() {
                 ))}
             </View>
 
-            {/* Posts Section - To be implemented */}
+            {/* Posts Section */}
             <View style={styles.postsSection}>
               <View style={styles.postsSectionHeader}>
                 <ThemedText style={styles.sectionTitle}>Posts</ThemedText>
@@ -403,7 +574,7 @@ export default function ChartDetailScreen() {
                   style={styles.addPostButton}
                   onPress={async () => {
                     const isLoggedIn = await AuthAPI.isLoggedIn();
-                    
+
                     if (isLoggedIn) {
                       router.push({
                         pathname: "/charts/create-post",
@@ -417,9 +588,9 @@ export default function ChartDetailScreen() {
                       // Redirect to login with return URL parameters
                       router.push({
                         pathname: "/auth/login",
-                        params: { 
-                          returnTo: "charts", 
-                          chartId: chart._id 
+                        params: {
+                          returnTo: "charts",
+                          chartId: chart._id,
                         },
                       });
                     }
@@ -432,11 +603,147 @@ export default function ChartDetailScreen() {
                 </TouchableOpacity>
               </View>
 
-              {posts.length > 0 ? (
-                <ThemedText>Posts will be shown here</ThemedText>
+              {postsLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator
+                    size="large"
+                    color={Colors[colorScheme ?? "light"].tint}
+                  />
+                  <ThemedText style={styles.loadingText}>
+                    Loading posts...
+                  </ThemedText>
+                </View>
+              ) : posts.length > 0 ? (
+                <View style={styles.postsList}>
+                  {posts.map((post, index) => (
+                    <View key={post.id}>
+                      <View
+                        style={[
+                          styles.postCard,
+                          {
+                            backgroundColor:
+                              Colors[colorScheme ?? "light"].background,
+                            borderColor:
+                              Colors[colorScheme ?? "light"].background,
+                          },
+                        ]}
+                      >
+                        <View style={styles.postHeader}>
+                          <View style={styles.userInfo}>
+                            <View style={styles.avatarContainer}>
+                              {post.userId?.avatar ? (
+                                <Image
+                                  source={{ uri: post.userId.avatar }}
+                                  style={styles.avatarImage}
+                                  contentFit="cover"
+                                />
+                              ) : (
+                                <View style={styles.defaultAvatarContainer}>
+                                  <Ionicons
+                                    name="person"
+                                    size={24}
+                                    color="#AE75DA"
+                                  />
+                                </View>
+                              )}
+                            </View>
+                            <View>
+                              <ThemedText style={styles.postAuthorName}>
+                                {post.anonymous
+                                  ? "Anonymous"
+                                  : (
+                                    <>
+                                      {post.user?.displayName}
+                                      {post.user?.username && (
+                                        <ThemedText style={styles.usernameText}> @{post.user.username}</ThemedText>
+                                      )}
+                                    </>
+                                  )
+                                }
+                              </ThemedText>
+                              <ThemedText style={styles.postDate}>
+                                {format(new Date(post.createdAt), "MMM d, yyyy")}
+                              </ThemedText>
+                            </View>
+                          </View>
+
+                          {user && post.user.id === user._id && (
+                            <TouchableOpacity
+                              onPress={(event) =>
+                                handleShowPostOptions(post._id, event)
+                              }
+                              style={styles.postOptionsButton}
+                            >
+                              <MaterialIcons
+                                name="more-horiz"
+                                size={24}
+                                color={Colors[colorScheme ?? "light"].text}
+                              />
+                            </TouchableOpacity>
+                          )}
+                        </View>
+
+                        <ThemedText style={styles.postContent}>
+                          {post.content}
+                        </ThemedText>
+
+                        {post.image && (
+                          <Image
+                            source={{ uri: post.image }}
+                            style={styles.postImage}
+                            contentFit="cover"
+                          />
+                        )}
+
+                        <View style={styles.postActions}>
+                          <TouchableOpacity
+                            style={styles.likeButton}
+                            onPress={() => handleLikePost(post.id)}
+                          >
+                            <MaterialIcons
+                              name={
+                                user &&
+                                Array.isArray(post.likes) &&
+                                post.likes.includes(user._id)
+                                  ? "favorite"
+                                  : "favorite-border"
+                              }
+                              size={18}
+                              color={
+                                user &&
+                                Array.isArray(post.likes) &&
+                                post.likes.includes(user._id)
+                                  ? "#E0245E"
+                                  : Colors[colorScheme ?? "light"].text
+                              }
+                            />
+                            {Array.isArray(post.likes) &&
+                              post.likes.length > 0 && (
+                                <ThemedText style={styles.actionText}>
+                                  {post.likes.length}
+                                </ThemedText>
+                              )}
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+
+                      {/* Add horizontal rule after each post except the last one */}
+                      {index < posts.length - 1 && (
+                        <View 
+                          style={[
+                            styles.postSeparator, 
+                            { 
+                              backgroundColor: colorScheme === 'dark' ? '#444444' : '#e0e0e0' 
+                            }
+                          ]} 
+                        />
+                      )}
+                    </View>
+                  ))}
+                </View>
               ) : (
                 <ThemedText style={styles.noPosts}>
-                  No posts yet for this chart
+                  No posts yet for this difficulty
                 </ThemedText>
               )}
             </View>
@@ -652,7 +959,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
+    paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginTop: 8,
@@ -660,6 +967,87 @@ const styles = StyleSheet.create({
   addPostButtonText: {
     color: "#FFFFFF",
     fontWeight: "bold",
-    marginLeft: 8,
+    marginLeft: 4,
+  },
+  postsList: {
+    marginTop: 8,
+  },
+  postCard: {
+    backgroundColor: "#f8f8f8",
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  postHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  userInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatarContainer: {
+    marginRight: 10,
+  },
+  avatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  postAuthorName: {
+    fontWeight: "bold",
+    fontSize: 15,
+  },
+  postDate: {
+    fontSize: 13,
+    color: "#888",
+  },
+  postOptionsButton: {
+    padding: 4,
+  },
+  postContent: {
+    fontSize: 16,
+    marginBottom: 12,
+    lineHeight: 22,
+  },
+  postImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  postActions: {
+    flexDirection: "row",
+    marginTop: 8,
+  },
+  likeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  actionText: {
+    marginLeft: 4,
+    fontSize: 14,
+  },
+  defaultAvatarContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#F0E6F7",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  postSeparator: {
+    height: 1,
+    // marginVertical: 16,
+    marginBottom: 16
+  },
+  usernameText: {
+    color: "#888888",
+    fontWeight: "normal",
+    fontSize: 13,
   },
 });
