@@ -125,6 +125,16 @@ export const ChartAPI = {
     }
   },
 
+  deletePost: async (postId: string) => {
+    try {
+      const response = await apiClient.delete(`/posts/${postId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      throw error;
+    }
+  },
+
   getPostsByChart: async (chartId: string, chartType: string, difficulty: string) => {
     try {
       const response = await axios.get(`${BASE_URL}/posts/chart/${chartId}`, {
@@ -283,4 +293,67 @@ export const AuthAPI = {
       throw error;
     }
   },
+};
+
+export const NotificationAPI = {
+  // Get user notifications with pagination
+  getNotifications: async (limit = 10, skip = 0) => {
+    try {
+      const response = await apiClient.get(`/notifications?limit=${limit}&skip=${skip}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      throw error;
+    }
+  },
+
+  // Get unread notification count
+  getUnreadCount: async () => {
+    try {
+      const response = await apiClient.get("/notifications/count");
+      return response.data.count;
+    } catch (error) {
+      console.error("Error fetching notification count:", error);
+      return 0;
+    }
+  },
+
+  // Mark notification as read
+  markAsRead: async (notificationId: string) => {
+    try {
+      const response = await apiClient.post("/notifications/mark-read", {
+        notificationId
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      throw error;
+    }
+  },
+
+  // Mark all notifications as read
+  markAllAsRead: async () => {
+    try {
+      const response = await apiClient.post("/notifications/mark-read", {
+        markAll: true
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      throw error;
+    }
+  },
+
+  // Archive notification
+  archiveNotification: async (notificationId: string) => {
+    try {
+      const response = await apiClient.post("/notifications/archive", {
+        notificationId
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error archiving notification:", error);
+      throw error;
+    }
+  }
 };

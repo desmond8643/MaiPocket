@@ -1,21 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, ActivityIndicator, Alert, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { AuthAPI, NotificationAPI } from '@/api/client';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
-import { AuthAPI } from '@/api/client';
-import { View, Image } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+
+// API URL
+const BASE_URL = "https://maipocket-backend.vercel.app";
+// const BASE_URL = "http://localhost:3001";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   useFocusEffect(
     React.useCallback(() => {
       checkLoginStatus();
+      fetchNotificationCount();
     }, [])
   );
 
@@ -37,6 +42,18 @@ export default function ProfileScreen() {
       console.error('Error checking login status:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchNotificationCount = async () => {
+    try {
+      const isLoggedIn = await AuthAPI.isLoggedIn();
+      if (isLoggedIn) {
+        const count = await NotificationAPI.getUnreadCount();
+        setNotificationCount(count);
+      }
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
     }
   };
 
@@ -119,17 +136,24 @@ export default function ProfileScreen() {
               >
                 <Ionicons name="notifications-outline" size={24} color="#AE75DA" />
                 <ThemedText style={styles.settingLabel}>Notifications</ThemedText>
+                {notificationCount > 0 && (
+                  <View style={styles.notificationBadge}>
+                    <ThemedText style={styles.notificationCount}>
+                      {notificationCount > 99 ? '99+' : notificationCount}
+                    </ThemedText>
+                  </View>
+                )}
                 <Ionicons name="chevron-forward" size={24} color="#999" />
               </TouchableOpacity>
               
-              <TouchableOpacity 
+              {/* <TouchableOpacity 
                 style={styles.settingsItem}
                 onPress={() => router.push('/settings/appearance')}
               >
                 <Ionicons name="color-palette-outline" size={24} color="#AE75DA" />
                 <ThemedText style={styles.settingLabel}>Appearance</ThemedText>
                 <Ionicons name="chevron-forward" size={24} color="#999" />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               
               <TouchableOpacity 
                 style={styles.settingsItem}
@@ -301,5 +325,21 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 16,
     paddingHorizontal: 20,
+  },
+  // New styles for notification badge
+  notificationBadge: {
+    backgroundColor: '#FF5555',
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  notificationCount: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+    paddingHorizontal: 6,
   },
 }); 

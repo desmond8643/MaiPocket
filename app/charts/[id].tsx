@@ -239,14 +239,28 @@ export default function ChartDetailScreen() {
   };
 
   const handleDeletePost = async (postId: string) => {
-    try {
-      await ChartAPI.deletePost(postId);
-      // Remove the post from the list
-      setPosts(posts.filter((p) => p.id !== postId));
-    } catch (err) {
-      console.error("Error deleting post:", err);
-      Alert.alert("Error", "Failed to delete post");
-    }
+    // Add confirmation alert
+    Alert.alert(
+      "Delete Post",
+      "Are you sure you want to delete this post?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await ChartAPI.deletePost(postId);
+              // Remove the post from the list
+              setPosts(posts.filter((p) => p.id !== postId));
+            } catch (err) {
+              console.error("Error deleting post:", err);
+              Alert.alert("Error", "Failed to delete post");
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleLikePost = async (postId: string) => {
@@ -670,7 +684,7 @@ export default function ChartDetailScreen() {
                           {user && post.user.id === user._id && (
                             <TouchableOpacity
                               onPress={(event) =>
-                                handleShowPostOptions(post._id, event)
+                                handleShowPostOptions(post.id, event)
                               }
                               style={styles.postOptionsButton}
                             >
@@ -693,6 +707,16 @@ export default function ChartDetailScreen() {
                             style={styles.postImage}
                             contentFit="cover"
                           />
+                        )}
+
+                        {post.tags && post.tags.length > 0 && (
+                          <View style={styles.tagsContainer}>
+                            {post.tags.map((tag, i) => (
+                              <View key={i} style={styles.tag}>
+                                <ThemedText style={styles.tagText}>{tag}</ThemedText>
+                              </View>
+                            ))}
+                          </View>
                         )}
 
                         <View style={styles.postActions}>
@@ -955,7 +979,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   addPostButton: {
-    backgroundColor: Colors.light.tint,
+    // backgroundColor: Colors.light.tint,
+    backgroundColor: '#9944DD',
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -1049,5 +1074,22 @@ const styles = StyleSheet.create({
     color: "#888888",
     fontWeight: "normal",
     fontSize: 13,
+  },
+  tagsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 0,
+  },
+  tag: {
+    backgroundColor: "#F0E6F7",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
+    marginRight: 6,
+    marginBottom: 6,
+  },
+  tagText: {
+    color: "#9944DD",
+    fontSize: 12,
   },
 });

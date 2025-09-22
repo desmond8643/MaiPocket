@@ -198,7 +198,8 @@ export default function ChartsScreen() {
         {
           backgroundColor:
             activeFilterType === item.id
-              ? Colors[colorScheme ?? "dark"].tint
+              // ? Colors[colorScheme ?? "dark"].tint
+              ? '#9944DD'
               : colorScheme === "dark"
               ? "#333333"
               : "#F0F0F0",
