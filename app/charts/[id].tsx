@@ -19,10 +19,12 @@ import {
 import { AuthAPI, ChartAPI } from "@/api/client";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { YouTubePreview } from "@/components/YouTubePreview";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart, Post } from "@/types/chart";
 import { User } from "@/types/user";
+import { extractYouTubeVideoId } from "@/utils/youtubeUtils";
 import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 
@@ -240,27 +242,23 @@ export default function ChartDetailScreen() {
 
   const handleDeletePost = async (postId: string) => {
     // Add confirmation alert
-    Alert.alert(
-      "Delete Post",
-      "Are you sure you want to delete this post?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await ChartAPI.deletePost(postId);
-              // Remove the post from the list
-              setPosts(posts.filter((p) => p.id !== postId));
-            } catch (err) {
-              console.error("Error deleting post:", err);
-              Alert.alert("Error", "Failed to delete post");
-            }
+    Alert.alert("Delete Post", "Are you sure you want to delete this post?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await ChartAPI.deletePost(postId);
+            // Remove the post from the list
+            setPosts(posts.filter((p) => p.id !== postId));
+          } catch (err) {
+            console.error("Error deleting post:", err);
+            Alert.alert("Error", "Failed to delete post");
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
 
   const handleLikePost = async (postId: string) => {
@@ -272,9 +270,7 @@ export default function ChartDetailScreen() {
         // Update the posts list with the updated like count
         setPosts(
           posts.map((p) =>
-            p.id === postId
-              ? { ...p, likes: updatedPost.likes, hasLiked: !p.hasLiked }
-              : p
+            p.id === postId ? { ...p, likes: updatedPost.likes } : p
           )
         );
       } else {
@@ -645,13 +641,14 @@ export default function ChartDetailScreen() {
                         <View style={styles.postHeader}>
                           <View style={styles.userInfo}>
                             <View style={styles.avatarContainer}>
-                              {post.userId?.avatar ? (
+                              {
+                                /* {post.userId?.avatar ? (
                                 <Image
                                   source={{ uri: post.userId.avatar }}
                                   style={styles.avatarImage}
                                   contentFit="cover"
                                 />
-                              ) : (
+                              ) : */
                                 <View style={styles.defaultAvatarContainer}>
                                   <Ionicons
                                     name="person"
@@ -659,24 +656,29 @@ export default function ChartDetailScreen() {
                                     color="#AE75DA"
                                   />
                                 </View>
-                              )}
+                              }
                             </View>
                             <View>
                               <ThemedText style={styles.postAuthorName}>
-                                {post.anonymous
-                                  ? "Anonymous"
-                                  : (
-                                    <>
-                                      {post.user?.displayName}
-                                      {post.user?.username && (
-                                        <ThemedText style={styles.usernameText}> @{post.user.username}</ThemedText>
-                                      )}
-                                    </>
-                                  )
-                                }
+                                {post.anonymous ? (
+                                  "Anonymous"
+                                ) : (
+                                  <>
+                                    {post.user?.displayName}
+                                    {post.user?.username && (
+                                      <ThemedText style={styles.usernameText}>
+                                        {" "}
+                                        @{post.user.username}
+                                      </ThemedText>
+                                    )}
+                                  </>
+                                )}
                               </ThemedText>
                               <ThemedText style={styles.postDate}>
-                                {format(new Date(post.createdAt), "MMM d, yyyy")}
+                                {format(
+                                  new Date(post.createdAt),
+                                  "MMM d, yyyy"
+                                )}
                               </ThemedText>
                             </View>
                           </View>
@@ -701,6 +703,13 @@ export default function ChartDetailScreen() {
                           {post.content}
                         </ThemedText>
 
+                        {/* YouTube Preview */}
+                        {extractYouTubeVideoId(post.content) && (
+                          <YouTubePreview
+                            videoId={extractYouTubeVideoId(post.content)!}
+                          />
+                        )}
+
                         {post.image && (
                           <Image
                             source={{ uri: post.image }}
@@ -713,7 +722,9 @@ export default function ChartDetailScreen() {
                           <View style={styles.tagsContainer}>
                             {post.tags.map((tag, i) => (
                               <View key={i} style={styles.tag}>
-                                <ThemedText style={styles.tagText}>{tag}</ThemedText>
+                                <ThemedText style={styles.tagText}>
+                                  {tag}
+                                </ThemedText>
                               </View>
                             ))}
                           </View>
@@ -753,13 +764,14 @@ export default function ChartDetailScreen() {
 
                       {/* Add horizontal rule after each post except the last one */}
                       {index < posts.length - 1 && (
-                        <View 
+                        <View
                           style={[
-                            styles.postSeparator, 
-                            { 
-                              backgroundColor: colorScheme === 'dark' ? '#444444' : '#e0e0e0' 
-                            }
-                          ]} 
+                            styles.postSeparator,
+                            {
+                              backgroundColor:
+                                colorScheme === "dark" ? "#444444" : "#e0e0e0",
+                            },
+                          ]}
                         />
                       )}
                     </View>
@@ -980,7 +992,7 @@ const styles = StyleSheet.create({
   },
   addPostButton: {
     // backgroundColor: Colors.light.tint,
-    backgroundColor: '#9944DD',
+    backgroundColor: "#9944DD",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -1068,7 +1080,7 @@ const styles = StyleSheet.create({
   postSeparator: {
     height: 1,
     // marginVertical: 16,
-    marginBottom: 16
+    marginBottom: 16,
   },
   usernameText: {
     color: "#888888",

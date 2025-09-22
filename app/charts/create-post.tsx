@@ -2,22 +2,24 @@ import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { YouTubePreview } from "@/components/YouTubePreview";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
+import { extractYouTubeVideoId } from "@/utils/youtubeUtils";
 
 export default function CreatePostScreen() {
   const { chartId, chartType, difficulty } = useLocalSearchParams();
@@ -34,6 +36,7 @@ export default function CreatePostScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [characterCount, setCharacterCount] = useState(0);
   const [postError, setPostError] = useState<string | null>(null);
+  const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
 
   // Available tags for posts
   const AVAILABLE_TAGS = ["chart video", "gameplay", "insight", "analysis"];
@@ -114,6 +117,15 @@ export default function CreatePostScreen() {
       case "remaster": return "#E9A5F1";
       default: return "#888888";
     }
+  };
+
+  const handlePostContentChange = (text: string) => {
+    setPostContent(text);
+    setCharacterCount(text.length);
+    
+    // Check for YouTube links
+    const videoId = extractYouTubeVideoId(text);
+    setYoutubeVideoId(videoId);
   };
 
   return (
@@ -222,11 +234,12 @@ export default function CreatePostScreen() {
                   multiline
                   maxLength={500}
                   value={postContent}
-                  onChangeText={(text) => {
-                    setPostContent(text);
-                    setCharacterCount(text.length);
-                  }}
+                  onChangeText={handlePostContentChange}
                 />
+                
+                {youtubeVideoId && (
+                  <YouTubePreview videoId={youtubeVideoId} />
+                )}
                 
                 <ThemedText style={styles.charCounter}>
                   {characterCount}/500
