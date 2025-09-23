@@ -12,6 +12,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthAPI } from "@/api/client";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export default function VerifyScreen() {
   const router = useRouter();
@@ -28,6 +29,8 @@ export default function VerifyScreen() {
   const [resendCountdown, setResendCountdown] = useState(0);
 
   const inputRefs = useRef<Array<TextInput | null>>([]);
+
+  const textColor = useThemeColor({}, 'text');
 
   useEffect(() => {
     if (resendCountdown > 0) {
@@ -128,6 +131,7 @@ export default function VerifyScreen() {
       <ThemedText style={styles.subtitle}>
         We've sent a 6-digit code to{"\n"}
         <ThemedText style={styles.emailText}>{email}</ThemedText>
+        {"\n"}Please check your spam/junk folder if you don't see it.
       </ThemedText>
 
       <View style={styles.codeContainer}>
@@ -137,7 +141,7 @@ export default function VerifyScreen() {
             ref={(ref) => {
               inputRefs.current[index] = ref;
             }}
-            style={styles.codeInput}
+            style={[styles.codeInput, { color: textColor }]}
             maxLength={1}
             keyboardType="number-pad"
             value={digit}
@@ -225,7 +229,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
   },
   verifyButton: {
     backgroundColor: "#AE75DA",

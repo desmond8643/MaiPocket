@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   deluxeLabel: {
-    backgroundColor: "transparent",
+    backgroundColor: "white",
     borderRadius: 16,
     paddingVertical: 8,
     paddingHorizontal: 12,
