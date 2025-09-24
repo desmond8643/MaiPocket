@@ -17,7 +17,7 @@ import {
 } from "react-native";
 
 import { AuthAPI, ChartAPI } from "@/api/client";
-import { showInterstitialWithCooldown } from "@/components/InterstitialAdComponent";
+import { showInterstitialAd } from "@/components/InterstitialAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { YouTubePreview } from "@/components/YouTubePreview";
@@ -305,12 +305,11 @@ export default function ChartDetailScreen() {
   console.log(user);
   console.log(posts);
 
-  const showPostCreationAd = (postParams) => {
-    showInterstitialWithCooldown(() => {
-      // This code runs after the ad is closed or fails to load
+  const navigateWithAd = (path: string, params: any) => {
+    showInterstitialAd(() => {
       router.push({
-        pathname: "/charts/create-post",
-        params: postParams
+        pathname: path,
+        params: params
       });
     });
   };
@@ -603,10 +602,10 @@ export default function ChartDetailScreen() {
                         difficulty: selectedDifficulty,
                       };
                       
-                      // Show ad before creating post
-                      showPostCreationAd(postParams);
+                      // Use preloaded ad for transition
+                      navigateWithAd("/charts/create-post", postParams);
                     } else {
-                      // Redirect to login with return URL parameters
+                      // For login, don't show ad
                       router.push({
                         pathname: "/auth/login",
                         params: {
