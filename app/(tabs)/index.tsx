@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   bottomAdContainer: {
     position: "absolute",
-    bottom: 100, // Adjust this value based on your tab bar height
+    bottom: 80, // Adjust this value based on your tab bar height
     left: 0,
     right: 0,
     zIndex: 999,
