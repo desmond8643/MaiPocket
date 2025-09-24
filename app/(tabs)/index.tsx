@@ -89,9 +89,9 @@ export default function HomeScreen() {
       </ParallaxScrollView>
 
       {/* Bottom ad - above tab bar */}
-      <View style={styles.bottomAdContainer}>
+      {/* <View style={styles.bottomAdContainer}>
         <BannerAdComponent />
-      </View>
+      </View> */}
     </View>
   );
 }
