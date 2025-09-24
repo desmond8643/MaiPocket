@@ -297,7 +297,7 @@ export default function ChartsScreen() {
           
         </ScrollView>
       </SafeAreaView>
-      <BannerAdComponent />
+   
     </ThemedView>
   );
 }

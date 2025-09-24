@@ -1,99 +1,113 @@
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
+import { BannerAdComponent } from "@/components/BannerAdComponent";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/milk.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <Image
-          source={require("@/assets/images/maipocket-logo.png")}
-          style={styles.titleLogo}
-        />
-      </ThemedView>
+    <View style={styles.container}>
+      {/* Top ad - absolute position */}
+      <View style={styles.topAdContainer}>
+        <BannerAdComponent />
+      </View>
+      
+      <ParallaxScrollView
+        headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
+        headerImage={
+          <Image
+            source={require("@/assets/images/milk.png")}
+            style={styles.reactLogo}
+          />
+        }
+      >
+        <ThemedView style={styles.titleContainer}>
+          <Image
+            source={require("@/assets/images/maipocket-logo.png")}
+            style={styles.titleLogo}
+          />
+        </ThemedView>
 
-      <ThemedView style={styles.featureContainer}>
-        <ThemedText type="subtitle">Browse Song Charts</ThemedText>
-        <ThemedText>
-          Explore maimai songs by genre, level, or version. Find your favorite
-          tracks and check their difficulties.
-        </ThemedText>
-        <TouchableOpacity
-          style={[
-            styles.actionButton,
-            {
-              // backgroundColor: Colors[colorScheme ?? "light"].tint,
-              backgroundColor: "#9944DD",
-            },
-          ]}
-          onPress={() => router.push("/charts")}
-        >
-          <ThemedText style={styles.buttonText}>Browse Charts</ThemedText>
-          <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
-        </TouchableOpacity>
-      </ThemedView>
-
-      <ThemedView style={styles.featureContainer}>
-        <ThemedText type="subtitle">Your Profile</ThemedText>
-        <ThemedText>
-          Manage your account, track your favorite songs, and customize your
-          experience.
-        </ThemedText>
-        <TouchableOpacity
-          style={[
-            styles.actionButton,
-            {
-              // backgroundColor: Colors[colorScheme ?? "light"].tint,
-              backgroundColor: "#9944DD",
-            },
-          ]}
-          onPress={() => router.push("/profile")}
-        >
-          <ThemedText style={styles.buttonText}>View Profile</ThemedText>
-          <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
-        </TouchableOpacity>
-      </ThemedView>
-
-      <ThemedView style={styles.copyrightContainer}>
-        <TouchableOpacity
-          style={[
-            styles.copyrightButton,
-            {
-              backgroundColor: Colors[colorScheme ?? "light"].background,
-              borderColor: Colors[colorScheme ?? "light"].tint,
-            },
-          ]}
-          onPress={() => router.push("/copyright")}
-        >
-          <ThemedText style={styles.copyrightButtonText}>
-            Copyright Notice
+        <ThemedView style={styles.featureContainer}>
+          <ThemedText type="subtitle">Browse Song Charts</ThemedText>
+          <ThemedText>
+            Explore maimai songs by genre, level, or version. Find your favorite
+            tracks and check their difficulties.
           </ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
-      <BannerAdComponent />
-    </ParallaxScrollView>
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              {
+                // backgroundColor: Colors[colorScheme ?? "light"].tint,
+                backgroundColor: "#9944DD",
+              },
+            ]}
+            onPress={() => router.push("/charts")}
+          >
+            <ThemedText style={styles.buttonText}>Browse Charts</ThemedText>
+            <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
+          </TouchableOpacity>
+        </ThemedView>
+
+        <ThemedView style={styles.featureContainer}>
+          <ThemedText type="subtitle">Your Profile</ThemedText>
+          <ThemedText>
+            Manage your account, track your favorite songs, and customize your
+            experience.
+          </ThemedText>
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              {
+                // backgroundColor: Colors[colorScheme ?? "light"].tint,
+                backgroundColor: "#9944DD",
+              },
+            ]}
+            onPress={() => router.push("/profile")}
+          >
+            <ThemedText style={styles.buttonText}>View Profile</ThemedText>
+            <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
+          </TouchableOpacity>
+        </ThemedView>
+
+        <ThemedView style={styles.copyrightContainer}>
+          <TouchableOpacity
+            style={[
+              styles.copyrightButton,
+              {
+                backgroundColor: Colors[colorScheme ?? "light"].background,
+                borderColor: Colors[colorScheme ?? "light"].tint,
+              },
+            ]}
+            onPress={() => router.push("/copyright")}
+          >
+            <ThemedText style={styles.copyrightButtonText}>
+              Copyright Notice
+            </ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      </ParallaxScrollView>
+      
+      {/* Bottom ad - above tab bar */}
+      <View style={styles.bottomAdContainer}>
+        <BannerAdComponent />
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -151,5 +165,21 @@ const styles = StyleSheet.create({
   },
   copyrightButtonText: {
     fontSize: 12,
+  },
+  topAdContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    alignItems: 'center',
+  },
+  bottomAdContainer: {
+    position: 'absolute',
+    bottom: 50, // Adjust this value based on your tab bar height
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    alignItems: 'center',
   },
 });

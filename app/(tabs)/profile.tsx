@@ -200,7 +200,7 @@ export default function ProfileScreen() {
           </View>
         )}
       </ScrollView>
-      <BannerAdComponent />
+      
     </ThemedView>
   );
 }
