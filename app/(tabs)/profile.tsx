@@ -1,4 +1,5 @@
 import { AuthAPI, NotificationAPI } from '@/api/client';
+import { BannerAdComponent } from '@/components/BannerAdComponent';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Ionicons } from '@expo/vector-icons';
@@ -193,6 +194,7 @@ export default function ProfileScreen() {
             <ThemedText style={styles.benefitsText}>
               Create an account to track your progress, save favorites, and more!
             </ThemedText>
+            <BannerAdComponent />
           </View>
         )}
       </ScrollView>

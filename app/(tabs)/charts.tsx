@@ -21,6 +21,7 @@ import { Colors } from "@/constants/Colors";
 import { ChartAPI } from "@/api/client";
 import { Chart } from "@/types/chart";
 import { SymbolViewProps } from "expo-symbols";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
 
 // Category types
 const FILTER_TYPES = [
@@ -104,13 +105,6 @@ export default function ChartsScreen() {
     "genre" | "level" | "version"
   >("genre");
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Remove the loading and error states since we're not fetching
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Just use the static CATEGORIES object directly
-  // Remove the useEffect that fetches categories
 
   // Render each category item
   const renderCategoryItem = ({
@@ -303,6 +297,7 @@ export default function ChartsScreen() {
           />
         </ScrollView>
       </SafeAreaView>
+      <BannerAdComponent />
     </ThemedView>
   );
 }
