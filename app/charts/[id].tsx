@@ -591,6 +591,10 @@ export default function ChartDetailScreen() {
                         chartType: selectedType,
                         difficulty: selectedDifficulty,
                       };
+                      router.push({
+                        pathname: '/charts/create-post',
+                        params: postParams
+                      })
                     } else {
                       // For login, don't show ad
                       router.push({
