@@ -12,6 +12,7 @@ import {
 
 import { ChartAPI } from "@/api/client";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
+import { preloadInterstitialAd, showInterstitialAd } from "@/components/InterstitialAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -29,6 +30,11 @@ export default function ChartListScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const insets = useSafeAreaInsets(); // Add this line
+
+  // Preload an interstitial ad when the component mounts
+  useEffect(() => {
+    preloadInterstitialAd();
+  }, []);
 
   // Add dynamic styles
   const dynamicStyles = {
@@ -153,12 +159,15 @@ export default function ChartListScreen() {
           styles.chartCard,
           { backgroundColor: colorScheme === "dark" ? "#333333" : "#FFFFFF" },
         ]}
-        onPress={() =>
-          router.push({
-            pathname: "/charts/[id]",
-            params: { id: item._id },
-          })
-        }
+        onPress={() => {
+          // Show interstitial ad before navigating to chart details
+          showInterstitialAd(() => {
+            router.push({
+              pathname: "/charts/[id]",
+              params: { id: item._id },
+            });
+          });
+        }}
       >
         <View style={styles.topSection}>
           <Image
