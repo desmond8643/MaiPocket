@@ -9,8 +9,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TabLayout() {
   return (
-    <View style={{ display: "flex", flexDirection: "row" }}>
-      <BannerAdComponent />
       <View style={{ flex: 1 }}>
         <Tabs
           screenOptions={{
@@ -56,6 +54,6 @@ export default function TabLayout() {
           />
         </Tabs>
       </View>
-    </View>
+    
   );
 }
