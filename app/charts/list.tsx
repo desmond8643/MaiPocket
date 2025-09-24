@@ -34,7 +34,7 @@ export default function ChartListScreen() {
   const dynamicStyles = {
     bottomAdContainer: {
       ...styles.bottomAdContainer,
-      bottom: 49 + insets.bottom, // Standard tab bar height (49) + bottom inset
+      bottom: insets.bottom,
     }
   };
 
@@ -348,7 +348,7 @@ export default function ChartListScreen() {
             renderItem={renderChartItem}
             keyExtractor={(item) => item._id}
             numColumns={1}
-            contentContainerStyle={[styles.chartsList, { paddingBottom: 100 }]} // Add extra padding at bottom for ad
+            contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]} // Add padding for ad
           />
         )}
       
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
   },
   bottomAdContainer: {
     position: "absolute",
-    bottom: 80, // Adjust based on tab bar height
+    bottom: 0, // Can be at the bottom since there's no tab bar
     left: 0,
     right: 0,
     zIndex: 999,
