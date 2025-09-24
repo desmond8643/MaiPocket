@@ -1,16 +1,25 @@
-import { Image } from "expo-image";
-import { router } from "expo-router";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
+import { Image } from "expo-image";
+import { router } from "expo-router";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
+
+  const dynamicStyles = {
+    bottomAdContainer: {
+      ...styles.bottomAdContainer,
+      bottom: 49 + insets.bottom, // Standard tab bar height (49) + bottom inset
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -89,7 +98,7 @@ export default function HomeScreen() {
       </ParallaxScrollView>
 
       {/* Bottom ad - above tab bar */}
-      <View style={styles.bottomAdContainer}>
+      <View style={dynamicStyles.bottomAdContainer}>
         <BannerAdComponent />
       </View>
     </View>
