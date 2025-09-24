@@ -8,6 +8,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -87,6 +88,8 @@ export default function HomeScreen() {
           </ThemedText>
         </TouchableOpacity>
       </ThemedView>
+
+      <BannerAdComponent />
     </ParallaxScrollView>
   );
 }

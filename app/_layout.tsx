@@ -6,6 +6,8 @@ import * as SplashScreen from "expo-splash-screen";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 
+import mobileAds from 'react-native-google-mobile-ads';
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded, error] = useFonts({
@@ -22,6 +24,15 @@ export default function RootLayout() {
   if (!loaded) {
     return null;
   }
+
+// Initialize before rendering any ads
+mobileAds()
+  .initialize()
+  .then(() => {
+    // SDK initialized
+    console.log('Google Mobile Ads SDK initialized');
+  });
+
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
