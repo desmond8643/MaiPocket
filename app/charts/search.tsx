@@ -1,25 +1,24 @@
-import { useLocalSearchParams } from "expo-router";
-import { useState, useEffect } from "react";
+import { Image } from "expo-image";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   StyleSheet,
   TouchableOpacity,
   // SafeAreaView,
   View,
-  ActivityIndicator,
 } from "react-native";
-import { Image } from "expo-image";
-import { router } from "expo-router";
-import { Stack } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ChartAPI } from "@/api/client";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { ChartAPI } from "@/api/client";
-import { Chart, Difficulty } from "@/types/chart";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Chart } from "@/types/chart";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ChartSearchScreen() {
   const { query } = useLocalSearchParams();
@@ -27,6 +26,15 @@ export default function ChartSearchScreen() {
   const [charts, setCharts] = useState<Chart[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const insets = useSafeAreaInsets(); // Add this line
+  
+  // Add dynamic styles
+  const dynamicStyles = {
+    bottomAdContainer: {
+      ...styles.bottomAdContainer,
+      bottom: insets.bottom,
+    }
+  };
 
   // Search for charts
   useEffect(() => {
@@ -268,7 +276,7 @@ export default function ChartSearchScreen() {
           renderItem={renderChartItem}
           keyExtractor={(item) => item._id}
           numColumns={1}
-          contentContainerStyle={styles.chartsList}
+          contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]} // Add extra padding for ad
           ListHeaderComponent={
             <ThemedText style={styles.resultsCount}>
               {charts.length} {charts.length === 1 ? "result" : "results"} found
@@ -276,6 +284,11 @@ export default function ChartSearchScreen() {
           }
         />
       )}
+      
+      {/* Add the banner ad component */}
+      <View style={dynamicStyles.bottomAdContainer}>
+        <BannerAdComponent />
+      </View>
       {/* </SafeAreaView> */}
     </ThemedView>
   );
@@ -438,5 +451,13 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  bottomAdContainer: {
+    position: "absolute",
+    bottom: 0, // Can be at the bottom since there's no tab bar
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    alignItems: "center",
   },
 });
