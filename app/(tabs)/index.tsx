@@ -9,7 +9,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -19,7 +19,7 @@ export default function HomeScreen() {
     bottomAdContainer: {
       ...styles.bottomAdContainer,
       bottom: 49 + insets.bottom, // Standard tab bar height (49) + bottom inset
-    }
+    },
   };
 
   return (
@@ -96,28 +96,7 @@ export default function HomeScreen() {
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
-        
-        {/* Add test ad button */}
-        <ThemedView style={styles.testAdContainer}>
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: "#E53935",
-              },
-            ]}
-            onPress={() => {
-              console.log("Testing interstitial ad...");
-              showInterstitial(() => {
-                console.log("Interstitial ad closed or failed to show");
-              });
-            }}
-          >
-            <ThemedText style={styles.buttonText}>Test Interstitial Ad</ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
       </ParallaxScrollView>
-
       {/* Bottom ad - above tab bar */}
       <View style={dynamicStyles.bottomAdContainer}>
         <BannerAdComponent />

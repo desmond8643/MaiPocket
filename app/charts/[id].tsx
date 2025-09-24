@@ -17,7 +17,6 @@ import {
 } from "react-native";
 
 import { AuthAPI, ChartAPI } from "@/api/client";
-import { showInterstitialAd } from "@/components/InterstitialAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { YouTubePreview } from "@/components/YouTubePreview";
@@ -304,15 +303,6 @@ export default function ChartDetailScreen() {
 
   console.log(user);
   console.log(posts);
-
-  const navigateWithAd = (path: string, params: any) => {
-    showInterstitialAd(() => {
-      router.push({
-        pathname: path,
-        params: params
-      });
-    });
-  };
 
   return (
     <>
@@ -601,9 +591,6 @@ export default function ChartDetailScreen() {
                         chartType: selectedType,
                         difficulty: selectedDifficulty,
                       };
-                      
-                      // Use preloaded ad for transition
-                      navigateWithAd("/charts/create-post", postParams);
                     } else {
                       // For login, don't show ad
                       router.push({

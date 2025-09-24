@@ -8,8 +8,14 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import mobileAds, { AdEventType, InterstitialAd, TestIds } from 'react-native-google-mobile-ads';
 
+// Define a type for the preloaded ad
+interface PreloadedAd {
+  ad: InterstitialAd;
+  unsubscribe: () => void;
+}
+
 // Keep track of a preloaded ad
-let preloadedAd = null;
+let preloadedAd: PreloadedAd | null = null;
 let isLoading = false;
 let lastAdShownTime = 0;
 const AD_COOLDOWN = 60000; // 1 minute cooldown
