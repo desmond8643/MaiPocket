@@ -194,10 +194,13 @@ export default function ProfileScreen() {
             <ThemedText style={styles.benefitsText}>
               Create an account to track your progress, save favorites, and more!
             </ThemedText>
-            <BannerAdComponent />
+            <View style={{marginTop: 8}}>
+            
+            </View>
           </View>
         )}
       </ScrollView>
+      <BannerAdComponent />
     </ThemedView>
   );
 }

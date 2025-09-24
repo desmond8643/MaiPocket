@@ -99,7 +99,6 @@ const CATEGORIES = {
 };
 
 export default function ChartsScreen() {
-
   const colorScheme = useColorScheme();
   const [activeFilterType, setActiveFilterType] = useState<
     "genre" | "level" | "version"
@@ -192,8 +191,8 @@ export default function ChartsScreen() {
         {
           backgroundColor:
             activeFilterType === item.id
-              // ? Colors[colorScheme ?? "dark"].tint
-              ? '#9944DD'
+              ? // ? Colors[colorScheme ?? "dark"].tint
+                "#9944DD"
               : colorScheme === "dark"
               ? "#333333"
               : "#F0F0F0",
@@ -295,6 +294,7 @@ export default function ChartsScreen() {
             scrollEnabled={false}
             contentContainerStyle={styles.categoryList}
           />
+          
         </ScrollView>
       </SafeAreaView>
       <BannerAdComponent />
