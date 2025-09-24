@@ -1,27 +1,24 @@
-import { useState, useEffect } from "react";
+import { router } from "expo-router";
+import { useState } from "react";
 import {
   FlatList,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
+  StyleSheet,
   // SafeAreaView,
   TextInput,
-  View,
-  ActivityIndicator,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Image } from "expo-image";
-import { router } from "expo-router";
 
+import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { ChartAPI } from "@/api/client";
-import { Chart } from "@/types/chart";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { SymbolViewProps } from "expo-symbols";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Category types
 const FILTER_TYPES = [
@@ -104,6 +101,15 @@ export default function ChartsScreen() {
     "genre" | "level" | "version"
   >("genre");
   const [searchQuery, setSearchQuery] = useState("");
+  const insets = useSafeAreaInsets(); // Add this line
+
+  // Add these dynamic styles
+  const dynamicStyles = {
+    bottomAdContainer: {
+      ...styles.bottomAdContainer,
+      bottom: 49 + insets.bottom, // Standard tab bar height (49) + bottom inset
+    }
+  };
 
   // Render each category item
   const renderCategoryItem = ({
@@ -297,7 +303,11 @@ export default function ChartsScreen() {
           
         </ScrollView>
       </SafeAreaView>
-   
+      
+      {/* Add the bottom ad component */}
+      <View style={dynamicStyles.bottomAdContainer}>
+        <BannerAdComponent />
+      </View>
     </ThemedView>
   );
 }
@@ -420,5 +430,13 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: "#FFFFFF",
     fontWeight: "600",
+  },
+  bottomAdContainer: {
+    position: "absolute",
+    bottom: 80, // Adjust this value based on your tab bar height
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    alignItems: "center",
   },
 });
