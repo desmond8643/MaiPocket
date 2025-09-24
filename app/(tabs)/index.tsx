@@ -1,4 +1,5 @@
 import { BannerAdComponent } from "@/components/BannerAdComponent";
+import { showInterstitial } from "@/components/InterstitialAdComponent";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -95,6 +96,26 @@ export default function HomeScreen() {
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
+        
+        {/* Add test ad button */}
+        <ThemedView style={styles.testAdContainer}>
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: "#E53935",
+              },
+            ]}
+            onPress={() => {
+              console.log("Testing interstitial ad...");
+              showInterstitial(() => {
+                console.log("Interstitial ad closed or failed to show");
+              });
+            }}
+          >
+            <ThemedText style={styles.buttonText}>Test Interstitial Ad</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
       </ParallaxScrollView>
 
       {/* Bottom ad - above tab bar */}
@@ -182,5 +203,11 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 999,
     alignItems: "center",
+  },
+  testAdContainer: {
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 40,
+    padding: 16,
   },
 });
