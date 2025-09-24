@@ -61,7 +61,7 @@ export function YouTubePreview({ videoId }: YouTubePreviewProps) {
       {videoTitle && (
         <View style={[
           styles.titleContainer,
-          { borderTopColor: Colors[colorScheme ?? 'light'].border }
+          { borderTopColor: Colors[colorScheme ?? 'light'].background }
         ]}>
           <ThemedText numberOfLines={2} style={styles.title}>
             {videoTitle}
