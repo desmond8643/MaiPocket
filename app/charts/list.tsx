@@ -11,12 +11,14 @@ import {
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ChartListScreen() {
   const { type, value } = useLocalSearchParams();
@@ -26,6 +28,15 @@ export default function ChartListScreen() {
   const [originalCharts, setOriginalCharts] = useState<Chart[]>([]); // Add this line
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const insets = useSafeAreaInsets(); // Add this line
+
+  // Add dynamic styles
+  const dynamicStyles = {
+    bottomAdContainer: {
+      ...styles.bottomAdContainer,
+      bottom: 49 + insets.bottom, // Standard tab bar height (49) + bottom inset
+    }
+  };
 
   // Fetch charts for the selected category
   useEffect(() => {
@@ -337,9 +348,14 @@ export default function ChartListScreen() {
             renderItem={renderChartItem}
             keyExtractor={(item) => item._id}
             numColumns={1}
-            contentContainerStyle={styles.chartsList}
+            contentContainerStyle={[styles.chartsList, { paddingBottom: 100 }]} // Add extra padding at bottom for ad
           />
         )}
+      
+      {/* Add the banner ad component */}
+      <View style={dynamicStyles.bottomAdContainer}>
+        <BannerAdComponent />
+      </View>
       {/* </SafeAreaView> */}
     </ThemedView>
   );
@@ -518,5 +534,13 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 16,
     color: "#888888",
+  },
+  bottomAdContainer: {
+    position: "absolute",
+    bottom: 80, // Adjust based on tab bar height
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    alignItems: "center",
   },
 });
