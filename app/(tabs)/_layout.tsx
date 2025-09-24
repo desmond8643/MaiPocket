@@ -5,11 +5,14 @@ import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TabLayout() {
   return (
     <View style={{ flex: 1 }}>
-      <BannerAdComponent />
+      <SafeAreaView edges={["top"]} style={{ backgroundColor: "#ffffff" }}>
+        <BannerAdComponent />
+      </SafeAreaView>
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: "#AE75DA", // Custom purple color
