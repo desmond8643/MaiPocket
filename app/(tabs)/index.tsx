@@ -88,8 +88,6 @@ export default function HomeScreen() {
           </ThemedText>
         </TouchableOpacity>
       </ThemedView>
-
-      <BannerAdComponent />
     </ParallaxScrollView>
   );
 }
