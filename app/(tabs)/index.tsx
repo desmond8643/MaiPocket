@@ -1,25 +1,19 @@
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
 
   return (
     <View style={styles.container}>
-      {/* Top ad - absolute position */}
-      <View style={styles.topAdContainer}>
-        <BannerAdComponent />
-      </View>
-      
       <ParallaxScrollView
         headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
         headerImage={
@@ -46,7 +40,6 @@ export default function HomeScreen() {
             style={[
               styles.actionButton,
               {
-                // backgroundColor: Colors[colorScheme ?? "light"].tint,
                 backgroundColor: "#9944DD",
               },
             ]}
@@ -67,7 +60,6 @@ export default function HomeScreen() {
             style={[
               styles.actionButton,
               {
-                // backgroundColor: Colors[colorScheme ?? "light"].tint,
                 backgroundColor: "#9944DD",
               },
             ]}
@@ -95,7 +87,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </ThemedView>
       </ParallaxScrollView>
-      
+
       {/* Bottom ad - above tab bar */}
       <View style={styles.bottomAdContainer}>
         <BannerAdComponent />
@@ -167,19 +159,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   topAdContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     zIndex: 999,
-    alignItems: 'center',
+    alignItems: "center",
   },
   bottomAdContainer: {
-    position: 'absolute',
-    bottom: 50, // Adjust this value based on your tab bar height
+    position: "absolute",
+    bottom: 100, // Adjust this value based on your tab bar height
     left: 0,
     right: 0,
     zIndex: 999,
-    alignItems: 'center',
+    alignItems: "center",
   },
 });
