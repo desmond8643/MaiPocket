@@ -1,7 +1,7 @@
 import {
-  AdEventType,
-  InterstitialAd,
-  TestIds,
+    AdEventType,
+    InterstitialAd,
+    TestIds,
 } from "react-native-google-mobile-ads";
 
 // Define ad unit IDs
@@ -9,36 +9,41 @@ const adUnitId = TestIds.INTERSTITIAL;
 
 // Basic interstitial ad function
 export function showInterstitial(onClose = () => {}) {
-  const interstitialAd = InterstitialAd.createForAdRequest(adUnitId);
-
-  // Add event handlers
-  const unsubscribeLoaded = interstitialAd.addAdEventListener(
-    AdEventType.LOADED,
-    () => {
-      interstitialAd.show();
-    }
-  );
-
-  const unsubscribeClosed = interstitialAd.addAdEventListener(
-    AdEventType.CLOSED,
-    () => {
+  const interstitialAd = InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL);
+  let hasAdClosed = false;
+  
+  // Add loading timeout
+  const timeoutId = setTimeout(() => {
+    if (!hasAdClosed) {
+      console.log('Ad loading timed out');
       onClose();
     }
-  );
-
-  const unsubscribeError = interstitialAd.addAdEventListener(
-    AdEventType.ERROR,
-    (error) => {
-      console.error("Interstitial ad error:", error);
-      onClose(); // Call onClose even if there was an error
-    }
-  );
-
-  // Load the ad
+  }, 10000); // 10 second timeout
+  
+  const unsubscribeLoaded = interstitialAd.addAdEventListener(AdEventType.LOADED, () => {
+    console.log('Interstitial ad loaded and ready to show');
+    interstitialAd.show();
+  });
+  
+  const unsubscribeClosed = interstitialAd.addAdEventListener(AdEventType.CLOSED, () => {
+    console.log('Ad closed');
+    hasAdClosed = true;
+    clearTimeout(timeoutId);
+    onClose();
+  });
+  
+  const unsubscribeError = interstitialAd.addAdEventListener(AdEventType.ERROR, (error) => {
+    console.error('Ad error:', error);
+    hasAdClosed = true;
+    clearTimeout(timeoutId);
+    onClose();
+  });
+  
+  console.log('Starting to load interstitial ad');
   interstitialAd.load();
-
-  // Return unsubscribe function to clean up listeners
+  
   return () => {
+    clearTimeout(timeoutId);
     unsubscribeLoaded();
     unsubscribeClosed();
     unsubscribeError();
