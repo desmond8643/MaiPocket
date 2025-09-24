@@ -4,7 +4,7 @@ import { AdEventType, InterstitialAd, TestIds } from 'react-native-google-mobile
 let preloadedAd = null;
 let isLoading = false;
 let lastAdShownTime = 0;
-const AD_COOLDOWN = 60000; // 1 minute cooldown
+const AD_COOLDOWN = 10000; // 1 minute cooldown
 
 // Preload an ad so it's ready when needed
 export function preloadInterstitialAd() {
