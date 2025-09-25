@@ -6,6 +6,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { AdProvider } from '@/context/AdContext';
 import mobileAds, { AdEventType, InterstitialAd, TestIds } from 'react-native-google-mobile-ads';
 
 // Define a type for the preloaded ad
@@ -151,50 +152,52 @@ mobileAds()
 
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack
-        screenOptions={{
-          headerStyle: {
-            backgroundColor:
-              colorScheme === "dark"
-                ? Colors.dark.background
-                : Colors.light.background,
-          },
-          headerTintColor:
-            colorScheme === "dark" ? Colors.dark.text : Colors.light.text,
-          headerTitleStyle: {
-            color:
+    <AdProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Stack
+          screenOptions={{
+            headerStyle: {
+              backgroundColor:
+                colorScheme === "dark"
+                  ? Colors.dark.background
+                  : Colors.light.background,
+            },
+            headerTintColor:
               colorScheme === "dark" ? Colors.dark.text : Colors.light.text,
-          },
-          contentStyle: {
-            backgroundColor:
-              colorScheme === "dark"
-                ? Colors.dark.background
-                : Colors.light.background,
-          },
-        }}
-      >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/register" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/verify" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="auth/forgot-password"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="auth/reset-password"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="settings/edit-profile"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="settings/change-password"
-          options={{ headerShown: false }}
-        />
-      </Stack>
-    </GestureHandlerRootView>
+            headerTitleStyle: {
+              color:
+                colorScheme === "dark" ? Colors.dark.text : Colors.light.text,
+            },
+            contentStyle: {
+              backgroundColor:
+                colorScheme === "dark"
+                  ? Colors.dark.background
+                  : Colors.light.background,
+            },
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+          <Stack.Screen name="auth/register" options={{ headerShown: false }} />
+          <Stack.Screen name="auth/verify" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="auth/forgot-password"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="auth/reset-password"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="settings/edit-profile"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="settings/change-password"
+            options={{ headerShown: false }}
+          />
+        </Stack>
+      </GestureHandlerRootView>
+    </AdProvider>
   );
 }

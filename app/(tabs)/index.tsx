@@ -1,10 +1,10 @@
 import { BannerAdComponent } from "@/components/BannerAdComponent";
-import { showInterstitial } from "@/components/InterstitialAdComponent";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
+import { useAds } from "@/context/AdContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -14,6 +14,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const { adsRemoved, temporaryAdRemoval } = useAds();
+  
+  const showAds = !adsRemoved && !temporaryAdRemoval;
 
   const dynamicStyles = {
     bottomAdContainer: {
@@ -79,6 +82,27 @@ export default function HomeScreen() {
             <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
           </TouchableOpacity>
         </ThemedView>
+        
+        {showAds && (
+          <ThemedView style={styles.featureContainer}>
+            <ThemedText type="subtitle">Remove Ads</ThemedText>
+            <ThemedText>
+              Enjoy an ad-free experience by watching a video or making a one-time purchase.
+            </ThemedText>
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                {
+                  backgroundColor: "#4CAF50",
+                },
+              ]}
+              onPress={() => router.push("/remove-ads")}
+            >
+              <ThemedText style={styles.buttonText}>Remove Ads</ThemedText>
+              <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
+            </TouchableOpacity>
+          </ThemedView>
+        )}
 
         <ThemedView style={styles.copyrightContainer}>
           <TouchableOpacity
@@ -97,10 +121,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </ThemedView>
       </ParallaxScrollView>
-      {/* Bottom ad - above tab bar */}
-      <View style={dynamicStyles.bottomAdContainer}>
-        <BannerAdComponent />
-      </View>
+      {/* Bottom ad - above tab bar, only if ads aren't removed */}
+      {showAds && (
+        <View style={dynamicStyles.bottomAdContainer}>
+          <BannerAdComponent />
+        </View>
+      )}
     </View>
   );
 }
