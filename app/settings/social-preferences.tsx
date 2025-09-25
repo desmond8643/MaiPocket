@@ -92,7 +92,13 @@ export default function SocialPreferencesScreen() {
               <Ionicons
                 name="logo-x"
                 size={24}
-                color={preference === "twitter" ? "#FFFFFF" : colorScheme === "dark" ? "#FFFFFF" : "#000000"}
+                color={
+                  preference === "twitter"
+                    ? "#FFFFFF"
+                    : colorScheme === "dark"
+                    ? "#FFFFFF"
+                    : "#000000"
+                }
               />
               <ThemedText
                 style={[
@@ -145,12 +151,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(150, 150, 150, 0.2)",
+    paddingBottom: 30,
   },
   headerTitle: {
     fontSize: 24,
