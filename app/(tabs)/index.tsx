@@ -10,8 +10,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View, WebView } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import WebView from "react-native-webview";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
