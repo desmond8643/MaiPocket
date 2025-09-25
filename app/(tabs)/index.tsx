@@ -134,7 +134,7 @@ export default function HomeScreen() {
               <WebView
                 source={{ 
                   uri: socialFeedPreference === 'twitter' 
-                    ? 'https://twitter.com/maimai_official' 
+                    ? 'https://x.com/maimai_official' 
                     : 'https://www.facebook.com/maimaiDX'
                 }}
                 style={styles.socialFeedWebView}
