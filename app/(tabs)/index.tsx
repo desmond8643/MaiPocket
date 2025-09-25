@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 
@@ -131,26 +131,70 @@ export default function HomeScreen() {
               Stay updated with the latest maimai news and announcements.
             </ThemedText>
             <View style={styles.socialFeedContainer}>
-              <WebView
-                source={{ 
-                  uri: socialFeedPreference === 'twitter' 
-                    ? 'https://x.com/maimai_official' 
-                    : 'https://www.facebook.com/maimaiDX'
-                }}
-                style={styles.socialFeedWebView}
-                javaScriptEnabled={true}
-                domStorageEnabled={true}
-                startInLoadingState={true}
-                originWhitelist={['*']}
-                onShouldStartLoadWithRequest={(request) => {
-                  // Only allow http and https URLs to open within the WebView
-                  return request.url.startsWith('http://') || request.url.startsWith('https://');
-                }}
-                onError={(syntheticEvent) => {
-                  const { nativeEvent } = syntheticEvent;
-                  console.warn('WebView error: ', nativeEvent);
-                }}
-              />
+              {socialFeedPreference === 'twitter' ? (
+                <WebView
+                  source={{
+                    html: `
+                      <!DOCTYPE html>
+                      <html>
+                      <head>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <style>
+                          body { font-family: system-ui; margin: 0; padding: 16px; background-color: #f8f8f8; }
+                          .loading { text-align: center; padding: 20px; color: #555; }
+                          .error { color: #721c24; background-color: #f8d7da; padding: 10px; border-radius: 4px; margin-top: 10px; }
+                        </style>
+                      </head>
+                      <body>
+                        <div id="content">
+                          <div class="loading">Loading Twitter timeline...</div>
+                        </div>
+                        <script>
+                          // Simple timeout to detect loading issues
+                          setTimeout(function() {
+                            if (document.querySelector('.twitter-timeline-rendered') === null) {
+                              document.getElementById('content').innerHTML += 
+                                '<div class="error">Unable to load timeline. Please check your connection.</div>';
+                            }
+                          }, 10000);
+                        </script>
+                        <div id="twitter-container">
+                          <a class="twitter-timeline" data-height="450" data-theme="light" href="https://twitter.com/maimai_official"></a>
+                        </div>
+                        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                      </body>
+                      </html>
+                    `
+                  }}
+                  style={styles.socialFeedWebView}
+                  javaScriptEnabled={true}
+                  domStorageEnabled={true}
+                  startInLoadingState={true}
+                  scalesPageToFit={false}
+                  onError={(syntheticEvent) => {
+                    const { nativeEvent } = syntheticEvent;
+                    console.error('WebView error:', nativeEvent);
+                  }}
+                  onHttpError={(syntheticEvent) => {
+                    const { nativeEvent } = syntheticEvent;
+                    console.error('WebView HTTP error:', nativeEvent);
+                  }}
+                  renderLoading={() => (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="large" color="#9944DD" />
+                      <ThemedText style={styles.loadingText}>Loading timeline...</ThemedText>
+                    </View>
+                  )}
+                />
+              ) : (
+                // Keep the Facebook implementation as before
+                <WebView
+                  source={{ uri: 'https://www.facebook.com/maimaiDX' }}
+                  style={styles.socialFeedWebView}
+                  javaScriptEnabled={true}
+                  domStorageEnabled={true}
+                />
+              )}
             </View>
           </ThemedView>
         )}
@@ -292,5 +336,18 @@ const styles = StyleSheet.create({
   },
   settingsIconContainer: {
     padding: 8,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.8)',
+  },
+  loadingText: {
+    marginTop: 10,
   },
 });
