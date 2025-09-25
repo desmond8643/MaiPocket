@@ -146,7 +146,7 @@ export default function HomeScreen() {
                     uri: 'https://x.com/maimai_official' 
                   }}
                   style={styles.socialFeedWebView}
-                  userAgent={userAgent}
+                  userAgent={userAgent || "Mozilla/5.0"}
                   javaScriptEnabled={true}
                   domStorageEnabled={true}
                   startInLoadingState={true}
