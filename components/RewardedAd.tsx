@@ -3,7 +3,8 @@ import { AdEventType, RewardedAd, RewardedAdEventType, TestIds } from 'react-nat
 export function showRewardedAd(onRewarded = (reward?: any) => {}, onClose = () => {}) {
   const rewardedAd = RewardedAd.createForAdRequest(TestIds.REWARDED);
   
-  const unsubscribeLoaded = rewardedAd.addAdEventListener(AdEventType.LOADED, () => {
+  // Use RewardedAdEventType.LOADED instead of AdEventType.LOADED
+  const unsubscribeLoaded = rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () => {
     rewardedAd.show();
   });
   

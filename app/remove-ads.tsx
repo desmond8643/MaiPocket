@@ -1,21 +1,28 @@
-import { showRewardedAd } from '@/components/RewardedAd';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { useAds } from '@/context/AdContext';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { showRewardedAd } from "@/components/RewardedAd";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useAds } from "@/context/AdContext";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function RemoveAdsScreen() {
-  const { removeAdsTemporarily, removeAdsPermanently, restorePurchases } = useAds();
+  const { removeAdsTemporarily, removeAdsPermanently, restorePurchases } =
+    useAds();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
 
   const watchLongAdForTemporaryRemoval = () => {
     setLoading(true);
-    
+
     // Use rewarded ad instead of interstitial
     showRewardedAd(
       async () => {
@@ -35,33 +42,33 @@ export default function RemoveAdsScreen() {
 
   const purchasePermanentAdRemoval = async () => {
     setLoading(true);
-    
+
     // This would be replaced with actual in-app purchase logic
     Alert.alert(
       "In-App Purchase",
       "Would you like to remove ads permanently for HKD $30?",
       [
-        { 
-          text: "Yes", 
+        {
+          text: "Yes",
           onPress: async () => {
             // This is where you'd implement the actual IAP
             // For now, just simulate a successful purchase
             await removeAdsPermanently();
             setLoading(false);
             Alert.alert(
-              "Purchase Successful", 
+              "Purchase Successful",
               "Thank you for your purchase! Ads have been permanently removed.",
               [{ text: "Great!", onPress: () => router.back() }]
             );
-          } 
+          },
         },
-        { 
-          text: "Cancel", 
+        {
+          text: "Cancel",
           style: "cancel",
           onPress: () => {
             setLoading(false);
-          }
-        }
+          },
+        },
       ]
     );
   };
@@ -70,7 +77,7 @@ export default function RemoveAdsScreen() {
     setLoading(true);
     const restored = await restorePurchases();
     setLoading(false);
-    
+
     if (restored) {
       Alert.alert(
         "Purchase Restored",
@@ -89,21 +96,26 @@ export default function RemoveAdsScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           {/* <IconSymbol name="chevron.left" size={24} /> */}
           <Ionicons name="arrow-back" size={24} color="#AE75DA" />
         </TouchableOpacity>
-        <ThemedText type="title">Remove Ads</ThemedText>
+        <ThemedText style={{ fontSize: 24, fontWeight: "bold" }}>
+          Remove Ads
+        </ThemedText>
       </View>
-      
+
       <ThemedView style={styles.content}>
         <ThemedView style={styles.optionCard}>
           <ThemedText type="subtitle">Watch Ad</ThemedText>
           <ThemedText style={styles.description}>
             Watch a video ad to remove all ads for 24 hours.
           </ThemedText>
-          <TouchableOpacity 
-            style={[styles.button, styles.watchAdButton]} 
+          <TouchableOpacity
+            style={[styles.button, styles.watchAdButton]}
             onPress={watchLongAdForTemporaryRemoval}
             disabled={loading}
           >
@@ -120,21 +132,23 @@ export default function RemoveAdsScreen() {
           <ThemedText style={styles.description}>
             One-time payment of HKD $30 to permanently remove all ads.
           </ThemedText>
-          <TouchableOpacity 
-            style={[styles.button, styles.purchaseButton]} 
+          <TouchableOpacity
+            style={[styles.button, styles.purchaseButton]}
             onPress={purchasePermanentAdRemoval}
             disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <ThemedText style={styles.buttonText}>Purchase (HKD $30)</ThemedText>
+              <ThemedText style={styles.buttonText}>
+                Purchase (HKD $30)
+              </ThemedText>
             )}
           </TouchableOpacity>
         </ThemedView>
 
-        <TouchableOpacity 
-          style={styles.restoreButton} 
+        <TouchableOpacity
+          style={styles.restoreButton}
           onPress={handleRestorePurchase}
           disabled={loading}
         >
@@ -154,8 +168,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
@@ -183,23 +197,23 @@ const styles = StyleSheet.create({
   button: {
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   watchAdButton: {
-    backgroundColor: '#5C6BC0',
+    backgroundColor: "#5C6BC0",
   },
   purchaseButton: {
-    backgroundColor: '#9944DD',
+    backgroundColor: "#9944DD",
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+    color: "#FFFFFF",
+    fontWeight: "600",
   },
   restoreButton: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 12,
   },
   restoreText: {
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
   },
-}); 
+});
