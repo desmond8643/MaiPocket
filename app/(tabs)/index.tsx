@@ -178,7 +178,7 @@ export default function HomeScreen() {
               styles.copyrightButton,
               {
                 backgroundColor: Colors[colorScheme ?? "light"].background,
-                borderColor: "##9944DD",
+                borderColor: "#9944DD",
               },
             ]}
             onPress={() => router.push("/copyright")}

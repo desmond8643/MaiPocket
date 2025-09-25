@@ -386,10 +386,11 @@ const styles = StyleSheet.create({
   },
   header: {
     position: "absolute",
-    padding: 16,
+    paddingHorizontal: 16,
+    top: 20,
     left: 0,
     right: 0,
-    height: 60,
+    // height: 60,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
