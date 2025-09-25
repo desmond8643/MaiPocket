@@ -14,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 // API URL
 const BASE_URL = "https://maipocket-backend.vercel.app";
@@ -115,98 +114,97 @@ export default function ProfileScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView>
-        {/* Add settings icon to header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.settingsIconContainer}
-            onPress={() => router.push("/settings/social-preferences")}
-          >
-            <Ionicons name="settings-outline" size={24} color="#AE75DA" />
-          </TouchableOpacity>
-        </View>
+      {/* Add settings icon to header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.settingsIconContainer}
+          onPress={() => router.push("/settings/social-preferences")}
+        >
+          <Ionicons name="settings-outline" size={24} color="#AE75DA" />
+        </TouchableOpacity>
+      </View>
 
-        <ScrollView style={styles.scrollView}>
-          {userData ? (
-            // Logged in view
-            <View style={styles.profileContainer}>
-              <View style={styles.avatarContainer}>
-                {userData.currentAvatar ? (
-                  <Image
-                    source={{ uri: userData.currentAvatar }}
-                    style={styles.avatarImage}
-                  />
-                ) : (
-                  <View style={styles.defaultAvatar}>
-                    <Ionicons name="person" size={60} color="#AE75DA" />
+      <ScrollView style={styles.scrollView}>
+        {userData ? (
+          // Logged in view
+          <View style={styles.profileContainer}>
+            <View style={styles.avatarContainer}>
+              {userData.currentAvatar ? (
+                <Image
+                  source={{ uri: userData.currentAvatar }}
+                  style={styles.avatarImage}
+                />
+              ) : (
+                <View style={styles.defaultAvatar}>
+                  <Ionicons name="person" size={60} color="#AE75DA" />
+                </View>
+              )}
+            </View>
+
+            <ThemedText style={styles.displayName}>
+              {userData.displayName}
+            </ThemedText>
+            <ThemedText style={styles.username}>
+              @{userData.username}
+            </ThemedText>
+
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <ThemedText style={styles.statValue}>
+                  {userData.exp || 0}
+                </ThemedText>
+                <ThemedText style={styles.statLabel}>EXP</ThemedText>
+              </View>
+              <View style={styles.statItem}>
+                <ThemedText style={styles.statValue}>
+                  {userData.crystals || 0}
+                </ThemedText>
+                <ThemedText style={styles.statLabel}>Crystals</ThemedText>
+              </View>
+              {userData.isPro && (
+                <View style={[styles.statItem, styles.proBadge]}>
+                  <ThemedText style={styles.proText}>PRO</ThemedText>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.settingsSection}>
+              <ThemedText style={styles.sectionTitle}>Settings</ThemedText>
+
+              <TouchableOpacity
+                style={styles.settingsItem}
+                onPress={() => router.push("/settings/edit-profile")}
+              >
+                <Ionicons name="person-outline" size={24} color="#AE75DA" />
+                <ThemedText style={styles.settingLabel}>
+                  Edit Profile
+                </ThemedText>
+                <Ionicons name="chevron-forward" size={24} color="#999" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.settingsItem}
+                onPress={() => router.push("/settings/notifications")}
+              >
+                <Ionicons
+                  name="notifications-outline"
+                  size={24}
+                  color="#AE75DA"
+                />
+                <ThemedText style={styles.settingLabel}>
+                  Notifications
+                </ThemedText>
+                {notificationCount > 0 && (
+                  <View style={styles.notificationBadge}>
+                    <ThemedText style={styles.notificationCount}>
+                      {notificationCount > 99 ? "99+" : notificationCount}
+                    </ThemedText>
                   </View>
                 )}
-              </View>
+                <Ionicons name="chevron-forward" size={24} color="#999" />
+              </TouchableOpacity>
 
-              <ThemedText style={styles.displayName}>
-                {userData.displayName}
-              </ThemedText>
-              <ThemedText style={styles.username}>
-                @{userData.username}
-              </ThemedText>
-
-              <View style={styles.statsContainer}>
-                <View style={styles.statItem}>
-                  <ThemedText style={styles.statValue}>
-                    {userData.exp || 0}
-                  </ThemedText>
-                  <ThemedText style={styles.statLabel}>EXP</ThemedText>
-                </View>
-                <View style={styles.statItem}>
-                  <ThemedText style={styles.statValue}>
-                    {userData.crystals || 0}
-                  </ThemedText>
-                  <ThemedText style={styles.statLabel}>Crystals</ThemedText>
-                </View>
-                {userData.isPro && (
-                  <View style={[styles.statItem, styles.proBadge]}>
-                    <ThemedText style={styles.proText}>PRO</ThemedText>
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.settingsSection}>
-                <ThemedText style={styles.sectionTitle}>Settings</ThemedText>
-
-                <TouchableOpacity
-                  style={styles.settingsItem}
-                  onPress={() => router.push("/settings/edit-profile")}
-                >
-                  <Ionicons name="person-outline" size={24} color="#AE75DA" />
-                  <ThemedText style={styles.settingLabel}>
-                    Edit Profile
-                  </ThemedText>
-                  <Ionicons name="chevron-forward" size={24} color="#999" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.settingsItem}
-                  onPress={() => router.push("/settings/notifications")}
-                >
-                  <Ionicons
-                    name="notifications-outline"
-                    size={24}
-                    color="#AE75DA"
-                  />
-                  <ThemedText style={styles.settingLabel}>
-                    Notifications
-                  </ThemedText>
-                  {notificationCount > 0 && (
-                    <View style={styles.notificationBadge}>
-                      <ThemedText style={styles.notificationCount}>
-                        {notificationCount > 99 ? "99+" : notificationCount}
-                      </ThemedText>
-                    </View>
-                  )}
-                  <Ionicons name="chevron-forward" size={24} color="#999" />
-                </TouchableOpacity>
-
-                {/* <TouchableOpacity 
+              {/* <TouchableOpacity 
                 style={styles.settingsItem}
                 onPress={() => router.push('/settings/appearance')}
               >
@@ -215,54 +213,53 @@ export default function ProfileScreen() {
                 <Ionicons name="chevron-forward" size={24} color="#999" />
               </TouchableOpacity> */}
 
-                <TouchableOpacity
-                  style={styles.settingsItem}
-                  onPress={() => router.push("/settings/change-password")}
-                >
-                  <Ionicons name="key-outline" size={24} color="#AE75DA" />
-                  <ThemedText style={styles.settingLabel}>
-                    Change Password
-                  </ThemedText>
-                  <Ionicons name="chevron-forward" size={24} color="#999" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.settingsItem}
-                  onPress={handleLogout}
-                >
-                  <Ionicons name="log-out-outline" size={24} color="#FF6B6B" />
-                  <ThemedText style={[styles.settingLabel, styles.logoutText]}>
-                    Log Out
-                  </ThemedText>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ) : (
-            // Not logged in view
-            <View style={styles.notLoggedInContainer}>
-              <View style={styles.defaultAvatar}>
-                <Ionicons name="person" size={60} color="#AE75DA" />
-              </View>
-              <ThemedText style={styles.notLoggedInText}>
-                You're not logged in
-              </ThemedText>
               <TouchableOpacity
-                style={styles.loginButton}
-                onPress={navigateToLogin}
+                style={styles.settingsItem}
+                onPress={() => router.push("/settings/change-password")}
               >
-                <ThemedText style={styles.loginButtonText}>
-                  Log In / Register
+                <Ionicons name="key-outline" size={24} color="#AE75DA" />
+                <ThemedText style={styles.settingLabel}>
+                  Change Password
+                </ThemedText>
+                <Ionicons name="chevron-forward" size={24} color="#999" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.settingsItem}
+                onPress={handleLogout}
+              >
+                <Ionicons name="log-out-outline" size={24} color="#FF6B6B" />
+                <ThemedText style={[styles.settingLabel, styles.logoutText]}>
+                  Log Out
                 </ThemedText>
               </TouchableOpacity>
-              <ThemedText style={styles.benefitsText}>
-                Create an account to track your progress, save favorites, and
-                more!
-              </ThemedText>
-              <View style={{ marginTop: 8 }}></View>
             </View>
-          )}
-        </ScrollView>
-      </SafeAreaView>
+          </View>
+        ) : (
+          // Not logged in view
+          <View style={styles.notLoggedInContainer}>
+            <View style={styles.defaultAvatar}>
+              <Ionicons name="person" size={60} color="#AE75DA" />
+            </View>
+            <ThemedText style={styles.notLoggedInText}>
+              You're not logged in
+            </ThemedText>
+            <TouchableOpacity
+              style={styles.loginButton}
+              onPress={navigateToLogin}
+            >
+              <ThemedText style={styles.loginButtonText}>
+                Log In / Register
+              </ThemedText>
+            </TouchableOpacity>
+            <ThemedText style={styles.benefitsText}>
+              Create an account to track your progress, save favorites, and
+              more!
+            </ThemedText>
+            <View style={{ marginTop: 8 }}></View>
+          </View>
+        )}
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -411,7 +408,7 @@ const styles = StyleSheet.create({
   },
   header: {
     position: "absolute",
-    top: 0,
+    top: 16,
     left: 0,
     right: 0,
     height: 60,
