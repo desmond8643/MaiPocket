@@ -6,11 +6,16 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useAds } from "@/context/AdContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUserAgent } from "@/hooks/useUserAgent";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 
@@ -18,7 +23,7 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();
-  
+
   const showAds = !adsRemoved && !temporaryAdRemoval;
 
   const dynamicStyles = {
@@ -28,20 +33,23 @@ export default function HomeScreen() {
     },
   };
 
-  const [socialFeedPreference, setSocialFeedPreference] = useState('facebook');
+  const [socialFeedPreference, setSocialFeedPreference] = useState("facebook");
+  const userAgent = useUserAgent();
 
   useEffect(() => {
     const loadPreference = async () => {
       try {
-        const savedPreference = await AsyncStorage.getItem('socialFeedPreference');
+        const savedPreference = await AsyncStorage.getItem(
+          "socialFeedPreference"
+        );
         if (savedPreference) {
           setSocialFeedPreference(savedPreference);
         }
       } catch (error) {
-        console.error('Error loading social feed preference:', error);
+        console.error("Error loading social feed preference:", error);
       }
     };
-    
+
     loadPreference();
   }, []);
 
@@ -102,12 +110,13 @@ export default function HomeScreen() {
             <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
           </TouchableOpacity>
         </ThemedView>
-        
+
         {showAds && (
           <ThemedView style={styles.featureContainer}>
             <ThemedText type="subtitle">Remove Ads</ThemedText>
             <ThemedText>
-              Enjoy an ad-free experience by watching a video or making a one-time purchase.
+              Enjoy an ad-free experience by watching a video or making a
+              one-time purchase.
             </ThemedText>
             <TouchableOpacity
               style={[
@@ -124,72 +133,32 @@ export default function HomeScreen() {
           </ThemedView>
         )}
 
-        {socialFeedPreference !== 'off' && (
+        {socialFeedPreference !== "off" && (
           <ThemedView style={styles.featureContainer}>
             <ThemedText type="subtitle">Recent Updates</ThemedText>
             <ThemedText>
               Stay updated with the latest maimai news and announcements.
             </ThemedText>
             <View style={styles.socialFeedContainer}>
-              {socialFeedPreference === 'twitter' ? (
+              {socialFeedPreference === "twitter" ? (
                 <WebView
-                  source={{
-                    html: `
-                      <!DOCTYPE html>
-                      <html>
-                      <head>
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <style>
-                          body { font-family: system-ui; margin: 0; padding: 16px; background-color: #f8f8f8; }
-                          .loading { text-align: center; padding: 20px; color: #555; }
-                          .error { color: #721c24; background-color: #f8d7da; padding: 10px; border-radius: 4px; margin-top: 10px; }
-                        </style>
-                      </head>
-                      <body>
-                        <div id="content">
-                          <div class="loading">Loading Twitter timeline...</div>
-                        </div>
-                        <script>
-                          // Simple timeout to detect loading issues
-                          setTimeout(function() {
-                            if (document.querySelector('.twitter-timeline-rendered') === null) {
-                              document.getElementById('content').innerHTML += 
-                                '<div class="error">Unable to load timeline. Please check your connection.</div>';
-                            }
-                          }, 10000);
-                        </script>
-                        <div id="twitter-container">
-                          <a class="twitter-timeline" data-height="450" data-theme="light" href="https://twitter.com/maimai_official"></a>
-                        </div>
-                        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-                      </body>
-                      </html>
-                    `
+                  source={{ 
+                    uri: 'https://x.com/maimai_official' 
                   }}
                   style={styles.socialFeedWebView}
+                  userAgent={userAgent}
                   javaScriptEnabled={true}
                   domStorageEnabled={true}
                   startInLoadingState={true}
-                  scalesPageToFit={false}
                   onError={(syntheticEvent) => {
                     const { nativeEvent } = syntheticEvent;
-                    console.error('WebView error:', nativeEvent);
+                    console.error("WebView error:", nativeEvent);
                   }}
-                  onHttpError={(syntheticEvent) => {
-                    const { nativeEvent } = syntheticEvent;
-                    console.error('WebView HTTP error:', nativeEvent);
-                  }}
-                  renderLoading={() => (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="large" color="#9944DD" />
-                      <ThemedText style={styles.loadingText}>Loading timeline...</ThemedText>
-                    </View>
-                  )}
                 />
               ) : (
                 // Keep the Facebook implementation as before
                 <WebView
-                  source={{ uri: 'https://www.facebook.com/maimaiDX' }}
+                  source={{ uri: "https://www.facebook.com/maimaiDX" }}
                   style={styles.socialFeedWebView}
                   javaScriptEnabled={true}
                   domStorageEnabled={true}
@@ -313,24 +282,24 @@ const styles = StyleSheet.create({
   socialFeedContainer: {
     height: 300,
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginTop: 10,
     borderWidth: 1,
-    borderColor: 'rgba(150, 150, 150, 0.3)',
+    borderColor: "rgba(150, 150, 150, 0.3)",
   },
   socialFeedWebView: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   header: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     height: 60,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
     paddingHorizontal: 16,
     zIndex: 10,
   },
@@ -338,14 +307,14 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   loadingContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.8)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.8)",
   },
   loadingText: {
     marginTop: 10,
