@@ -261,14 +261,6 @@ const styles = StyleSheet.create({
   copyrightButtonText: {
     fontSize: 12,
   },
-  topAdContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 999,
-    alignItems: "center",
-  },
   bottomAdContainer: {
     position: "absolute",
     bottom: 80, // Adjust this value based on your tab bar height
@@ -276,12 +268,6 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 999,
     alignItems: "center",
-  },
-  testAdContainer: {
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 40,
-    padding: 16,
   },
   socialFeedContainer: {
     height: 600,
@@ -306,21 +292,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     zIndex: 10,
-  },
-  settingsIconContainer: {
-    padding: 8,
-  },
-  loadingContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.8)",
-  },
-  loadingText: {
-    marginTop: 10,
   },
 });
