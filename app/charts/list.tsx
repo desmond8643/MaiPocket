@@ -7,20 +7,23 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
-import { preloadInterstitialAd, showInterstitialAd } from "@/components/InterstitialAdComponent";
+import {
+  preloadInterstitialAd,
+  showInterstitialAd,
+} from "@/components/InterstitialAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useShowAds } from '@/hooks/useShowAds';
+import { useShowAds } from "@/hooks/useShowAds";
 import { Chart } from "@/types/chart";
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ChartListScreen() {
   const { type, value } = useLocalSearchParams();
@@ -39,14 +42,6 @@ export default function ChartListScreen() {
       preloadInterstitialAd();
     }
   }, [showAds]);
-
-  // Add dynamic styles
-  // const dynamicStyles = {
-  //   bottomAdContainer: {
-  //     ...styles.bottomAdContainer,
-  //     bottom: insets.bottom,
-  //   }
-  // };
 
   // Fetch charts for the selected category
   useEffect(() => {
@@ -110,9 +105,17 @@ export default function ChartListScreen() {
 
     // Function to sort difficulties
     const sortByDifficultyOrder = (difficulties: SimpleDifficulty[]) => {
-      const difficultyOrder = ["basic", "advanced", "expert", "master", "remaster"];
+      const difficultyOrder = [
+        "basic",
+        "advanced",
+        "expert",
+        "master",
+        "remaster",
+      ];
       return difficulties.sort((a, b) => {
-        return difficultyOrder.indexOf(a.type) - difficultyOrder.indexOf(b.type);
+        return (
+          difficultyOrder.indexOf(a.type) - difficultyOrder.indexOf(b.type)
+        );
       });
     };
 
@@ -164,13 +167,19 @@ export default function ChartListScreen() {
           { backgroundColor: colorScheme === "dark" ? "#333333" : "#FFFFFF" },
         ]}
         onPress={() => {
-          // Show interstitial ad before navigating to chart details
-          showInterstitialAd(() => {
+          if (showAds) {
+            showInterstitialAd(() => {
+              router.push({
+                pathname: "/charts/[id]",
+                params: { id: item._id },
+              });
+            });
+          } else {
             router.push({
               pathname: "/charts/[id]",
               params: { id: item._id },
             });
-          });
+          }
         }}
       >
         <View style={styles.topSection}>
@@ -275,96 +284,96 @@ export default function ChartListScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       {/* <SafeAreaView style={styles.container}> */}
-        <Stack.Screen
-          options={{
-            title: value ? `${value.toString()}${!loading ? ` (${charts.length})`: ""}` : "Charts",
-            headerBackTitle: "Categories",
-          }}
-        />
-        <ThemedView style={styles.searchContainer}>
-          <ThemedView
-            style={[
-              styles.searchInputContainer,
-              {
-                backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0",
-              },
-            ]}
-          >
-            <IconSymbol
-              name="magnifyingglass"
-              size={20}
-              color="#888888"
-              style={styles.searchIcon}
-            />
-            <TextInput
-              style={[
-                styles.searchInput,
-                { color: colorScheme === "dark" ? "#FFFFFF" : "#000000" },
-              ]}
-              placeholder="Search charts..."
-              placeholderTextColor={
-                colorScheme === "dark" ? "#AAAAAA" : "#888888"
-              }
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </ThemedView>
-        </ThemedView>
-
-        {loading ? (
-          <ThemedView style={styles.loadingContainer}>
-            <ActivityIndicator
-              size="large"
-              color={Colors[colorScheme ?? "light"].tint}
-            />
-            <ThemedText style={styles.loadingText}>
-              Loading charts...
-            </ThemedText>
-          </ThemedView>
-        ) : error ? (
-          <ThemedView style={styles.errorContainer}>
-            <IconSymbol
-              name="exclamationmark.triangle"
-              size={40}
-              color="#FF3B30"
-            />
-            <ThemedText style={styles.errorText}>{error}</ThemedText>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={() => {
-                setLoading(true);
-                setError(null);
-                // Re-fetch charts
-                ChartAPI.getChartsByCategory(type.toString(), value.toString())
-                  .then((data) => {
-                    setCharts(data);
-                    setLoading(false);
-                  })
-                  .catch((err) => {
-                    console.error(`Error fetching charts for ${value}:`, err);
-                    setError("Failed to load charts. Please try again.");
-                    setLoading(false);
-                  });
-              }}
-            >
-              <ThemedText style={styles.retryButtonText}>Retry</ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
-        ) : charts.length === 0 ? (
-          <ThemedView style={styles.emptyContainer}>
-            <IconSymbol name="music.note" size={60} color="#CCCCCC" />
-            <ThemedText style={styles.emptyText}>No charts found</ThemedText>
-          </ThemedView>
-        ) : (
-          <FlatList
-            data={charts}
-            renderItem={renderChartItem}
-            keyExtractor={(item) => item._id}
-            numColumns={1}
-            contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]} // Add padding for ad
+      <Stack.Screen
+        options={{
+          title: value
+            ? `${value.toString()}${!loading ? ` (${charts.length})` : ""}`
+            : "Charts",
+          headerBackTitle: "Categories",
+        }}
+      />
+      <ThemedView style={styles.searchContainer}>
+        <ThemedView
+          style={[
+            styles.searchInputContainer,
+            {
+              backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0",
+            },
+          ]}
+        >
+          <IconSymbol
+            name="magnifyingglass"
+            size={20}
+            color="#888888"
+            style={styles.searchIcon}
           />
-        )}
-      
+          <TextInput
+            style={[
+              styles.searchInput,
+              { color: colorScheme === "dark" ? "#FFFFFF" : "#000000" },
+            ]}
+            placeholder="Search charts..."
+            placeholderTextColor={
+              colorScheme === "dark" ? "#AAAAAA" : "#888888"
+            }
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </ThemedView>
+      </ThemedView>
+
+      {loading ? (
+        <ThemedView style={styles.loadingContainer}>
+          <ActivityIndicator
+            size="large"
+            color={Colors[colorScheme ?? "light"].tint}
+          />
+          <ThemedText style={styles.loadingText}>Loading charts...</ThemedText>
+        </ThemedView>
+      ) : error ? (
+        <ThemedView style={styles.errorContainer}>
+          <IconSymbol
+            name="exclamationmark.triangle"
+            size={40}
+            color="#FF3B30"
+          />
+          <ThemedText style={styles.errorText}>{error}</ThemedText>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => {
+              setLoading(true);
+              setError(null);
+              // Re-fetch charts
+              ChartAPI.getChartsByCategory(type.toString(), value.toString())
+                .then((data) => {
+                  setCharts(data);
+                  setLoading(false);
+                })
+                .catch((err) => {
+                  console.error(`Error fetching charts for ${value}:`, err);
+                  setError("Failed to load charts. Please try again.");
+                  setLoading(false);
+                });
+            }}
+          >
+            <ThemedText style={styles.retryButtonText}>Retry</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      ) : charts.length === 0 ? (
+        <ThemedView style={styles.emptyContainer}>
+          <IconSymbol name="music.note" size={60} color="#CCCCCC" />
+          <ThemedText style={styles.emptyText}>No charts found</ThemedText>
+        </ThemedView>
+      ) : (
+        <FlatList
+          data={charts}
+          renderItem={renderChartItem}
+          keyExtractor={(item) => item._id}
+          numColumns={1}
+          contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]} // Add padding for ad
+        />
+      )}
+
       {/* Add the banner ad component */}
       {showAds && (
         <View style={dynamicStyles.bottomAdContainer}>
@@ -397,14 +406,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingBottom: 16,
-    
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
     paddingHorizontal: 8,
-    marginTop: 16
+    marginTop: 16,
   },
   searchInputContainer: {
     flex: 1,
