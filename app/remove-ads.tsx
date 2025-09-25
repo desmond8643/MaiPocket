@@ -1,8 +1,8 @@
-import { showInterstitial } from '@/components/InterstitialAdComponent';
+import { showRewardedAd } from '@/components/RewardedAd';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAds } from '@/context/AdContext';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -16,16 +16,21 @@ export default function RemoveAdsScreen() {
   const watchLongAdForTemporaryRemoval = () => {
     setLoading(true);
     
-    // Show a rewarded ad (we'll use interstitial for now)
-    showInterstitial(async () => {
-      await removeAdsTemporarily();
-      setLoading(false);
-      Alert.alert(
-        "Ads Removed Temporarily",
-        "Thanks for watching! Ads have been removed for 24 hours.",
-        [{ text: "Great!", onPress: () => router.back() }]
-      );
-    });
+    // Use rewarded ad instead of interstitial
+    showRewardedAd(
+      async () => {
+        await removeAdsTemporarily();
+        setLoading(false);
+        Alert.alert(
+          "Ads Removed Temporarily",
+          "Thanks for watching! Ads have been removed for 24 hours.",
+          [{ text: "Great!", onPress: () => router.back() }]
+        );
+      },
+      () => {
+        setLoading(false);
+      }
+    );
   };
 
   const purchasePermanentAdRemoval = async () => {
@@ -85,7 +90,8 @@ export default function RemoveAdsScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <IconSymbol name="chevron.left" size={24} />
+          {/* <IconSymbol name="chevron.left" size={24} /> */}
+          <Ionicons name="arrow-back" size={24} color="#AE75DA" />
         </TouchableOpacity>
         <ThemedText type="title">Remove Ads</ThemedText>
       </View>
