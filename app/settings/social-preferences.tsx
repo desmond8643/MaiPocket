@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -10,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function SocialPreferencesScreen() {
   const router = useRouter();
   const [preference, setPreference] = useState("facebook");
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
     loadPreference();
@@ -44,10 +46,7 @@ export default function SocialPreferencesScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#AE75DA" />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>
-            Social Media Preferences
-          </ThemedText>
-          <View style={{ width: 24 }} />
+          <ThemedText style={styles.headerTitle}>Settings</ThemedText>
         </View>
 
         <View style={styles.content}>
@@ -93,7 +92,7 @@ export default function SocialPreferencesScreen() {
               <Ionicons
                 name="logo-x"
                 size={24}
-                color={preference === "twitter" ? "#FFFFFF" : "#1DA1F2"}
+                color={preference === "twitter" ? "#FFFFFF" : colorScheme === "dark" ? "#FFFFFF" : "#000000"}
               />
               <ThemedText
                 style={[
@@ -154,7 +153,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "rgba(150, 150, 150, 0.2)",
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: "bold",
   },
   content: {

@@ -7,14 +7,11 @@ import { Colors } from "@/constants/Colors";
 import { useAds } from "@/context/AdContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from '@react-navigation/native';
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View
-} from "react-native";
+import React, { useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 
@@ -34,22 +31,26 @@ export default function HomeScreen() {
 
   const [socialFeedPreference, setSocialFeedPreference] = useState("facebook");
 
-  useEffect(() => {
-    const loadPreference = async () => {
-      try {
-        const savedPreference = await AsyncStorage.getItem(
-          "socialFeedPreference"
-        );
-        if (savedPreference) {
-          setSocialFeedPreference(savedPreference);
-        }
-      } catch (error) {
-        console.error("Error loading social feed preference:", error);
+  const loadPreference = async () => {
+    try {
+      const savedPreference = await AsyncStorage.getItem(
+        "socialFeedPreference"
+      );
+      if (savedPreference) {
+        setSocialFeedPreference(savedPreference);
       }
-    };
+    } catch (error) {
+      console.error("Error loading social feed preference:", error);
+    }
+  };
 
-    loadPreference();
-  }, []);
+  // This will run both on initial mount AND whenever the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      loadPreference();
+      return () => {}; // cleanup function
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
@@ -140,8 +141,8 @@ export default function HomeScreen() {
             <View style={styles.socialFeedContainer}>
               {socialFeedPreference === "twitter" ? (
                 <WebView
-                  source={{ 
-                    uri: 'https://x.com/maimai_official' 
+                  source={{
+                    uri: "https://x.com/maimai_official",
                   }}
                   style={styles.socialFeedWebView}
                   userAgent="Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
   featureContainer: {
     gap: 8,
     marginBottom: 24,
-    padding: 16,
+    paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 0,
     elevation: 0,
