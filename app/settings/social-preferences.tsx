@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SocialPreferencesScreen() {
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function SocialPreferencesScreen() {
 
   return (
     <ThemedView style={styles.container}>
+        <SafeAreaView style={{flex:1}}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#AE75DA" />
@@ -127,6 +129,7 @@ export default function SocialPreferencesScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      </SafeAreaView>
     </ThemedView>
   );
 }
