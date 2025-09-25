@@ -6,9 +6,11 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useAds } from "@/context/AdContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, TouchableOpacity, View, WebView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
@@ -24,6 +26,23 @@ export default function HomeScreen() {
       bottom: 49 + insets.bottom, // Standard tab bar height (49) + bottom inset
     },
   };
+
+  const [socialFeedPreference, setSocialFeedPreference] = useState('facebook');
+
+  useEffect(() => {
+    const loadPreference = async () => {
+      try {
+        const savedPreference = await AsyncStorage.getItem('socialFeedPreference');
+        if (savedPreference) {
+          setSocialFeedPreference(savedPreference);
+        }
+      } catch (error) {
+        console.error('Error loading social feed preference:', error);
+      }
+    };
+    
+    loadPreference();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -101,6 +120,25 @@ export default function HomeScreen() {
               <ThemedText style={styles.buttonText}>Remove Ads</ThemedText>
               <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
             </TouchableOpacity>
+          </ThemedView>
+        )}
+
+        {socialFeedPreference !== 'off' && (
+          <ThemedView style={styles.featureContainer}>
+            <ThemedText type="subtitle">Recent Updates</ThemedText>
+            <ThemedText>
+              Stay updated with the latest maimai news and announcements.
+            </ThemedText>
+            <View style={styles.socialFeedContainer}>
+              <WebView
+                source={{ 
+                  uri: socialFeedPreference === 'twitter' 
+                    ? 'https://twitter.com/maimai_official' 
+                    : 'https://www.facebook.com/maimai.sega'
+                }}
+                style={styles.socialFeedWebView}
+              />
+            </View>
           </ThemedView>
         )}
 
@@ -214,5 +252,32 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 40,
     padding: 16,
+  },
+  socialFeedContainer: {
+    height: 300,
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(150, 150, 150, 0.3)',
+  },
+  socialFeedWebView: {
+    width: '100%',
+    height: '100%',
+  },
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 60,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    zIndex: 10,
+  },
+  settingsIconContainer: {
+    padding: 8,
   },
 });

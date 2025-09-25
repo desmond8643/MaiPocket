@@ -1,5 +1,4 @@
 import { AuthAPI, NotificationAPI } from '@/api/client';
-import { BannerAdComponent } from '@/components/BannerAdComponent';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { WebView } from 'react-native-webview';
 
 // API URL
 const BASE_URL = "https://maipocket-backend.vercel.app";
@@ -17,11 +17,13 @@ export default function ProfileScreen() {
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [socialFeedPreference, setSocialFeedPreference] = useState('facebook');
 
   useFocusEffect(
     React.useCallback(() => {
       checkLoginStatus();
       fetchNotificationCount();
+      loadPreference();
     }, [])
   );
 
@@ -58,6 +60,26 @@ export default function ProfileScreen() {
     }
   };
 
+  const loadPreference = async () => {
+    try {
+      const savedPreference = await AsyncStorage.getItem('socialFeedPreference');
+      if (savedPreference) {
+        setSocialFeedPreference(savedPreference);
+      }
+    } catch (error) {
+      console.error('Error loading social feed preference:', error);
+    }
+  };
+
+  const savePreference = async (newPreference: string) => {
+    try {
+      await AsyncStorage.setItem('socialFeedPreference', newPreference);
+      setSocialFeedPreference(newPreference);
+    } catch (error) {
+      console.error('Error saving preference:', error);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await AuthAPI.logout();
@@ -83,6 +105,16 @@ export default function ProfileScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      {/* Add settings icon to header */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.settingsIconContainer}
+          onPress={() => router.push('/settings/social-preferences')}
+        >
+          <Ionicons name="settings-outline" size={24} color="#AE75DA" />
+        </TouchableOpacity>
+      </View>
+      
       <ScrollView style={styles.scrollView}>
         {userData ? (
           // Logged in view
@@ -198,6 +230,25 @@ export default function ProfileScreen() {
             
             </View>
           </View>
+        )}
+
+        {socialFeedPreference !== 'off' && (
+          <ThemedView style={styles.featureContainer}>
+            <ThemedText type="subtitle">Recent Updates</ThemedText>
+            <ThemedText>
+              Stay updated with the latest maimai news and announcements.
+            </ThemedText>
+            <View style={styles.socialFeedContainer}>
+              <WebView
+                source={{ 
+                  uri: socialFeedPreference === 'twitter' 
+                    ? 'https://twitter.com/maimai_official' 
+                    : 'https://www.facebook.com/maimai.sega'
+                }}
+                style={styles.socialFeedWebView}
+              />
+            </View>
+          </ThemedView>
         )}
       </ScrollView>
       
@@ -346,5 +397,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     paddingHorizontal: 6,
+  },
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 60,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    zIndex: 10,
+  },
+  settingsIconContainer: {
+    padding: 8,
+  },
+  featureContainer: {
+    padding: 20,
+    marginTop: 10,
+    backgroundColor: 'rgba(174, 117, 218, 0.05)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(150, 150, 150, 0.3)',
+  },
+  socialFeedContainer: {
+    height: 300,
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(150, 150, 150, 0.3)',
+  },
+  socialFeedWebView: {
+    width: '100%',
+    height: '100%',
   },
 }); 
