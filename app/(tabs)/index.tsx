@@ -6,7 +6,6 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useAds } from "@/context/AdContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useUserAgent } from "@/hooks/useUserAgent";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -34,7 +33,7 @@ export default function HomeScreen() {
   };
 
   const [socialFeedPreference, setSocialFeedPreference] = useState("facebook");
-  const userAgent = useUserAgent();
+  const [userAgent, setUserAgent] = useState("Mozilla/5.0");
 
   useEffect(() => {
     const loadPreference = async () => {
@@ -51,6 +50,21 @@ export default function HomeScreen() {
     };
 
     loadPreference();
+  }, []);
+
+  useEffect(() => {
+    const getUserAgentString = async () => {
+      try {
+        // Import inside useEffect to avoid initialization issues
+        const DeviceInfo = require('react-native-device-info');
+        const ua = await DeviceInfo.getUserAgent();
+        if (ua) setUserAgent(ua);
+      } catch (error) {
+        console.error("Error getting user agent:", error);
+      }
+    };
+    
+    getUserAgentString();
   }, []);
 
   return (
@@ -146,7 +160,7 @@ export default function HomeScreen() {
                     uri: 'https://x.com/maimai_official' 
                   }}
                   style={styles.socialFeedWebView}
-                  userAgent={userAgent || "Mozilla/5.0"}
+                  userAgent="Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"
                   javaScriptEnabled={true}
                   domStorageEnabled={true}
                   startInLoadingState={true}
