@@ -16,7 +16,9 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
+import { useAds } from "@/context/AdContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useShowAds } from '@/hooks/useShowAds';
 import { SymbolViewProps } from "expo-symbols";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -102,14 +104,18 @@ export default function ChartsScreen() {
   >("genre");
   const [searchQuery, setSearchQuery] = useState("");
   const insets = useSafeAreaInsets(); // Add this line
+  const { adsRemoved, temporaryAdRemoval } = useAds();
+  const { showAds, dynamicStyles } = useShowAds(true); // true because it's in a tab bar
+
+  
 
   // Add these dynamic styles
-  const dynamicStyles = {
-    bottomAdContainer: {
-      ...styles.bottomAdContainer,
-      bottom: 49 + insets.bottom, // Standard tab bar height (49) + bottom inset
-    }
-  };
+  // const dynamicStyles = {
+  //   bottomAdContainer: {
+  //     ...styles.bottomAdContainer,
+  //     bottom: 49 + insets.bottom, // Standard tab bar height (49) + bottom inset
+  //   }
+  // };
 
   // Render each category item
   const renderCategoryItem = ({
@@ -305,9 +311,11 @@ export default function ChartsScreen() {
       </SafeAreaView>
       
       {/* Add the bottom ad component */}
-      <View style={dynamicStyles.bottomAdContainer}>
-        <BannerAdComponent />
-      </View>
+      {showAds && (
+        <View style={dynamicStyles.bottomAdContainer}>
+          <BannerAdComponent />
+        </View>
+      )}
     </ThemedView>
   );
 }
