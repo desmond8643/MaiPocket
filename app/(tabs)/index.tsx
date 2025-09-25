@@ -138,18 +138,17 @@ export default function HomeScreen() {
                     : 'https://www.facebook.com/maimaiDX'
                 }}
                 style={styles.socialFeedWebView}
-                
-                // Add these properties
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
                 startInLoadingState={true}
-                scalesPageToFit={true}
                 originWhitelist={['*']}
-                allowsInlineMediaPlayback={true}
-                
-                // This is the critical property to prevent external browser opens
                 onShouldStartLoadWithRequest={(request) => {
-                  return true; // Always handle URLs within the WebView
+                  // Only allow http and https URLs to open within the WebView
+                  return request.url.startsWith('http://') || request.url.startsWith('https://');
+                }}
+                onError={(syntheticEvent) => {
+                  const { nativeEvent } = syntheticEvent;
+                  console.warn('WebView error: ', nativeEvent);
                 }}
               />
             </View>
