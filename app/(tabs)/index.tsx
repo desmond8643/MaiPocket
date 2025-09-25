@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   socialFeedContainer: {
-    height: 300,
+    height: 600,
     borderRadius: 8,
     overflow: "hidden",
     marginTop: 10,
