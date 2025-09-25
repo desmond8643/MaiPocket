@@ -135,9 +135,22 @@ export default function HomeScreen() {
                 source={{ 
                   uri: socialFeedPreference === 'twitter' 
                     ? 'https://twitter.com/maimai_official' 
-                    : 'https://www.facebook.com/maimai.sega'
+                    : 'https://www.facebook.com/maimaiDX'
                 }}
                 style={styles.socialFeedWebView}
+                
+                // Add these properties
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                startInLoadingState={true}
+                scalesPageToFit={true}
+                originWhitelist={['*']}
+                allowsInlineMediaPlayback={true}
+                
+                // This is the critical property to prevent external browser opens
+                onShouldStartLoadWithRequest={(request) => {
+                  return true; // Always handle URLs within the WebView
+                }}
               />
             </View>
           </ThemedView>

@@ -222,6 +222,10 @@ export default function RootLayout() {
             options={{ headerShown: false }}
           />
           <Stack.Screen name="remove-ads" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="settings/social-preferences"
+            options={{ headerShown: false }}
+          />
         </Stack>
       </GestureHandlerRootView>
     </AdProvider>

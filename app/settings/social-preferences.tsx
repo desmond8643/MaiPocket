@@ -84,7 +84,7 @@ export default function SocialPreferencesScreen() {
             onPress={() => savePreference('twitter')}
           >
             <Ionicons
-              name="logo-twitter"
+              name="logo-x"
               size={24}
               color={preference === 'twitter' ? '#FFFFFF' : '#1DA1F2'}
             />
