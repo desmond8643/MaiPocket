@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   header: {
     position: "absolute",
     paddingHorizontal: 16,
-    top: 20,
+    top: 40,
     left: 0,
     right: 0,
     // height: 60,
