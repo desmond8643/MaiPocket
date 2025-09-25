@@ -386,14 +386,13 @@ const styles = StyleSheet.create({
   },
   header: {
     position: "absolute",
-    top: 16,
+    padding: 16,
     left: 0,
     right: 0,
     height: 60,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
-    paddingHorizontal: 16,
     zIndex: 10,
   },
   settingsIconContainer: {
@@ -401,7 +400,7 @@ const styles = StyleSheet.create({
   },
   featureContainer: {
     padding: 20,
-    marginTop: 10,
+    // marginTop: 10,
     backgroundColor: "rgba(174, 117, 218, 0.05)",
     borderRadius: 12,
     borderWidth: 1,

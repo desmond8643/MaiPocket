@@ -7,7 +7,7 @@ import { Colors } from "@/constants/Colors";
 import { useAds } from "@/context/AdContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -110,28 +110,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </ThemedView>
 
-        {showAds && (
-          <ThemedView style={styles.featureContainer}>
-            <ThemedText type="subtitle">Remove Ads</ThemedText>
-            <ThemedText>
-              Enjoy an ad-free experience by watching a video or making a
-              one-time purchase.
-            </ThemedText>
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                {
-                  backgroundColor: "#4CAF50",
-                },
-              ]}
-              onPress={() => router.push("/remove-ads")}
-            >
-              <ThemedText style={styles.buttonText}>Remove Ads</ThemedText>
-              <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
-            </TouchableOpacity>
-          </ThemedView>
-        )}
-
         {socialFeedPreference !== "off" && (
           <ThemedView style={styles.featureContainer}>
             <ThemedText type="subtitle">Recent Updates</ThemedText>
@@ -172,6 +150,27 @@ export default function HomeScreen() {
             </View>
           </ThemedView>
         )}
+        {showAds && (
+          <ThemedView style={styles.featureContainer}>
+            <ThemedText type="subtitle">Remove Ads</ThemedText>
+            <ThemedText>
+              Enjoy an ad-free experience by watching a video or making a
+              one-time purchase.
+            </ThemedText>
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                {
+                  backgroundColor: "#9944DD",
+                },
+              ]}
+              onPress={() => router.push("/remove-ads")}
+            >
+              <ThemedText style={styles.buttonText}>Remove Ads</ThemedText>
+              <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
+            </TouchableOpacity>
+          </ThemedView>
+        )}
 
         <ThemedView style={styles.copyrightContainer}>
           <TouchableOpacity
@@ -179,7 +178,7 @@ export default function HomeScreen() {
               styles.copyrightButton,
               {
                 backgroundColor: Colors[colorScheme ?? "light"].background,
-                borderColor: Colors[colorScheme ?? "light"].tint,
+                borderColor: "##9944DD",
               },
             ]}
             onPress={() => router.push("/copyright")}

@@ -44,7 +44,12 @@ export default function SocialPreferencesScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#AE75DA" />
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color="#AE75DA"
+              style={{ marginRight: 15 }}
+            />
           </TouchableOpacity>
           <ThemedText style={styles.headerTitle}>Settings</ThemedText>
         </View>
