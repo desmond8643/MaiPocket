@@ -132,14 +132,14 @@ export default function HomeScreen() {
         </ThemedView> */}
 
         {socialFeedPreference !== "off" && (
-          <ThemedView style={{...styles.featureContainer, paddingHorizontal: 0 }}>
-            <ThemedText type="subtitle" style={{paddingHorizontal: 16 }}>Recent Updates</ThemedText>
-            <ThemedText style={{paddingHorizontal: 16 }}>
+          <ThemedView
+            style={{ ...styles.featureContainer, paddingHorizontal: 0 }}
+          >
+            <ThemedText type="subtitle">Recent Updates</ThemedText>
+            <ThemedText>
               Stay updated with the latest maimai news and announcements.
             </ThemedText>
-            <View
-              style={{ ...styles.socialFeedContainer}}
-            >
+            <View style={{ ...styles.socialFeedContainer }}>
               {socialFeedPreference === "twitter" ? (
                 <WebView
                   source={{
@@ -173,7 +173,7 @@ export default function HomeScreen() {
             </View>
           </ThemedView>
         )}
-        {showAdsSection && (
+        {/* {showAdsSection && (
           <ThemedView style={styles.featureContainer}>
             <ThemedText type="subtitle">Remove Ads</ThemedText>
             <ThemedText>
@@ -196,6 +196,29 @@ export default function HomeScreen() {
               <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
             </TouchableOpacity>
           </ThemedView>
+        )} */}
+        {showAdsSection && (
+          <TouchableOpacity
+            style={{ ...styles.featureContainer, backgroundColor: "#AA60C8" }}
+            onPress={() => router.push("/remove-ads")}
+          >
+            <View style={styles.featureTitleContainer}>
+              <ThemedText
+                type="subtitle"
+                style={{ color: "white", marginTop: 8 }}
+              >
+                Remove Ads
+              </ThemedText>
+              <Ionicons name="play-outline" size={48} color="white" />
+            </View>
+            <View style={styles.featureDescription}>
+              <ThemedText style={{ color: "white" }}>
+                {temporaryAdRemoval
+                  ? "Ads temporarily removed. Visit to see remaining time."
+                  : "Enjoy an ad-free experience by watching a video or making a one-time purchase."}
+              </ThemedText>
+            </View>
+          </TouchableOpacity>
         )}
 
         <ThemedView style={styles.copyrightContainer}>
