@@ -76,13 +76,7 @@ export default function HomeScreen() {
           style={{ ...styles.featureContainer, backgroundColor: "#696FC7" }}
           onPress={() => router.push("/charts")}
         >
-          <View
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              flexDirection: "row",
-            }}
-          >
+          <View style={styles.featureTitleContainer}>
             <ThemedText
               type="subtitle"
               style={{ color: "white", marginTop: 8 }}
@@ -96,21 +90,28 @@ export default function HomeScreen() {
               Explore maimai songs
             </ThemedText>
           </View>
-          {/* <TouchableOpacity
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: "#9944DD",
-              },
-            ]}
-            onPress={() => router.push("/charts")}
-          >
-            <ThemedText style={styles.buttonText}>Browse Charts</ThemedText>
-            <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
-          </TouchableOpacity> */}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ ...styles.featureContainer, backgroundColor: "#F75270" }}
+          onPress={() => router.push("/profile")}
+        >
+          <View style={styles.featureTitleContainer}>
+            <ThemedText
+              type="subtitle"
+              style={{ color: "white", marginTop: 8 }}
+            >
+              Profile
+            </ThemedText>
+            <Ionicons name="person" size={48} color="white" />
+          </View>
+          <View style={styles.featureDescription}>
+            <ThemedText style={{ color: "white" }}>
+              Manage your account
+            </ThemedText>
+          </View>
         </TouchableOpacity>
 
-        <ThemedView style={styles.featureContainer}>
+        {/* <ThemedView style={styles.featureContainer}>
           <ThemedText type="subtitle">Your Profile</ThemedText>
           <ThemedText>
             Manage your account, track your favorite songs, and customize your
@@ -128,7 +129,7 @@ export default function HomeScreen() {
             <ThemedText style={styles.buttonText}>View Profile</ThemedText>
             <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
           </TouchableOpacity>
-        </ThemedView>
+        </ThemedView> */}
 
         {socialFeedPreference !== "off" && (
           <ThemedView style={styles.featureContainer}>
@@ -252,6 +253,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 2,
     borderRadius: 8,
+  },
+  featureTitleContainer: {
+    display: "flex",
+    justifyContent: "space-between",
+    flexDirection: "row",
   },
   reactLogo: {
     height: 250,
