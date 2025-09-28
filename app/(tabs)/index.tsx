@@ -72,8 +72,9 @@ export default function HomeScreen() {
           />
         </ThemedView>
 
-        <ThemedView
+        <TouchableOpacity
           style={{ ...styles.featureContainer, backgroundColor: "#696FC7" }}
+          onPress={() => router.push("/charts")}
         >
           <View
             style={{
@@ -90,11 +91,11 @@ export default function HomeScreen() {
             </ThemedText>
             <Ionicons name="musical-note" size={48} color="white" />
           </View>
-          <TouchableOpacity style={styles.featureDescription}>
+          <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
               Explore maimai songs
             </ThemedText>
-          </TouchableOpacity>
+          </View>
           {/* <TouchableOpacity
             style={[
               styles.actionButton,
@@ -107,7 +108,7 @@ export default function HomeScreen() {
             <ThemedText style={styles.buttonText}>Browse Charts</ThemedText>
             <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
           </TouchableOpacity> */}
-        </ThemedView>
+        </TouchableOpacity>
 
         <ThemedView style={styles.featureContainer}>
           <ThemedText type="subtitle">Your Profile</ThemedText>
