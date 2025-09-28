@@ -47,7 +47,9 @@ export default function RemoveAdsScreen() {
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
       setRemainingTime(
-        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+        `${hours.toString().padStart(2, "0")}:${minutes
+          .toString()
+          .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
       );
     };
 
@@ -175,7 +177,8 @@ export default function RemoveAdsScreen() {
         <ThemedView style={styles.optionCard}>
           <ThemedText type="subtitle">Remove Ads Forever</ThemedText>
           <ThemedText style={styles.description}>
-            One-time payment of HKD $28 to permanently remove all ads.
+            One-time payment of HKD $28 to permanently remove all ads. (Only
+            works after published to App Store)
           </ThemedText>
           <TouchableOpacity
             style={[styles.button, styles.purchaseButton]}
