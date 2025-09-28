@@ -6,6 +6,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useAds } from "@/context/AdContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
@@ -74,10 +75,21 @@ export default function HomeScreen() {
         <ThemedView
           style={{ ...styles.featureContainer, backgroundColor: "#696FC7" }}
         >
-          <ThemedText type="subtitle">Browse Song Charts</ThemedText>
-          <ThemedText style={{ backgroundColor: "#44444E" }}>
-            Explore maimai songs
-          </ThemedText>
+          <View style={{ display: "flex", justifyContent: "space-between" }}>
+            <ThemedText type="subtitle">Browse Song Charts</ThemedText>
+            <Ionicons name="musical-note" size={48} color="white" />
+          </View>
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#44444E",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              paddingVertical: 2,
+            }}
+          >
+            <ThemedText>Explore maimai songs</ThemedText>
+          </TouchableOpacity>
           {/* <TouchableOpacity
             style={[
               styles.actionButton,
