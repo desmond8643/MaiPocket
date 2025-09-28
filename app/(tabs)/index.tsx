@@ -75,20 +75,20 @@ export default function HomeScreen() {
         <ThemedView
           style={{ ...styles.featureContainer, backgroundColor: "#696FC7" }}
         >
-          <View style={{ display: "flex", justifyContent: "space-between" }}>
+          <View
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              flexDirection: "row",
+            }}
+          >
             <ThemedText type="subtitle">Browse Song Charts</ThemedText>
             <Ionicons name="musical-note" size={48} color="white" />
           </View>
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#44444E",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              paddingVertical: 2,
-            }}
-          >
-            <ThemedText>Explore maimai songs</ThemedText>
+          <TouchableOpacity style={styles.featureDescription}>
+            <ThemedText style={{ color: "#696FC7" }}>
+              Explore maimai songs
+            </ThemedText>
           </TouchableOpacity>
           {/* <TouchableOpacity
             style={[
@@ -238,6 +238,14 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+  },
+  featureDescription: {
+    backgroundColor: "#44444E",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 2,
+    borderRadius: 12,
   },
   reactLogo: {
     height: 250,
