@@ -20,7 +20,7 @@ export default function RemoveAdsScreen() {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
   const [remainingTime, setRemainingTime] = useState("");
-  const [expiryTimestamp, setExpiryTimestamp] = useState(null);
+  const [expiryTimestamp, setExpiryTimestamp] = useState<number | null>(null);
   
   // Update the useEffect in remove-ads.tsx to handle edge cases better
   useEffect(() => {
