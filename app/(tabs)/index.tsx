@@ -100,7 +100,7 @@ export default function HomeScreen() {
               type="subtitle"
               style={{ color: "white", marginTop: 8 }}
             >
-              Profile
+              Your Profile
             </ThemedText>
             <Ionicons name="person" size={48} color="white" />
           </View>
