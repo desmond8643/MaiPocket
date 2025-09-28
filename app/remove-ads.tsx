@@ -13,41 +13,23 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function RemoveAdsScreen() {
-  const { removeAdsTemporarily, removeAdsPermanently, restorePurchases, temporaryAdRemoval } = useAds();
+  const { removeAdsTemporarily, removeAdsPermanently, restorePurchases, temporaryAdRemoval, temporaryAdRemovalEndTime } = useAds();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
   const [remainingTime, setRemainingTime] = useState("");
-  const [expiryTimestamp, setExpiryTimestamp] = useState<number | null>(null);
   
-  // Update the useEffect in remove-ads.tsx to handle edge cases better
+  // Use the temporaryAdRemovalEndTime from context directly
   useEffect(() => {
-    if (!temporaryAdRemoval) return;
-    
-    // Get the stored expiry timestamp
-    const getExpiryTimestamp = async () => {
-      try {
-        const storedTimestamp = await AsyncStorage.getItem('adFreeExpiryTimestamp');
-        if (storedTimestamp) {
-          setExpiryTimestamp(parseInt(storedTimestamp, 10));
-        }
-      } catch (error) {
-        console.error("Error retrieving ad-free expiry timestamp:", error);
-      }
-    };
-    
-    getExpiryTimestamp();
-  }, [temporaryAdRemoval]);
-
-  // Add a second useEffect for the timer
-  useEffect(() => {
-    if (!expiryTimestamp) return;
+    if (!temporaryAdRemoval || !temporaryAdRemovalEndTime) {
+      setRemainingTime("");
+      return;
+    }
     
     const calculateRemainingTime = () => {
       const now = Date.now();
-      const diff = expiryTimestamp - now;
+      const diff = temporaryAdRemovalEndTime - now;
       
       if (diff <= 0) {
         setRemainingTime("Expired");
@@ -64,7 +46,7 @@ export default function RemoveAdsScreen() {
     const interval = setInterval(calculateRemainingTime, 60000);
     
     return () => clearInterval(interval);
-  }, [expiryTimestamp]);
+  }, [temporaryAdRemoval, temporaryAdRemovalEndTime]);
 
   const watchLongAdForTemporaryRemoval = () => {
     setLoading(true);
