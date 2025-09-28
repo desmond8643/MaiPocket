@@ -132,12 +132,14 @@ export default function HomeScreen() {
         </ThemedView> */}
 
         {socialFeedPreference !== "off" && (
-          <ThemedView style={styles.featureContainer}>
-            <ThemedText type="subtitle">Recent Updates</ThemedText>
-            <ThemedText>
+          <ThemedView style={{...styles.featureContainer, paddingHorizontal: 0 }}>
+            <ThemedText type="subtitle" style={{paddingHorizontal: 16 }}>Recent Updates</ThemedText>
+            <ThemedText style={{paddingHorizontal: 16 }}>
               Stay updated with the latest maimai news and announcements.
             </ThemedText>
-            <View style={styles.socialFeedContainer}>
+            <View
+              style={{ ...styles.socialFeedContainer}}
+            >
               {socialFeedPreference === "twitter" ? (
                 <WebView
                   source={{
