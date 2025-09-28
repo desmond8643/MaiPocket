@@ -46,7 +46,9 @@ export default function RemoveAdsScreen() {
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      setRemainingTime(`${hours}:${minutes}:${seconds}`);
+      setRemainingTime(
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      );
     };
 
     calculateRemainingTime();
