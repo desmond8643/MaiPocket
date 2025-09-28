@@ -71,13 +71,14 @@ export default function HomeScreen() {
           />
         </ThemedView>
 
-        <ThemedView style={styles.featureContainer}>
+        <ThemedView
+          style={{ ...styles.featureContainer, backgroundColor: "#696FC7" }}
+        >
           <ThemedText type="subtitle">Browse Song Charts</ThemedText>
-          <ThemedText>
-            Explore maimai songs by genre, level, or version. Find your favorite
-            tracks and check their difficulties.
+          <ThemedText style={{ backgroundColor: "#44444E" }}>
+            Explore maimai songs
           </ThemedText>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[
               styles.actionButton,
               {
@@ -88,7 +89,7 @@ export default function HomeScreen() {
           >
             <ThemedText style={styles.buttonText}>Browse Charts</ThemedText>
             <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </ThemedView>
 
         <ThemedView style={styles.featureContainer}>
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 12,
     borderWidth: 0,
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    // backgroundColor: "rgba(255, 255, 255, 0.7)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
