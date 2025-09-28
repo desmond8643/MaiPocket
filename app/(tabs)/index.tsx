@@ -82,11 +82,16 @@ export default function HomeScreen() {
               flexDirection: "row",
             }}
           >
-            <ThemedText type="subtitle">Browse Song Charts</ThemedText>
+            <ThemedText
+              type="subtitle"
+              style={{ color: "white", marginTop: 8 }}
+            >
+              Browse Song Charts
+            </ThemedText>
             <Ionicons name="musical-note" size={48} color="white" />
           </View>
           <TouchableOpacity style={styles.featureDescription}>
-            <ThemedText style={{ color: "#696FC7" }}>
+            <ThemedText style={{ color: "white" }}>
               Explore maimai songs
             </ThemedText>
           </TouchableOpacity>
@@ -245,7 +250,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: 8,
   },
   reactLogo: {
     height: 250,
