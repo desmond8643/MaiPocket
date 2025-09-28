@@ -20,19 +20,25 @@ export default function RemoveAdsScreen() {
   const [loading, setLoading] = useState(false);
   const [remainingTime, setRemainingTime] = useState("");
   
-  // Add this effect to calculate and display remaining time
+  // Update the useEffect in remove-ads.tsx to handle edge cases better
   useEffect(() => {
     if (!temporaryAdRemoval) return;
     
     const calculateRemainingTime = () => {
-      // Get the expiry timestamp from AsyncStorage or context
+      // Check if temporaryAdRemoval is a valid timestamp
       const expiryTime = typeof temporaryAdRemoval === 'number' ? temporaryAdRemoval : null;
-      if (!expiryTime) return;
+      if (!expiryTime) {
+        setRemainingTime("Unknown");
+        return;
+      }
       
       const now = Date.now();
       const diff = expiryTime - now;
       
-      if (diff <= 0) return;
+      if (diff <= 0) {
+        setRemainingTime("Expired");
+        return;
+      }
       
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -41,7 +47,7 @@ export default function RemoveAdsScreen() {
     };
     
     calculateRemainingTime();
-    const interval = setInterval(calculateRemainingTime, 60000); // Update every minute
+    const interval = setInterval(calculateRemainingTime, 60000);
     
     return () => clearInterval(interval);
   }, [temporaryAdRemoval]);
@@ -72,7 +78,7 @@ export default function RemoveAdsScreen() {
     // This would be replaced with actual in-app purchase logic
     Alert.alert(
       "In-App Purchase",
-      "Would you like to remove ads permanently for HKD $30?",
+      "Would you like to remove ads permanently for HKD $28?",
       [
         {
           text: "Yes",
@@ -175,7 +181,7 @@ export default function RemoveAdsScreen() {
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <ThemedText style={styles.buttonText}>
-                Purchase (HKD $30)
+                Purchase (HKD $28)
               </ThemedText>
             )}
           </TouchableOpacity>
