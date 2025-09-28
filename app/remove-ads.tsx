@@ -44,13 +44,13 @@ export default function RemoveAdsScreen() {
 
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60 * 60)) / 1000);
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
       setRemainingTime(`${hours}:${minutes}:${seconds}`);
     };
 
     calculateRemainingTime();
-    const interval = setInterval(calculateRemainingTime, 60000);
+    const interval = setInterval(calculateRemainingTime, 1000);
 
     return () => clearInterval(interval);
   }, [temporaryAdRemoval, temporaryAdRemovalEndTime]);
