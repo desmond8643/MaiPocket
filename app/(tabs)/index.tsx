@@ -87,7 +87,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
-              Explore maimai songs
+              Explore songs in maimai
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -214,8 +214,8 @@ export default function HomeScreen() {
             <View style={styles.featureDescription}>
               <ThemedText style={{ color: "white" }}>
                 {temporaryAdRemoval
-                  ? "Ads temporarily removed. Visit to see remaining time."
-                  : "Enjoy an ad-free experience by watching a video or making a one-time purchase."}
+                  ? "Ads temporarily removed"
+                  : "Enjoy an ad-free experience"}
               </ThemedText>
             </View>
           </TouchableOpacity>
