@@ -20,7 +20,8 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();
 
-  const showAds = !adsRemoved && !temporaryAdRemoval;
+  const showAdsSection = !adsRemoved; // Only hide for permanent removal
+  const showActualAds = !adsRemoved && !temporaryAdRemoval;
 
   const dynamicStyles = {
     bottomAdContainer: {
@@ -150,12 +151,13 @@ export default function HomeScreen() {
             </View>
           </ThemedView>
         )}
-        {showAds && (
+        {showAdsSection && (
           <ThemedView style={styles.featureContainer}>
             <ThemedText type="subtitle">Remove Ads</ThemedText>
             <ThemedText>
-              Enjoy an ad-free experience by watching a video or making a
-              one-time purchase.
+              {temporaryAdRemoval
+                ? "Ads temporarily removed. Visit to see remaining time."
+                : "Enjoy an ad-free experience by watching a video or making a one-time purchase."}
             </ThemedText>
             <TouchableOpacity
               style={[
@@ -166,7 +168,9 @@ export default function HomeScreen() {
               ]}
               onPress={() => router.push("/remove-ads")}
             >
-              <ThemedText style={styles.buttonText}>Remove Ads</ThemedText>
+              <ThemedText style={styles.buttonText}>
+                {temporaryAdRemoval ? "View Ad-Free Status" : "Remove Ads"}
+              </ThemedText>
               <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
             </TouchableOpacity>
           </ThemedView>
@@ -190,7 +194,7 @@ export default function HomeScreen() {
         </ThemedView>
       </ParallaxScrollView>
       {/* Bottom ad - above tab bar, only if ads aren't removed */}
-      {showAds && (
+      {showActualAds && (
         <View style={dynamicStyles.bottomAdContainer}>
           <BannerAdComponent />
         </View>

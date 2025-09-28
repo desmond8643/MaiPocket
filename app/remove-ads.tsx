@@ -4,7 +4,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { useAds } from "@/context/AdContext";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,10 +15,36 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function RemoveAdsScreen() {
-  const { removeAdsTemporarily, removeAdsPermanently, restorePurchases } =
-    useAds();
+  const { removeAdsTemporarily, removeAdsPermanently, restorePurchases, temporaryAdRemoval } = useAds();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
+  const [remainingTime, setRemainingTime] = useState("");
+  
+  // Add this effect to calculate and display remaining time
+  useEffect(() => {
+    if (!temporaryAdRemoval) return;
+    
+    const calculateRemainingTime = () => {
+      // Get the expiry timestamp from AsyncStorage or context
+      const expiryTime = typeof temporaryAdRemoval === 'number' ? temporaryAdRemoval : null;
+      if (!expiryTime) return;
+      
+      const now = Date.now();
+      const diff = expiryTime - now;
+      
+      if (diff <= 0) return;
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      
+      setRemainingTime(`${hours}h ${minutes}m`);
+    };
+    
+    calculateRemainingTime();
+    const interval = setInterval(calculateRemainingTime, 60000); // Update every minute
+    
+    return () => clearInterval(interval);
+  }, [temporaryAdRemoval]);
 
   const watchLongAdForTemporaryRemoval = () => {
     setLoading(true);
@@ -112,17 +138,25 @@ export default function RemoveAdsScreen() {
         <ThemedView style={styles.optionCard}>
           <ThemedText type="subtitle">Watch Ad</ThemedText>
           <ThemedText style={styles.description}>
-            Watch a video ad to remove all ads for 24 hours.
+            {temporaryAdRemoval 
+              ? `Ads are currently removed. Time remaining: ${remainingTime}`
+              : "Watch a video ad to remove all ads for 24 hours."}
           </ThemedText>
           <TouchableOpacity
-            style={[styles.button, styles.watchAdButton]}
+            style={[
+              styles.button, 
+              styles.watchAdButton,
+              temporaryAdRemoval && styles.disabledButton
+            ]}
             onPress={watchLongAdForTemporaryRemoval}
-            disabled={loading}
+            disabled={loading || temporaryAdRemoval}
           >
             {loading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <ThemedText style={styles.buttonText}>Watch Ad</ThemedText>
+              <ThemedText style={styles.buttonText}>
+                {temporaryAdRemoval ? "Active" : "Watch Ad"}
+              </ThemedText>
             )}
           </TouchableOpacity>
         </ThemedView>
@@ -130,7 +164,7 @@ export default function RemoveAdsScreen() {
         <ThemedView style={styles.optionCard}>
           <ThemedText type="subtitle">Remove Ads Forever</ThemedText>
           <ThemedText style={styles.description}>
-            One-time payment of HKD $30 to permanently remove all ads.
+            One-time payment of HKD $28 to permanently remove all ads.
           </ThemedText>
           <TouchableOpacity
             style={[styles.button, styles.purchaseButton]}
@@ -215,5 +249,9 @@ const styles = StyleSheet.create({
   },
   restoreText: {
     textDecorationLine: "underline",
+  },
+  disabledButton: {
+    backgroundColor: "#8a8a8a",
+    opacity: 0.7,
   },
 });
