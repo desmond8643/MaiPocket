@@ -15,36 +15,43 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function RemoveAdsScreen() {
-  const { removeAdsTemporarily, removeAdsPermanently, restorePurchases, temporaryAdRemoval, temporaryAdRemovalEndTime } = useAds();
+  const {
+    removeAdsTemporarily,
+    removeAdsPermanently,
+    restorePurchases,
+    temporaryAdRemoval,
+    temporaryAdRemovalEndTime,
+  } = useAds();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
   const [remainingTime, setRemainingTime] = useState("");
-  
+
   // Use the temporaryAdRemovalEndTime from context directly
   useEffect(() => {
     if (!temporaryAdRemoval || !temporaryAdRemovalEndTime) {
       setRemainingTime("");
       return;
     }
-    
+
     const calculateRemainingTime = () => {
       const now = Date.now();
       const diff = temporaryAdRemovalEndTime - now;
-      
+
       if (diff <= 0) {
         setRemainingTime("Expired");
         return;
       }
-      
+
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      
-      setRemainingTime(`${hours}h ${minutes}m`);
+      const seconds = Math.floor((diff % (1000 * 60 * 60)) / 1000);
+
+      setRemainingTime(`${hours}:${minutes}:${seconds}`);
     };
-    
+
     calculateRemainingTime();
     const interval = setInterval(calculateRemainingTime, 60000);
-    
+
     return () => clearInterval(interval);
   }, [temporaryAdRemoval, temporaryAdRemovalEndTime]);
 
@@ -140,15 +147,15 @@ export default function RemoveAdsScreen() {
         <ThemedView style={styles.optionCard}>
           <ThemedText type="subtitle">Watch Ad</ThemedText>
           <ThemedText style={styles.description}>
-            {temporaryAdRemoval 
-              ? `Ads are currently removed. Time remaining: ${remainingTime}`
+            {temporaryAdRemoval
+              ? `Ads are currently removed`
               : "Watch a video ad to remove all ads for 24 hours."}
           </ThemedText>
           <TouchableOpacity
             style={[
-              styles.button, 
+              styles.button,
               styles.watchAdButton,
-              temporaryAdRemoval && styles.disabledButton
+              temporaryAdRemoval && styles.disabledButton,
             ]}
             onPress={watchLongAdForTemporaryRemoval}
             disabled={loading || temporaryAdRemoval}
@@ -157,7 +164,7 @@ export default function RemoveAdsScreen() {
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <ThemedText style={styles.buttonText}>
-                {temporaryAdRemoval ? "Active" : "Watch Ad"}
+                {temporaryAdRemoval ? `Active (${remainingTime})` : "Watch Ad"}
               </ThemedText>
             )}
           </TouchableOpacity>
