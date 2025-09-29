@@ -108,9 +108,12 @@ export default function GamePlayScreen() {
       // Fix: Use the raw score without adding previous streak
       const rawScore = score;
       
-      // If completed, add the score to the current streak
-      // Otherwise reset the streak to 0
-      const newStreak = completed ? savedScores[modeKey].currentStreak + rawScore : 0;
+      // Always add current score to streak before potentially resetting
+      const updatedStreak = savedScores[modeKey].currentStreak + rawScore;
+      
+      // If completed, keep the updated streak
+      // Otherwise reset the streak to 0 for next game (after updating the streak)
+      const newStreak = completed ? updatedStreak : 0;
       
       // Update high score
       const newHighScore = Math.max(savedScores[modeKey].highScore, rawScore);
