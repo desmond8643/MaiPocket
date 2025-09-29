@@ -272,13 +272,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   featureDescription: {
-    // backgroundColor: "#44444E",
-    backgroundColor: "#758694",
+    backgroundColor: "#44444E",
+    // backgroundColor: "#758694",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 2,
     borderRadius: 8,
+    opacity: 80
   },
   featureTitleContainer: {
     display: "flex",

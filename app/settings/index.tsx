@@ -28,58 +28,9 @@ export default function SettingsScreen() {
           <View style={styles.optionsContainer}>
             <TouchableOpacity
               style={styles.optionItem}
-              onPress={() => router.push("/settings/edit-profile")}
-            >
-              <Ionicons
-                name="person-outline"
-                size={24}
-                color="#AE75DA"
-              />
-              <ThemedText style={styles.optionText}>
-                Edit Profile
-              </ThemedText>
-              <Ionicons name="chevron-forward" size={24} color="#999" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.optionItem}
-              onPress={() => router.push("/settings/notifications")}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#AE75DA"
-              />
-              <ThemedText style={styles.optionText}>
-                Notifications
-              </ThemedText>
-              <Ionicons name="chevron-forward" size={24} color="#999" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.optionItem}
-              onPress={() => router.push("/settings/change-password")}
-            >
-              <Ionicons
-                name="key-outline"
-                size={24}
-                color="#AE75DA"
-              />
-              <ThemedText style={styles.optionText}>
-                Change Password
-              </ThemedText>
-              <Ionicons name="chevron-forward" size={24} color="#999" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.optionItem}
               onPress={() => router.push("/settings/social-preferences")}
             >
-              <Ionicons
-                name="share-social-outline"
-                size={24}
-                color="#AE75DA"
-              />
+              <Ionicons name="share-social-outline" size={24} color="#AE75DA" />
               <ThemedText style={styles.optionText}>
                 Social Preferences
               </ThemedText>
@@ -100,7 +51,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 16,
+    // paddingTop: 16,
     paddingBottom: 30,
   },
   headerTitle: {
@@ -126,4 +77,4 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
   },
-}); 
+});

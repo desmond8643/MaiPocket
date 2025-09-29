@@ -226,6 +226,7 @@ export default function RootLayout() {
             name="settings/social-preferences"
             options={{ headerShown: false }}
           />
+          <Stack.Screen name="settings" options={{ headerShown: false }} />
         </Stack>
       </GestureHandlerRootView>
     </AdProvider>
