@@ -2,12 +2,20 @@ import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, TouchableOpacity, View, Alert } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getHighScores } from "@/api/client"; // We'll implement this
+import { getHighScores } from "@/api/client";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+import { UserScore } from "@/types/game";
 
 export default function GameHomeScreen() {
-  // Replace useAuth with your existing auth method
   const [user, setUser] = useState(null);
   const [localScores, setLocalScores] = useState({
     normal: { highScore: 0, currentStreak: 0 },
@@ -17,17 +25,27 @@ export default function GameHomeScreen() {
     normal: { highScore: 0, currentStreak: 0 },
     hard: { highScore: 0, currentStreak: 0 },
   });
-  
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     // Check if user is logged in using your existing method
     checkUserAuth();
     loadLocalScores();
   }, []);
-  
+
+  // Add focus listener to refresh scores when returning to this screen
+  useFocusEffect(
+    useCallback(() => {
+      loadLocalScores();
+      if (user) {
+        loadServerScores();
+      }
+    }, [user])
+  );
+
   const checkUserAuth = async () => {
     try {
-      // Use your existing method to check authentication
-      const userData = await AsyncStorage.getItem('userData');
+      const userData = await AsyncStorage.getItem("userData");
       if (userData) {
         setUser(JSON.parse(userData));
         loadServerScores();
@@ -36,45 +54,58 @@ export default function GameHomeScreen() {
       console.error("Error checking auth:", error);
     }
   };
-  
+
   const loadLocalScores = async () => {
     try {
-      const savedScores = await AsyncStorage.getItem('songQuizScores');
+      setIsLoading(true);
+      const savedScores = await AsyncStorage.getItem("songQuizScores");
       if (savedScores) {
         setLocalScores(JSON.parse(savedScores));
       }
     } catch (error) {
       console.error("Error loading local scores:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
-  
+
   const loadServerScores = async () => {
     try {
+      setIsLoading(true);
       const scores = await getHighScores();
       setServerScores({
-        normal: scores.find((s: { mode: string; highScore: number; currentStreak: number }) => s.mode === 'normal') || { highScore: 0, currentStreak: 0 },
-        hard: scores.find((s: { mode: string; highScore: number; currentStreak: number }) => s.mode === 'hard') || { highScore: 0, currentStreak: 0 },
+        normal: scores.find((s: UserScore) => s.mode === "normal") || {
+          highScore: 0,
+          currentStreak: 0,
+        },
+
+        hard: scores.find((s: UserScore) => s.mode === "hard") || {
+          highScore: 0,
+          currentStreak: 0,
+        },
       });
     } catch (error) {
       console.error("Error loading server scores:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
-  
+
   const startGame = (mode: string) => {
-    if (!user && mode === 'hard') {
+    if (!user && mode === "hard") {
       Alert.alert(
         "Login Required",
         "You need to be logged in to play Hard mode.",
         [
           { text: "Login", onPress: () => router.push("/auth/login") },
-          { text: "Cancel", style: "cancel" }
+          { text: "Cancel", style: "cancel" },
         ]
       );
       return;
     }
     router.push({
       pathname: "game/play",
-      params: { mode }
+      params: { mode },
     });
   };
 
@@ -84,11 +115,11 @@ export default function GameHomeScreen() {
       <ThemedText style={styles.description}>
         Test your maimai knowledge! Guess the song from its thumbnail.
       </ThemedText>
-      
+
       <View style={styles.modeContainer}>
-        <TouchableOpacity 
-          style={[styles.modeButton, { backgroundColor: '#696FC7' }]}
-          onPress={() => startGame('normal')}
+        <TouchableOpacity
+          style={[styles.modeButton, { backgroundColor: "#696FC7" }]}
+          onPress={() => startGame("normal")}
         >
           <ThemedText style={styles.modeButtonText}>Normal Mode</ThemedText>
           <ThemedText style={styles.modeDescription}>
@@ -96,17 +127,31 @@ export default function GameHomeScreen() {
           </ThemedText>
           <View style={styles.scoreContainer}>
             <ThemedText style={styles.scoreText}>
-              High Score: {user ? serverScores.normal.highScore : localScores.normal.highScore}
+              High Score:{" "}
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : user ? (
+                serverScores.normal.highScore
+              ) : (
+                localScores.normal.highScore
+              )}
             </ThemedText>
             <ThemedText style={styles.scoreText}>
-              Current Streak: {user ? serverScores.normal.currentStreak : localScores.normal.currentStreak}
+              Current Streak:{" "}
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : user ? (
+                serverScores.normal.currentStreak
+              ) : (
+                localScores.normal.currentStreak
+              )}
             </ThemedText>
           </View>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.modeButton, { backgroundColor: '#F75270' }]}
-          onPress={() => startGame('hard')}
+
+        <TouchableOpacity
+          style={[styles.modeButton, { backgroundColor: "#F75270" }]}
+          onPress={() => startGame("hard")}
         >
           <ThemedText style={styles.modeButtonText}>Hard Mode</ThemedText>
           <ThemedText style={styles.modeDescription}>
@@ -114,20 +159,26 @@ export default function GameHomeScreen() {
           </ThemedText>
           <View style={styles.scoreContainer}>
             <ThemedText style={styles.scoreText}>
-              High Score: {user ? serverScores.hard.highScore : localScores.hard.highScore}
+              High Score:{" "}
+              {user ? serverScores.hard.highScore : localScores.hard.highScore}
             </ThemedText>
             <ThemedText style={styles.scoreText}>
-              Current Streak: {user ? serverScores.hard.currentStreak : localScores.hard.currentStreak}
+              Current Streak:{" "}
+              {user
+                ? serverScores.hard.currentStreak
+                : localScores.hard.currentStreak}
             </ThemedText>
           </View>
         </TouchableOpacity>
       </View>
-      
-      <TouchableOpacity 
+
+      <TouchableOpacity
         style={styles.leaderboardButton}
-        onPress={() => router.push('/game/leaderboard')}
+        onPress={() => router.push("/game/leaderboard")}
       >
-        <ThemedText style={styles.leaderboardButtonText}>View Leaderboards</ThemedText>
+        <ThemedText style={styles.leaderboardButtonText}>
+          View Leaderboards
+        </ThemedText>
       </TouchableOpacity>
     </ThemedView>
   );
@@ -140,7 +191,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
   },
   description: {
@@ -156,34 +207,34 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   modeButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
   },
   modeDescription: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
     marginBottom: 16,
   },
   scoreContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
     padding: 12,
     borderRadius: 8,
   },
   scoreText: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
   },
   leaderboardButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     padding: 16,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   leaderboardButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
-  }
-}); 
+    fontWeight: "bold",
+  },
+});

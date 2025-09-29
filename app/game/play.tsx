@@ -26,6 +26,8 @@ export default function GamePlayScreen() {
   const [gameOver, setGameOver] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15); // 15 seconds per question
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
 
   useEffect(() => {
     loadQuestions();
@@ -102,12 +104,20 @@ export default function GamePlayScreen() {
           };
 
       const modeKey = mode === "hard" ? "hard" : "normal";
-      const newScore = score + savedScores[modeKey].currentStreak;
-      const newHighScore = Math.max(savedScores[modeKey].highScore, newScore);
+      
+      // Fix: Use the raw score without adding previous streak
+      const rawScore = score;
+      
+      // If completed, add the score to the current streak
+      // Otherwise reset the streak to 0
+      const newStreak = completed ? savedScores[modeKey].currentStreak + rawScore : 0;
+      
+      // Update high score
+      const newHighScore = Math.max(savedScores[modeKey].highScore, rawScore);
 
       savedScores[modeKey] = {
         highScore: newHighScore,
-        currentStreak: completed ? newScore : 0, // Reset streak on failure
+        currentStreak: newStreak,
       };
 
       await AsyncStorage.setItem("songQuizScores", JSON.stringify(savedScores));
@@ -116,7 +126,8 @@ export default function GamePlayScreen() {
       // Update server scores if logged in
       if (isLoggedIn) {
         const modeStr = Array.isArray(mode) ? mode[0] : mode;
-        await submitScore(modeStr, newScore, completed ? newScore : 0);
+        // Pass the raw score and new streak separately
+        await submitScore(modeStr, rawScore, newStreak);
       }
     } catch (error) {
       console.error("Error saving score:", error);
