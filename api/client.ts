@@ -365,7 +365,21 @@ export const getQuizQuestions = async (mode: string): Promise<QuizQuestion[]> =>
 };
 
 export const submitScore = async (mode: string, score: number, currentStreak: number) => {
-  const response = await apiClient.post('/game/score', { mode, score, currentStreak });
+  // Get the user data from AsyncStorage
+  const userDataString = await AsyncStorage.getItem('userData');
+  let userId = null;
+  
+  if (userDataString) {
+    const userData = JSON.parse(userDataString);
+    userId = userData._id; // Assuming the user ID is stored as _id
+  }
+
+  const response = await apiClient.post('/game/score', { 
+    mode, 
+    score, 
+    currentStreak,
+    userId // Add this line to include userId
+  });
   return response.data;
 };
 
