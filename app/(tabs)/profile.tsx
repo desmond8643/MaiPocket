@@ -146,8 +146,7 @@ export default function ProfileScreen() {
               </View>
 
               <View style={styles.settingsSection}>
-                <ThemedText style={styles.sectionTitle}>Settings</ThemedText>
-
+                {/* <ThemedText style={styles.sectionTitle}>Profile</ThemedText> */}
                 <TouchableOpacity
                   style={styles.settingsItem}
                   onPress={() => router.push("/settings/edit-profile")}
@@ -256,7 +255,7 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     padding: 20,
-    marginTop: 64,
+    marginTop: 48,
   },
   avatarContainer: {
     alignItems: "center",
