@@ -28,7 +28,6 @@ export default function GamePlayScreen() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-
   useEffect(() => {
     loadQuestions();
   }, []);
@@ -78,19 +77,20 @@ export default function GamePlayScreen() {
   };
 
   const handleCorrectAnswer = () => {
-    setScore(score + 1);
+    const newScore = score + 1;
+    setScore(newScore);
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setTimeLeft(15);
       setSelectedAnswer(null);
     } else {
-      // All questions answered correctly
-      handleGameOver(true);
+      // Pass the correct score to handleGameOver
+      handleGameOver(true, newScore);
     }
   };
 
-  const handleGameOver = async (completed = false) => {
+  const handleGameOver = async (completed = false, finalScore = score) => {
     setGameOver(true);
 
     // Update local scores
@@ -104,17 +104,17 @@ export default function GamePlayScreen() {
           };
 
       const modeKey = mode === "hard" ? "hard" : "normal";
-      
+
       // Fix: Use the raw score without adding previous streak
-      const rawScore = score;
-      
+      const rawScore = finalScore;
+
       // Always add current score to streak before potentially resetting
       const updatedStreak = savedScores[modeKey].currentStreak + rawScore;
-      
+
       // If completed, keep the updated streak
       // Otherwise reset the streak to 0 for next game (after updating the streak)
       const newStreak = completed ? updatedStreak : 0;
-      
+
       // Update high score
       const newHighScore = Math.max(savedScores[modeKey].highScore, rawScore);
 
