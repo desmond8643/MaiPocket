@@ -83,7 +83,7 @@ export default function HomeScreen() {
             >
               Browse Song Charts
             </ThemedText>
-            <Ionicons name="musical-note" size={48} color="white" />
+            <Ionicons name="musical-note-outline" size={48} color="white" />
           </View>
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
@@ -102,7 +102,7 @@ export default function HomeScreen() {
             >
               Your Profile
             </ThemedText>
-            <Ionicons name="person" size={48} color="white" />
+            <Ionicons name="person-outline" size={48} color="white" />
           </View>
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
@@ -272,7 +272,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   featureDescription: {
-    backgroundColor: "#44444E",
+    // backgroundColor: "#44444E",
+    backgroundColor: "#758694",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",

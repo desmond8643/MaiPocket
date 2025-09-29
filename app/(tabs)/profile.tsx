@@ -91,11 +91,11 @@ export default function ProfileScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={{ flex: 1 }}>
-        {/* Add settings icon to header */}
+        {/* Update settings icon to link to main settings page */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.settingsIconContainer}
-            onPress={() => router.push("/settings/social-preferences")}
+            onPress={() => router.push("/settings")}
           >
             <Ionicons name="settings-outline" size={24} color="#AE75DA" />
           </TouchableOpacity>

@@ -277,7 +277,7 @@ export default function CreatePostScreen() {
                     Colors[colorScheme ?? "light"].text + "80"
                   }
                   multiline
-                  maxLength={500}
+                  maxLength={1000}
                   value={postContent}
                   onChangeText={handlePostContentChange}
                 />
@@ -285,7 +285,7 @@ export default function CreatePostScreen() {
                 {youtubeVideoId && <YouTubePreview videoId={youtubeVideoId} />}
 
                 <ThemedText style={styles.charCounter}>
-                  {characterCount}/500
+                  {characterCount}/1000
                 </ThemedText>
 
                 {/* Tags Selection */}
@@ -326,7 +326,7 @@ export default function CreatePostScreen() {
                     onValueChange={setIsAnonymous}
                     trackColor={{
                       false: "#767577",
-                      true: Colors[colorScheme ?? "light"].tint,
+                      true: "#AE75DA",
                     }}
                   />
                 </View>
