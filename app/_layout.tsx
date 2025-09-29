@@ -230,6 +230,11 @@ export default function RootLayout() {
             name="settings/index"
             options={{ headerShown: false }}
           />
+          <Stack.Screen name="game/index" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="game/play"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
         </Stack>
       </GestureHandlerRootView>
     </AdProvider>
