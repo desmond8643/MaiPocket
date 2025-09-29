@@ -28,7 +28,6 @@ export default function GamePlayScreen() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
 
   useEffect(() => {
-    checkLoginStatus();
     loadQuestions();
   }, []);
 
@@ -60,24 +59,6 @@ export default function GamePlayScreen() {
       console.error("Error loading questions:", error);
       Alert.alert("Error", "Failed to load quiz questions. Please try again.");
       router.back();
-    }
-  };
-
-  const checkLoginStatus = async () => {
-    try {
-      const isLoggedIn = await AuthAPI.isLoggedIn();
-      if (isLoggedIn) {
-        const userDataStr = await AsyncStorage.getItem("userData");
-        if (userDataStr) {
-          setUser(JSON.parse(userDataStr));
-        } else {
-          // Fetch fresh user data
-          const freshUserData = await AuthAPI.getCurrentUser();
-          setUser(freshUserData);
-        }
-      }
-    } catch (error) {
-      console.error("Error checking login status:", error);
     }
   };
 
@@ -131,8 +112,9 @@ export default function GamePlayScreen() {
 
       await AsyncStorage.setItem("songQuizScores", JSON.stringify(savedScores));
 
+      const isLoggedIn = await AuthAPI.isLoggedIn();
       // Update server scores if logged in
-      if (user?._id) {
+      if (isLoggedIn) {
         const modeStr = Array.isArray(mode) ? mode[0] : mode;
         await submitScore(modeStr, newScore, completed ? newScore : 0);
       }
