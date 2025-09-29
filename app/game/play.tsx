@@ -11,14 +11,13 @@ import {
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getQuizQuestions, submitScore } from "@/api/client"; // We'll implement these
+import { AuthAPI, getQuizQuestions, submitScore } from "@/api/client";
 import { Ionicons } from "@expo/vector-icons";
 import { QuizQuestion } from "@/types/quiz";
 import { User } from "@/types/user"; // Import your User type
 
 export default function GamePlayScreen() {
   const { mode } = useLocalSearchParams();
-  // Replace useAuth with your existing auth method
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -29,6 +28,7 @@ export default function GamePlayScreen() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
 
   useEffect(() => {
+    checkLoginStatus();
     loadQuestions();
   }, []);
 
@@ -60,6 +60,24 @@ export default function GamePlayScreen() {
       console.error("Error loading questions:", error);
       Alert.alert("Error", "Failed to load quiz questions. Please try again.");
       router.back();
+    }
+  };
+
+  const checkLoginStatus = async () => {
+    try {
+      const isLoggedIn = await AuthAPI.isLoggedIn();
+      if (isLoggedIn) {
+        const userDataStr = await AsyncStorage.getItem("userData");
+        if (userDataStr) {
+          setUser(JSON.parse(userDataStr));
+        } else {
+          // Fetch fresh user data
+          const freshUserData = await AuthAPI.getCurrentUser();
+          setUser(freshUserData);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking login status:", error);
     }
   };
 
