@@ -51,7 +51,7 @@ export default function SocialPreferencesScreen() {
               style={{ marginRight: 15 }}
             />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>Settings</ThemedText>
+          <ThemedText style={styles.headerTitle}>Social Preferences</ThemedText>
         </View>
 
         <View style={styles.content}>
