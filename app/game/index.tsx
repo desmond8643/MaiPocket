@@ -15,6 +15,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { UserScore } from "@/types/game";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GameHomeScreen() {
   const [user, setUser] = useState(null);
@@ -27,6 +28,7 @@ export default function GameHomeScreen() {
     hard: { highScore: 0, currentStreak: 0 },
   });
   const [isLoading, setIsLoading] = useState(true);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     // Check if user is logged in using your existing method
@@ -111,7 +113,7 @@ export default function GameHomeScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}

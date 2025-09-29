@@ -15,6 +15,7 @@ import { AuthAPI, getQuizQuestions, submitScore } from "@/api/client";
 import { Ionicons } from "@expo/vector-icons";
 import { QuizQuestion } from "@/types/quiz";
 import { User } from "@/types/user"; // Import your User type
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GamePlayScreen() {
   const { mode } = useLocalSearchParams();
@@ -28,6 +29,7 @@ export default function GamePlayScreen() {
   const [timeLeft, setTimeLeft] = useState(15); // 15 seconds per question
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     loadQuestions();
@@ -55,7 +57,7 @@ export default function GamePlayScreen() {
       const modeStr = Array.isArray(mode) ? mode[0] : mode;
       const quizData = await getQuizQuestions(modeStr);
       setQuestions(quizData);
-      
+
       // Load saved scores to get the current streak
       const savedScoresStr = await AsyncStorage.getItem("songQuizScores");
       const savedScores = savedScoresStr
@@ -67,7 +69,7 @@ export default function GamePlayScreen() {
       const modeKey = modeStr === "hard" ? "hard" : "normal";
       const currentStreak = savedScores[modeKey].currentStreak || 0;
       setAccumulatedScore(currentStreak);
-      
+
       setLoading(false);
       setTimeLeft(15);
     } catch (error) {
@@ -131,7 +133,10 @@ export default function GamePlayScreen() {
       const newStreak = completed ? updatedStreak : 0;
 
       // Update high score
-      const newHighScore = Math.max(savedScores[modeKey].highScore, updatedStreak);
+      const newHighScore = Math.max(
+        savedScores[modeKey].highScore,
+        updatedStreak
+      );
 
       savedScores[modeKey] = {
         highScore: newHighScore,
@@ -209,7 +214,7 @@ export default function GamePlayScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         {/* <TouchableOpacity
           onPress={() => router.back()}
@@ -342,6 +347,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 30, // Increase from 20
     marginBottom: 10,
+    paddingTop: 20,
   },
   buttonRow: {
     flexDirection: "row",
