@@ -1,5 +1,5 @@
-import { LeaderboardEntry, QuizQuestion } from '@/types/game';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LeaderboardEntry, QuizQuestion } from "@/types/game";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
 // Change this to your actual backend URL
@@ -15,9 +15,9 @@ const apiClient = axios.create({
 // Add token to requests if available
 apiClient.interceptors.request.use(
   async (config) => {
-    const token = await AsyncStorage.getItem('authToken');
+    const token = await AsyncStorage.getItem("authToken");
     if (token) {
-      config.headers['x-auth-token'] = token;
+      config.headers["x-auth-token"] = token;
     }
     return config;
   },
@@ -42,7 +42,9 @@ export const ChartAPI = {
     console.log(value);
     try {
       const response = await apiClient.get(
-        `/charts?type=${type}&value=${encodeURIComponent(value)}&sortBy=level&order=desc`
+        `/charts?type=${type}&value=${encodeURIComponent(
+          value
+        )}&sortBy=level&order=desc`
       );
       return response.data;
     } catch (error) {
@@ -89,17 +91,25 @@ export const ChartAPI = {
       const formattedData = {
         content: postData.content,
         tags: postData.tags,
-        chartId: typeof postData.chartId === 'string' ? postData.chartId : String(postData.chartId),
-        chartType: typeof postData.chartType === 'string' ? postData.chartType : String(postData.chartType),
-        chartDifficulty: typeof postData.chartDifficulty === 'string' ? 
-          postData.chartDifficulty : String(postData.chartDifficulty),
-        anonymous: postData.anonymous
+        chartId:
+          typeof postData.chartId === "string"
+            ? postData.chartId
+            : String(postData.chartId),
+        chartType:
+          typeof postData.chartType === "string"
+            ? postData.chartType
+            : String(postData.chartType),
+        chartDifficulty:
+          typeof postData.chartDifficulty === "string"
+            ? postData.chartDifficulty
+            : String(postData.chartDifficulty),
+        anonymous: postData.anonymous,
       };
 
-      const response = await apiClient.post('/posts', formattedData);
+      const response = await apiClient.post("/posts", formattedData);
       return response.data;
     } catch (error) {
-      console.error('Error creating post:', error);
+      console.error("Error creating post:", error);
       throw error;
     }
   },
@@ -110,7 +120,7 @@ export const ChartAPI = {
       const response = await apiClient.get(`/posts/chart/${chartId}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching posts for chart:', error);
+      console.error("Error fetching posts for chart:", error);
       throw error;
     }
   },
@@ -121,7 +131,7 @@ export const ChartAPI = {
       const response = await apiClient.post(`/posts/${postId}/like`);
       return response.data;
     } catch (error) {
-      console.error('Error liking post:', error);
+      console.error("Error liking post:", error);
       throw error;
     }
   },
@@ -131,16 +141,20 @@ export const ChartAPI = {
       const response = await apiClient.delete(`/posts/${postId}`);
       return response.data;
     } catch (error) {
-      console.error('Error deleting post:', error);
+      console.error("Error deleting post:", error);
       throw error;
     }
   },
 
-  getPostsByChart: async (chartId: string, chartType: string, difficulty: string) => {
+  getPostsByChart: async (
+    chartId: string,
+    chartType: string,
+    difficulty: string
+  ) => {
     try {
       const response = await axios.get(`${BASE_URL}/posts/chart/${chartId}`, {
         params: { chartType, difficulty },
-        withCredentials: true
+        withCredentials: true,
       });
       return response.data;
     } catch (error) {
@@ -159,83 +173,88 @@ export const AuthAPI = {
     password: string;
   }) => {
     try {
-      const response = await apiClient.post('/auth/register', userData);
+      const response = await apiClient.post("/auth/register", userData);
       return response.data;
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       throw error;
     }
   },
-  
+
   // Verify email
   verifyEmail: async (verificationData: { email: string; code: string }) => {
     try {
-      const response = await apiClient.post('/auth/verify', verificationData);
+      const response = await apiClient.post("/auth/verify", verificationData);
       return response.data;
     } catch (error) {
-      console.error('Verification error:', error);
+      console.error("Verification error:", error);
       throw error;
     }
   },
-  
+
   // Resend verification code
   resendVerification: async (email: string) => {
     try {
-      const response = await apiClient.post('/auth/resend-verification', { email });
+      const response = await apiClient.post("/auth/resend-verification", {
+        email,
+      });
       return response.data;
     } catch (error) {
-      console.error('Resend verification error:', error);
+      console.error("Resend verification error:", error);
       throw error;
     }
   },
-  
+
   // Login user
   login: async (credentials: { usernameOrEmail: string; password: string }) => {
     try {
-      const response = await apiClient.post('/auth/login', credentials);
+      const response = await apiClient.post("/auth/login", credentials);
       // Save token to storage
       if (response.data.token) {
-        await AsyncStorage.setItem('authToken', response.data.token);
-        await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+        await AsyncStorage.setItem("authToken", response.data.token);
+        await AsyncStorage.setItem(
+          "userData",
+          JSON.stringify(response.data.user)
+        );
       }
       return response.data;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       throw error;
     }
   },
-  
+
   // Logout user
   logout: async () => {
     try {
-      await AsyncStorage.removeItem('authToken');
-      await AsyncStorage.removeItem('userData');
+      await AsyncStorage.removeItem("authToken");
+      await AsyncStorage.removeItem("userData");
       return { success: true };
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
       throw error;
     }
   },
-  
+
   // Get current user
   getCurrentUser: async () => {
     try {
-      const response = await apiClient.get('/auth/me');
+      const response = await apiClient.get("/auth/me");
       return response.data;
     } catch (error) {
-      console.error('Get user error:', error);
+      console.error("Get user error:", error);
       throw error;
     }
   },
-  
+
   // Check if user is logged in
   isLoggedIn: async () => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      const userData = await AsyncStorage.getItem('userData');
+      const token = await AsyncStorage.getItem("authToken");
+      const userData = await AsyncStorage.getItem("userData");
       return !!token && !!userData;
     } catch (error) {
-      console.error('Check login status error:', error);
+      console.error("Check login status error:", error);
       return false;
     }
   },
@@ -243,54 +262,73 @@ export const AuthAPI = {
   // Request password reset
   forgotPassword: async (email: string) => {
     try {
-      const response = await apiClient.post('/auth/forgot-password', { email });
+      const response = await apiClient.post("/auth/forgot-password", { email });
       return response.data;
     } catch (error) {
-      console.error('Forgot password error:', error);
+      console.error("Forgot password error:", error);
       throw error;
     }
   },
 
   // Verify reset code
-  verifyResetCode: async (verificationData: { email: string; code: string }) => {
+  verifyResetCode: async (verificationData: {
+    email: string;
+    code: string;
+  }) => {
     try {
-      const response = await apiClient.post('/auth/verify-reset-code', verificationData);
+      const response = await apiClient.post(
+        "/auth/verify-reset-code",
+        verificationData
+      );
       return response.data;
     } catch (error) {
-      console.error('Reset code verification error:', error);
+      console.error("Reset code verification error:", error);
       throw error;
     }
   },
 
   // Reset password
-  resetPassword: async (resetData: { email: string; code: string; newPassword: string }) => {
+  resetPassword: async (resetData: {
+    email: string;
+    code: string;
+    newPassword: string;
+  }) => {
     try {
-      const response = await apiClient.post('/auth/reset-password', resetData);
+      const response = await apiClient.post("/auth/reset-password", resetData);
       return response.data;
     } catch (error) {
-      console.error('Password reset error:', error);
+      console.error("Password reset error:", error);
       throw error;
     }
   },
 
   // Update user profile
-  updateProfile: async (profileData: { username?: string; displayName?: string }) => {
+  updateProfile: async (profileData: {
+    username?: string;
+    displayName?: string;
+  }) => {
     try {
-      const response = await apiClient.put('/auth/profile', profileData);
+      const response = await apiClient.put("/auth/profile", profileData);
       return response.data;
     } catch (error) {
-      console.error('Update profile error:', error);
+      console.error("Update profile error:", error);
       throw error;
     }
   },
 
   // Change password
-  changePassword: async (passwordData: { currentPassword: string; newPassword: string }) => {
+  changePassword: async (passwordData: {
+    currentPassword: string;
+    newPassword: string;
+  }) => {
     try {
-      const response = await apiClient.post('/auth/change-password', passwordData);
+      const response = await apiClient.post(
+        "/auth/change-password",
+        passwordData
+      );
       return response.data;
     } catch (error) {
-      console.error('Change password error:', error);
+      console.error("Change password error:", error);
       throw error;
     }
   },
@@ -300,7 +338,9 @@ export const NotificationAPI = {
   // Get user notifications with pagination
   getNotifications: async (limit = 10, skip = 0) => {
     try {
-      const response = await apiClient.get(`/notifications?limit=${limit}&skip=${skip}`);
+      const response = await apiClient.get(
+        `/notifications?limit=${limit}&skip=${skip}`
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -323,7 +363,7 @@ export const NotificationAPI = {
   markAsRead: async (notificationId: string) => {
     try {
       const response = await apiClient.post("/notifications/mark-read", {
-        notificationId
+        notificationId,
       });
       return response.data;
     } catch (error) {
@@ -336,7 +376,7 @@ export const NotificationAPI = {
   markAllAsRead: async () => {
     try {
       const response = await apiClient.post("/notifications/mark-read", {
-        markAll: true
+        markAll: true,
       });
       return response.data;
     } catch (error) {
@@ -349,46 +389,63 @@ export const NotificationAPI = {
   archiveNotification: async (notificationId: string) => {
     try {
       const response = await apiClient.post("/notifications/archive", {
-        notificationId
+        notificationId,
       });
       return response.data;
     } catch (error) {
       console.error("Error archiving notification:", error);
       throw error;
     }
-  }
+  },
 };
 
-export const getQuizQuestions = async (mode: string): Promise<QuizQuestion[]> => {
+export const getQuizQuestions = async (
+  mode: string
+): Promise<QuizQuestion[]> => {
   const response = await apiClient.get(`/game/questions?mode=${mode}`);
   return response.data;
 };
 
-export const submitScore = async (mode: string, score: number, currentStreak: number) => {
+export const submitScore = async (
+  mode: string,
+  score: number,
+  currentStreak: number
+) => {
   // Get the user data from AsyncStorage
-  const userDataString = await AsyncStorage.getItem('userData');
+  const userDataString = await AsyncStorage.getItem("userData");
   let userId = null;
-  
+
   if (userDataString) {
     const userData = JSON.parse(userDataString);
     userId = userData.id; // Assuming the user ID is stored as _id
   }
 
-  const response = await apiClient.post('/game/score', { 
-    mode, 
-    score, 
+  const response = await apiClient.post("/game/score", {
+    mode,
+    score,
     currentStreak,
-    userId // Add this line to include userId
+    userId, // Add this line to include userId
   });
   return response.data;
 };
 
 export const getHighScores = async () => {
-  const response = await apiClient.get('/game/scores');
+  const userDataString = await AsyncStorage.getItem("userData");
+  let userId = null;
+
+  if (userDataString) {
+    const userData = JSON.parse(userDataString);
+    userId = userData.id; // Assuming the user ID is stored as _id
+  }
+  const response = await apiClient.get(
+    `/game/scores?userId=${encodeURIComponent(userId)}`
+  );
   return response.data;
 };
 
-export const getLeaderboard = async (mode: string): Promise<LeaderboardEntry[]> => {
+export const getLeaderboard = async (
+  mode: string
+): Promise<LeaderboardEntry[]> => {
   const response = await apiClient.get(`/game/leaderboard/${mode}`);
   return response.data;
 };
