@@ -125,7 +125,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
-              Test your maimai knowledge!
+              Test your maimai knowledge
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 2,
     borderRadius: 8,
-    opacity: 80
+    opacity: 80,
   },
   featureTitleContainer: {
     display: "flex",

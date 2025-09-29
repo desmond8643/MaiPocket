@@ -14,6 +14,7 @@ import { getHighScores } from "@/api/client";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { UserScore } from "@/types/game";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function GameHomeScreen() {
   const [user, setUser] = useState(null);
@@ -111,14 +112,25 @@ export default function GameHomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.title}>Song Quiz Game</ThemedText>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          {/* <IconSymbol name="chevron.left" size={24} /> */}
+          <Ionicons name="arrow-back" size={24} color="#AE75DA" />
+        </TouchableOpacity>
+        <ThemedText style={{ fontSize: 24, fontWeight: "bold" }}>
+          Song Quiz Game
+        </ThemedText>
+      </View>
       <ThemedText style={styles.description}>
         Test your maimai knowledge! Guess the song from its thumbnail.
       </ThemedText>
 
       <View style={styles.modeContainer}>
         <TouchableOpacity
-          style={[styles.modeButton, { backgroundColor: "#696FC7" }]}
+          style={[styles.modeButton, { backgroundColor: "#9944DD" }]}
           onPress={() => startGame("normal")}
         >
           <ThemedText style={styles.modeButtonText}>Normal Mode</ThemedText>
@@ -150,7 +162,7 @@ export default function GameHomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.modeButton, { backgroundColor: "#F75270" }]}
+          style={[styles.modeButton, { backgroundColor: "#E9A5F1" }]}
           onPress={() => startGame("hard")}
         >
           <ThemedText style={styles.modeButtonText}>Hard Mode</ThemedText>
@@ -227,7 +239,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   leaderboardButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#696FC7",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
@@ -236,5 +248,14 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  backButton: {
+    marginRight: 16,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
 });

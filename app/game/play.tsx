@@ -23,6 +23,7 @@ export default function GamePlayScreen() {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [accumulatedScore, setAccumulatedScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15); // 15 seconds per question
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -54,6 +55,19 @@ export default function GamePlayScreen() {
       const modeStr = Array.isArray(mode) ? mode[0] : mode;
       const quizData = await getQuizQuestions(modeStr);
       setQuestions(quizData);
+      
+      // Load saved scores to get the current streak
+      const savedScoresStr = await AsyncStorage.getItem("songQuizScores");
+      const savedScores = savedScoresStr
+        ? JSON.parse(savedScoresStr)
+        : {
+            normal: { highScore: 0, currentStreak: 0 },
+            hard: { highScore: 0, currentStreak: 0 },
+          };
+      const modeKey = modeStr === "hard" ? "hard" : "normal";
+      const currentStreak = savedScores[modeKey].currentStreak || 0;
+      setAccumulatedScore(currentStreak);
+      
       setLoading(false);
       setTimeLeft(15);
     } catch (error) {
@@ -79,6 +93,7 @@ export default function GamePlayScreen() {
   const handleCorrectAnswer = () => {
     const newScore = score + 1;
     setScore(newScore);
+    setAccumulatedScore(accumulatedScore + 1);
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -116,7 +131,7 @@ export default function GamePlayScreen() {
       const newStreak = completed ? updatedStreak : 0;
 
       // Update high score
-      const newHighScore = Math.max(savedScores[modeKey].highScore, rawScore);
+      const newHighScore = Math.max(savedScores[modeKey].highScore, updatedStreak);
 
       savedScores[modeKey] = {
         highScore: newHighScore,
@@ -166,10 +181,13 @@ export default function GamePlayScreen() {
           color="#F75270"
         />
         <ThemedText style={styles.gameOverTitle}>
-          {score === questions.length ? "Perfect Score!" : "Game Over!"}
+          {score === questions.length ? "All Perfect" : "You Lose..."}
         </ThemedText>
         <ThemedText style={styles.scoreText}>
           Your Score: {score}/{questions.length}
+        </ThemedText>
+        <ThemedText style={styles.scoreText}>
+          Total Score: {accumulatedScore}
         </ThemedText>
 
         <View style={styles.buttonRow}>
@@ -193,17 +211,20 @@ export default function GamePlayScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
           <Ionicons name="arrow-back" size={24} color="#696FC7" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <View></View>
         <View style={styles.progressContainer}>
           <ThemedText style={styles.progressText}>
             Question {currentQuestionIndex + 1}/{questions.length}
           </ThemedText>
-          <ThemedText style={styles.scoreText}>Score: {score}</ThemedText>
+          <ThemedText style={styles.scoreText}>
+            Score: {score} (Total: {accumulatedScore})
+          </ThemedText>
         </View>
         <View style={styles.timerContainer}>
           <ThemedText style={styles.timerText}>{timeLeft}</ThemedText>
@@ -216,7 +237,7 @@ export default function GamePlayScreen() {
           style={styles.thumbnail}
           resizeMode="contain"
         />
-        <ThemedText style={styles.questionText}>What is this song?</ThemedText>
+        {/* <ThemedText style={styles.questionText}>What is this song?</ThemedText> */}
       </View>
 
       <View style={styles.answersContainer}>
@@ -319,7 +340,7 @@ const styles = StyleSheet.create({
   gameOverTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    marginTop: 20,
+    marginTop: 30, // Increase from 20
     marginBottom: 10,
   },
   buttonRow: {
