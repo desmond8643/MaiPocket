@@ -110,6 +110,25 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={{ ...styles.featureContainer, backgroundColor: "#4CAF50" }}
+          onPress={() => router.push("/game")}
+        >
+          <View style={styles.featureTitleContainer}>
+            <ThemedText
+              type="subtitle"
+              style={{ color: "white", marginTop: 8 }}
+            >
+              Song Quiz Game
+            </ThemedText>
+            <Ionicons name="game-controller-outline" size={48} color="white" />
+          </View>
+          <View style={styles.featureDescription}>
+            <ThemedText style={{ color: "white" }}>
+              Test your maimai knowledge!
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
 
         {/* <ThemedView style={styles.featureContainer}>
           <ThemedText type="subtitle">Your Profile</ThemedText>

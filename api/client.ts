@@ -1,3 +1,4 @@
+import { LeaderboardEntry, QuizQuestion } from '@/types/game';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 
@@ -356,4 +357,24 @@ export const NotificationAPI = {
       throw error;
     }
   }
+};
+
+export const getQuizQuestions = async (mode: string): Promise<QuizQuestion[]> => {
+  const response = await apiClient.get(`/game/questions?mode=${mode}`);
+  return response.data;
+};
+
+export const submitScore = async (mode: string, score: number, currentStreak: number) => {
+  const response = await apiClient.post('/game/score', { mode, score, currentStreak });
+  return response.data;
+};
+
+export const getHighScores = async () => {
+  const response = await apiClient.get('/game/scores');
+  return response.data;
+};
+
+export const getLeaderboard = async (mode: string): Promise<LeaderboardEntry[]> => {
+  const response = await apiClient.get(`/game/leaderboard/${mode}`);
+  return response.data;
 };
