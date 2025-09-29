@@ -371,7 +371,7 @@ export const submitScore = async (mode: string, score: number, currentStreak: nu
   
   if (userDataString) {
     const userData = JSON.parse(userDataString);
-    userId = userData._id; // Assuming the user ID is stored as _id
+    userId = userData.id; // Assuming the user ID is stored as _id
   }
 
   const response = await apiClient.post('/game/score', { 
