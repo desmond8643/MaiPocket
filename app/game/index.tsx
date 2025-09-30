@@ -17,6 +17,8 @@ import { UserScore } from "@/types/game";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
+import { useAds } from "@/context/AdContext";
 
 export default function GameHomeScreen() {
   const [user, setUser] = useState(null);
@@ -30,6 +32,8 @@ export default function GameHomeScreen() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const insets = useSafeAreaInsets();
+  const { adsRemoved, temporaryAdRemoval } = useAds();
+  const showActualAds = !adsRemoved && !temporaryAdRemoval;
 
   useEffect(() => {
     // Check if user is logged in using your existing method
@@ -113,6 +117,13 @@ export default function GameHomeScreen() {
     });
   };
 
+  const dynamicStyles = {
+    bottomAdContainer: {
+      ...styles.bottomAdContainer,
+      bottom: insets.bottom, // Adjust for bottom inset
+    },
+  };
+
   return (
     <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -192,6 +203,11 @@ export default function GameHomeScreen() {
           View Leaderboards
         </ThemedText>
       </TouchableOpacity>
+      {showActualAds && (
+        <View style={dynamicStyles.bottomAdContainer}>
+          <BannerAdComponent />
+        </View>
+      )}
     </ThemedView>
   );
 }
@@ -257,5 +273,13 @@ const styles = StyleSheet.create({
     // paddingHorizontal: 16,
     paddingVertical: 12,
     justifyContent: "space-between",
+  },
+  bottomAdContainer: {
+    position: "absolute",
+    bottom: 16,
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    alignItems: "center",
   },
 });

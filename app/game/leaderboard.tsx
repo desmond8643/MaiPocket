@@ -13,6 +13,8 @@ import { LeaderboardEntry } from "@/types/game"; // Import if available, or defi
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
+import { useAds } from "@/context/AdContext";
 
 // If you need to define it inline:
 // type LeaderboardEntry = {
@@ -26,6 +28,8 @@ export default function LeaderboardScreen() {
   const [activeMode, setActiveMode] = useState("normal");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const insets = useSafeAreaInsets();
+  const { adsRemoved, temporaryAdRemoval } = useAds();
+  const showActualAds = !adsRemoved && !temporaryAdRemoval;
 
   useEffect(() => {
     loadLeaderboard();
@@ -70,6 +74,13 @@ export default function LeaderboardScreen() {
         <ThemedText style={styles.scoreText}>{item.highScore}</ThemedText>
       </View>
     );
+  };
+
+  const dynamicStyles = {
+    bottomAdContainer: {
+      ...styles.bottomAdContainer,
+      bottom: insets.bottom, // Adjust for bottom inset
+    },
   };
 
   return (
@@ -141,6 +152,11 @@ export default function LeaderboardScreen() {
             <ThemedText style={styles.emptyText}>No scores yet</ThemedText>
           }
         />
+      )}
+      {showActualAds && (
+        <View style={dynamicStyles.bottomAdContainer}>
+          <BannerAdComponent />
+        </View>
       )}
     </ThemedView>
   );
@@ -249,5 +265,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // paddingHorizontal: 16,
     paddingVertical: 12,
+  },
+  bottomAdContainer: {
+    position: "absolute",
+    bottom: 16,
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    alignItems: "center",
   },
 });

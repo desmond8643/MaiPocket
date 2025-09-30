@@ -16,6 +16,8 @@ import { AuthAPI, getQuizQuestions, submitScore } from "@/api/client";
 import { Ionicons } from "@expo/vector-icons";
 import { QuizQuestion } from "@/types/game";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { preloadInterstitialAd, showInterstitialAd } from "@/components/InterstitialAdComponent";
+import { useShowAds } from "@/hooks/useShowAds";
 
 // import { User } from "@/types/user"; // Import your User type
 // const [user, setUser] = useState<User | null>(null);
@@ -34,6 +36,7 @@ export default function GamePlayScreen() {
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [bestScore, setBestScore] = useState(0);
   const insets = useSafeAreaInsets();
+  const { showAds } = useShowAds(false);
 
   useEffect(() => {
     loadQuestions();
@@ -55,6 +58,12 @@ export default function GamePlayScreen() {
 
     return () => clearInterval(timer);
   }, [loading, gameOver, currentQuestionIndex]);
+
+  useEffect(() => {
+    if (showAds) {
+      preloadInterstitialAd();
+    }
+  }, [showAds]);
 
   const loadQuestions = async () => {
     try {
@@ -113,9 +122,7 @@ export default function GamePlayScreen() {
     }
   };
 
-  const handleGameOver = async (completed = false, finalScore = score) => {
-    setGameOver(true);
-
+  const updateScores = async (completed = false, finalScore = score) => {
     // Update local scores
     try {
       const savedScoresStr = await AsyncStorage.getItem("songQuizScores");
@@ -169,6 +176,18 @@ export default function GamePlayScreen() {
       }
     } catch (error) {
       console.error("Error saving score:", error);
+    }
+  };
+
+  const handleGameOver = async (completed = false, finalScore = score) => {
+    if (showAds) {
+      showInterstitialAd(() => {
+        setGameOver(true);
+        updateScores(completed, finalScore);
+      });
+    } else {
+      setGameOver(true);
+      updateScores(completed, finalScore);
     }
   };
 
