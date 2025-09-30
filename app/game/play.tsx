@@ -103,7 +103,7 @@ export default function GamePlayScreen() {
   };
 
   // Helper function for local storage fallback
-  const fallbackToLocalStorage = async (modeStr) => {
+  const fallbackToLocalStorage = async (modeStr: string) => {
     const storageKey = "songQuizScores";
     const savedScoresStr = await AsyncStorage.getItem(storageKey);
     if (savedScoresStr) {
