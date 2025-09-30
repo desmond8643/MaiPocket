@@ -12,11 +12,14 @@ import {
   Vibration,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AuthAPI, getQuizQuestions, submitScore } from "@/api/client";
+import { AuthAPI, getQuizQuestions, getUserStreak, submitScore } from "@/api/client";
 import { Ionicons } from "@expo/vector-icons";
 import { QuizQuestion } from "@/types/game";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { preloadInterstitialAd, showInterstitialAd } from "@/components/InterstitialAdComponent";
+import {
+  preloadInterstitialAd,
+  showInterstitialAd,
+} from "@/components/InterstitialAdComponent";
 import { useShowAds } from "@/hooks/useShowAds";
 
 // import { User } from "@/types/user"; // Import your User type
@@ -73,7 +76,7 @@ export default function GamePlayScreen() {
 
       // Check if user is logged in
       const isLoggedIn = await AuthAPI.isLoggedIn();
-      
+
       if (isLoggedIn) {
         try {
           // Fetch streak from server
@@ -147,7 +150,7 @@ export default function GamePlayScreen() {
       // Check if user is logged in
       const isLoggedIn = await AuthAPI.isLoggedIn();
       let storageKey = "songQuizScores";
-      
+
       // If logged in, use user-specific storage key
       if (isLoggedIn) {
         const userData = await AsyncStorage.getItem("userData");
@@ -246,10 +249,12 @@ export default function GamePlayScreen() {
           size={80}
           color="#F75270"
         />
-        <ThemedText style={[
-          styles.gameOverTitle,
-          { color: score === questions.length ? "#ED3F27" : "#696FC7" }
-        ]}>
+        <ThemedText
+          style={[
+            styles.gameOverTitle,
+            { color: score === questions.length ? "#ED3F27" : "#696FC7" },
+          ]}
+        >
           {score === questions.length ? "All Perfect" : "You Lose..."}
         </ThemedText>
         <ThemedText style={styles.scoreText}>
@@ -259,7 +264,10 @@ export default function GamePlayScreen() {
           Current Streak🔥: {accumulatedScore}
         </ThemedText>
         <ThemedText style={[styles.scoreText, styles.bestScoreText]}>
-          Best Score: {bestScore} {isNewRecord && <ThemedText style={{color: '#4CAF50'}}>(New Record!)</ThemedText>}
+          Best Score: {bestScore}{" "}
+          {isNewRecord && (
+            <ThemedText style={{ color: "#4CAF50" }}>(New Record!)</ThemedText>
+          )}
         </ThemedText>
 
         <View style={styles.buttonRow}>
@@ -293,10 +301,9 @@ export default function GamePlayScreen() {
           </ThemedText>
         </View>
         <View style={styles.timerContainer}>
-          <ThemedText style={[
-            styles.timerText,
-            timeLeft <= 5 && styles.timerTextWarning
-          ]}>
+          <ThemedText
+            style={[styles.timerText, timeLeft <= 5 && styles.timerTextWarning]}
+          >
             {timeLeft}
           </ThemedText>
         </View>
@@ -308,7 +315,6 @@ export default function GamePlayScreen() {
           style={styles.thumbnail}
           resizeMode="contain"
         />
-        {/* <ThemedText style={styles.questionText}>What is this song?</ThemedText> */}
       </View>
 
       <View style={styles.answersContainer}>
@@ -378,7 +384,7 @@ const styles = StyleSheet.create({
   questionContainer: {
     alignItems: "center",
     marginBottom: 24,
-    marginTop: 24
+    marginTop: 24,
   },
   thumbnail: {
     width: 250,
