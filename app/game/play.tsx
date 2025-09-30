@@ -31,6 +31,8 @@ export default function GamePlayScreen() {
   const [gameOver, setGameOver] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15); // 15 seconds per question
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isNewRecord, setIsNewRecord] = useState(false);
+  const [bestScore, setBestScore] = useState(0);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -136,11 +138,15 @@ export default function GamePlayScreen() {
       // Otherwise reset the streak to 0 for next game (after updating the streak)
       const newStreak = completed ? updatedStreak : 0;
 
+      // Store current best score
+      const currentHighScore = savedScores[modeKey].highScore;
       // Update high score
-      const newHighScore = Math.max(
-        savedScores[modeKey].highScore,
-        updatedStreak
-      );
+      const newHighScore = Math.max(currentHighScore, updatedStreak);
+      
+      // Set state for display
+      setBestScore(newHighScore);
+      // Check if we have a new record
+      setIsNewRecord(updatedStreak > currentHighScore);
 
       savedScores[modeKey] = {
         highScore: newHighScore,
@@ -203,6 +209,15 @@ export default function GamePlayScreen() {
         <ThemedText style={styles.scoreText}>
           Total Score: {accumulatedScore}
         </ThemedText>
+        <ThemedText style={[styles.scoreText, styles.bestScoreText]}>
+          Best Score: {bestScore}
+        </ThemedText>
+        
+        {isNewRecord && (
+          <View style={styles.newRecordContainer}>
+            <ThemedText style={styles.newRecordText}>New Record!</ThemedText>
+          </View>
+        )}
 
         <View style={styles.buttonRow}>
           <TouchableOpacity
@@ -225,13 +240,7 @@ export default function GamePlayScreen() {
   return (
     <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        {/* <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#696FC7" />
-        </TouchableOpacity> */}
-        <View></View>
+        <View style={styles.timerPlaceholder}></View>
         <View style={styles.progressContainer}>
           <ThemedText style={styles.progressText}>
             Question {currentQuestionIndex + 1}/{questions.length}
@@ -369,6 +378,27 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  timerPlaceholder: {
+    width: 40, // Match timer width
+  },
+  bestScoreText: {
+    marginTop: 10,
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#696FC7",
+  },
+  newRecordContainer: {
+    backgroundColor: "#4CAF50",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  newRecordText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
