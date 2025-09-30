@@ -71,8 +71,21 @@ export default function GamePlayScreen() {
       const quizData = await getQuizQuestions(modeStr);
       setQuestions(quizData);
 
+      // Check if user is logged in
+      const isLoggedIn = await AuthAPI.isLoggedIn();
+      let storageKey = "songQuizScores";
+      
+      // If logged in, use user-specific storage key
+      if (isLoggedIn) {
+        const userData = await AsyncStorage.getItem("userData");
+        if (userData) {
+          const user = JSON.parse(userData);
+          storageKey = `songQuizScores_${user.id}`;
+        }
+      }
+
       // Load saved scores to get the current streak
-      const savedScoresStr = await AsyncStorage.getItem("songQuizScores");
+      const savedScoresStr = await AsyncStorage.getItem(storageKey);
       const savedScores = savedScoresStr
         ? JSON.parse(savedScoresStr)
         : {
@@ -125,7 +138,20 @@ export default function GamePlayScreen() {
   const updateScores = async (completed = false, finalScore = score) => {
     // Update local scores
     try {
-      const savedScoresStr = await AsyncStorage.getItem("songQuizScores");
+      // Check if user is logged in
+      const isLoggedIn = await AuthAPI.isLoggedIn();
+      let storageKey = "songQuizScores";
+      
+      // If logged in, use user-specific storage key
+      if (isLoggedIn) {
+        const userData = await AsyncStorage.getItem("userData");
+        if (userData) {
+          const user = JSON.parse(userData);
+          storageKey = `songQuizScores_${user.id}`;
+        }
+      }
+
+      const savedScoresStr = await AsyncStorage.getItem(storageKey);
       const savedScores = savedScoresStr
         ? JSON.parse(savedScoresStr)
         : {
@@ -161,7 +187,7 @@ export default function GamePlayScreen() {
         currentStreak: newStreak,
       };
 
-      await AsyncStorage.setItem("songQuizScores", JSON.stringify(savedScores));
+      await AsyncStorage.setItem(storageKey, JSON.stringify(savedScores));
 
       const isLoggedIn = await AuthAPI.isLoggedIn();
       // Update server scores if logged in
