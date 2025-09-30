@@ -12,7 +12,12 @@ import {
   Vibration,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AuthAPI, getQuizQuestions, getUserStreak, submitScore } from "@/api/client";
+import {
+  AuthAPI,
+  getQuizQuestions,
+  getUserStreak,
+  submitScore,
+} from "@/api/client";
 import { Ionicons } from "@expo/vector-icons";
 import { QuizQuestion } from "@/types/game";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -131,8 +136,9 @@ export default function GamePlayScreen() {
 
   const handleCorrectAnswer = () => {
     const newScore = score + 1;
+    const newAccumulatedScore = accumulatedScore + 1;
     setScore(newScore);
-    setAccumulatedScore(accumulatedScore + 1);
+    setAccumulatedScore(newAccumulatedScore);
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -149,19 +155,24 @@ export default function GamePlayScreen() {
       const modeStr = Array.isArray(mode) ? mode[0] : mode;
       const isLoggedIn = await AuthAPI.isLoggedIn();
       const rawScore = finalScore;
-      
+
       if (isLoggedIn) {
         // For logged-in users, send score to server and get updated values
         const updatedStreak = accumulatedScore; // Use the current accumulated score
         const newStreak = completed ? updatedStreak : 0;
-        
+
         // Submit score to server
-        const serverResponse = await submitScore(modeStr, rawScore, updatedStreak, newStreak);
-        
+        const serverResponse = await submitScore(
+          modeStr,
+          rawScore,
+          updatedStreak,
+          newStreak
+        );
+
         // Update local state with server values
         setBestScore(serverResponse.highScore);
         setIsNewRecord(updatedStreak > bestScore);
-        
+
         // No need to update local storage for logged-in users as we'll always fetch from server
       } else {
         // For non-logged in users, use local storage
@@ -173,26 +184,26 @@ export default function GamePlayScreen() {
               normal: { highScore: 0, currentStreak: 0 },
               hard: { highScore: 0, currentStreak: 0 },
             };
-        
+
         const modeKey = modeStr === "hard" ? "hard" : "normal";
         const updatedStreak = accumulatedScore;
         const newStreak = completed ? updatedStreak : 0;
-        
+
         // Store current best score
         const currentHighScore = savedScores[modeKey].highScore;
         // Update high score
         const newHighScore = Math.max(currentHighScore, updatedStreak);
-        
+
         // Set state for display
         setBestScore(newHighScore);
         // Check if we have a new record
         setIsNewRecord(updatedStreak > currentHighScore);
-        
+
         savedScores[modeKey] = {
           highScore: newHighScore,
           currentStreak: newStreak,
         };
-        
+
         await AsyncStorage.setItem(storageKey, JSON.stringify(savedScores));
       }
     } catch (error) {
