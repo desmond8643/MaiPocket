@@ -16,6 +16,7 @@ import { useCallback } from "react";
 import { UserScore } from "@/types/game";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
 export default function GameHomeScreen() {
   const [user, setUser] = useState(null);
@@ -120,11 +121,12 @@ export default function GameHomeScreen() {
           style={styles.backButton}
         >
           {/* <IconSymbol name="chevron.left" size={24} /> */}
-          <Ionicons name="arrow-back" size={24} color="#AE75DA" />
+          <IconSymbol name="chevron.left" size={24} color="#AE75DA" />
         </TouchableOpacity>
         <ThemedText style={{ fontSize: 24, fontWeight: "bold" }}>
           Song Quiz Game
         </ThemedText>
+        <View></View>
       </View>
       <ThemedText style={styles.description}>
         Test your maimai knowledge! Guess the song from its thumbnail.
@@ -258,5 +260,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     // paddingHorizontal: 16,
     paddingVertical: 12,
+    justifyContent: "space-between",
   },
 });

@@ -12,6 +12,7 @@ import { getLeaderboard } from "@/api/client"; // We'll implement this
 import { LeaderboardEntry } from "@/types/game"; // Import if available, or define inline
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // If you need to define it inline:
 // type LeaderboardEntry = {
@@ -24,6 +25,7 @@ export default function LeaderboardScreen() {
   const [loading, setLoading] = useState(true);
   const [activeMode, setActiveMode] = useState("normal");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     loadLeaderboard();
@@ -56,7 +58,7 @@ export default function LeaderboardScreen() {
   );
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
