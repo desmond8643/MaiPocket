@@ -378,6 +378,7 @@ const styles = StyleSheet.create({
   questionContainer: {
     alignItems: "center",
     marginBottom: 24,
+    marginTop: 24
   },
   thumbnail: {
     width: 250,
