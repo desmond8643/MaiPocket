@@ -213,14 +213,8 @@ export default function GamePlayScreen() {
           Current Streak 🔥: {accumulatedScore}
         </ThemedText>
         <ThemedText style={[styles.scoreText, styles.bestScoreText]}>
-          Best Score: {bestScore}
+          Best Score: {bestScore} {isNewRecord && <ThemedText style={{color: '#4CAF50'}}>(New Record!)</ThemedText>}
         </ThemedText>
-
-        {isNewRecord && (
-          <View style={styles.newRecordContainer}>
-            <ThemedText style={styles.newRecordText}>New Record!</ThemedText>
-          </View>
-        )}
 
         <View style={styles.buttonRow}>
           <TouchableOpacity
