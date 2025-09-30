@@ -256,7 +256,7 @@ export default function GamePlayScreen() {
           Your Score: {score}/{questions.length}
         </ThemedText>
         <ThemedText style={styles.scoreText}>
-          Current Streak 🔥: {accumulatedScore}
+          Current Streak🔥: {accumulatedScore}
         </ThemedText>
         <ThemedText style={[styles.scoreText, styles.bestScoreText]}>
           Best Score: {bestScore} {isNewRecord && <ThemedText style={{color: '#4CAF50'}}>(New Record!)</ThemedText>}
