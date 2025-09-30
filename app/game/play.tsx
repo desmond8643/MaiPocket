@@ -9,17 +9,20 @@ import {
   View,
   ActivityIndicator,
   Alert,
+  Vibration,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthAPI, getQuizQuestions, submitScore } from "@/api/client";
 import { Ionicons } from "@expo/vector-icons";
-import { QuizQuestion } from "@/types/quiz";
-import { User } from "@/types/user"; // Import your User type
+import { QuizQuestion } from "@/types/game";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// import { User } from "@/types/user"; // Import your User type
+// const [user, setUser] = useState<User | null>(null);
+// const [isLoading, setIsLoading] = useState(true);
 
 export default function GamePlayScreen() {
   const { mode } = useLocalSearchParams();
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -28,7 +31,6 @@ export default function GamePlayScreen() {
   const [gameOver, setGameOver] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15); // 15 seconds per question
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -87,6 +89,8 @@ export default function GamePlayScreen() {
       if (answer === currentQuestion.correctAnswer) {
         handleCorrectAnswer();
       } else {
+        // Vibrate when answer is wrong
+        Vibration.vibrate(300);
         handleGameOver();
       }
     }, 1000);
@@ -147,10 +151,15 @@ export default function GamePlayScreen() {
 
       const isLoggedIn = await AuthAPI.isLoggedIn();
       // Update server scores if logged in
+      // if (isLoggedIn) {
+      //   const modeStr = Array.isArray(mode) ? mode[0] : mode;
+      //   // Pass the raw score and new streak separately
+      //   await submitScore(modeStr, rawScore, newStreak);
+      // }
       if (isLoggedIn) {
         const modeStr = Array.isArray(mode) ? mode[0] : mode;
-        // Pass the raw score and new streak separately
-        await submitScore(modeStr, rawScore, newStreak);
+        // Send both the accumulated streak (for high score) and new streak (for next game)
+        await submitScore(modeStr, rawScore, updatedStreak, newStreak);
       }
     } catch (error) {
       console.error("Error saving score:", error);

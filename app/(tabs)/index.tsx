@@ -291,8 +291,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   featureDescription: {
-    backgroundColor: "#44444E",
+    // backgroundColor: "#44444E",
     // backgroundColor: "#758694",
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",

@@ -116,17 +116,13 @@ export default function GameHomeScreen() {
   return (
     <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          {/* <IconSymbol name="chevron.left" size={24} /> */}
-          <IconSymbol name="chevron.left" size={24} color="#AE75DA" />
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <IconSymbol name="chevron.left" size={20} color="#AE75DA" />
         </TouchableOpacity>
-        <ThemedText style={{ fontSize: 24, fontWeight: "bold" }}>
+        <ThemedText style={{ fontSize: 24, fontWeight: "bold", flex: 1, textAlign: 'center' }}>
           Song Quiz Game
         </ThemedText>
-        <View></View>
+        <View style={{ width: 36 }} />
       </View>
       <ThemedText style={styles.description}>
         Test your maimai knowledge! Guess the song from its thumbnail.

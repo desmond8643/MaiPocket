@@ -406,25 +406,50 @@ export const getQuizQuestions = async (
   return response.data;
 };
 
+// export const submitScore = async (
+//   mode: string,
+//   score: number,
+//   currentStreak: number
+// ) => {
+//   // Get the user data from AsyncStorage
+//   const userDataString = await AsyncStorage.getItem("userData");
+//   let userId = null;
+
+//   if (userDataString) {
+//     const userData = JSON.parse(userDataString);
+//     userId = userData.id; // Assuming the user ID is stored as _id
+//   }
+
+//   const response = await apiClient.post("/game/score", {
+//     mode,
+//     score,
+//     currentStreak,
+//     userId, // Add this line to include userId
+//   });
+//   return response.data;
+// };
+
+// Update the function signature
 export const submitScore = async (
   mode: string,
   score: number,
-  currentStreak: number
+  accumulatedStreak: number, // This is for high score comparison
+  currentStreak: number      // This is for next game (0 if lost)
 ) => {
-  // Get the user data from AsyncStorage
   const userDataString = await AsyncStorage.getItem("userData");
   let userId = null;
 
   if (userDataString) {
     const userData = JSON.parse(userDataString);
-    userId = userData.id; // Assuming the user ID is stored as _id
+    userId = userData.id;
   }
 
   const response = await apiClient.post("/game/score", {
     mode,
     score,
+    accumulatedStreak, // Send both values
     currentStreak,
-    userId, // Add this line to include userId
+    userId,
   });
   return response.data;
 };
