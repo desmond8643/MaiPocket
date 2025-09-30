@@ -146,11 +146,11 @@ export default function GamePlayScreen() {
       setSelectedAnswer(null);
     } else {
       // Pass the correct score to handleGameOver
-      handleGameOver(true, newScore);
+      handleGameOver(true, newScore, newAccumulatedScore);
     }
   };
 
-  const updateScores = async (completed = false, finalScore = score) => {
+  const updateScores = async (completed = false, finalScore = score, finalAccumulated = accumulatedScore) => {
     try {
       const modeStr = Array.isArray(mode) ? mode[0] : mode;
       const isLoggedIn = await AuthAPI.isLoggedIn();
@@ -158,7 +158,7 @@ export default function GamePlayScreen() {
 
       if (isLoggedIn) {
         // For logged-in users, send score to server and get updated values
-        const updatedStreak = accumulatedScore; // Use the current accumulated score
+        const updatedStreak = finalAccumulated; // Use the current accumulated score
         const newStreak = completed ? updatedStreak : 0;
 
         // Submit score to server
@@ -186,7 +186,7 @@ export default function GamePlayScreen() {
             };
 
         const modeKey = modeStr === "hard" ? "hard" : "normal";
-        const updatedStreak = accumulatedScore;
+        const updatedStreak = finalAccumulated;
         const newStreak = completed ? updatedStreak : 0;
 
         // Store current best score
@@ -211,15 +211,15 @@ export default function GamePlayScreen() {
     }
   };
 
-  const handleGameOver = async (completed = false, finalScore = score) => {
+  const handleGameOver = async (completed = false, finalScore = score, finalAccumulated = accumulatedScore) => {
     if (showAds) {
       showInterstitialAd(() => {
         setGameOver(true);
-        updateScores(completed, finalScore);
+        updateScores(completed, finalScore, finalAccumulated);
       });
     } else {
       setGameOver(true);
-      updateScores(completed, finalScore);
+      updateScores(completed, finalScore, finalAccumulated);
     }
   };
 
