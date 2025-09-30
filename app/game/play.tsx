@@ -145,64 +145,55 @@ export default function GamePlayScreen() {
   };
 
   const updateScores = async (completed = false, finalScore = score) => {
-    // Update local scores
     try {
-      // Check if user is logged in
-      const isLoggedIn = await AuthAPI.isLoggedIn();
-      let storageKey = "songQuizScores";
-
-      // If logged in, use user-specific storage key
-      if (isLoggedIn) {
-        const userData = await AsyncStorage.getItem("userData");
-        if (userData) {
-          const user = JSON.parse(userData);
-          storageKey = `songQuizScores_${user.id}`;
-        }
-      }
-
-      const savedScoresStr = await AsyncStorage.getItem(storageKey);
-      const savedScores = savedScoresStr
-        ? JSON.parse(savedScoresStr)
-        : {
-            normal: { highScore: 0, currentStreak: 0 },
-            hard: { highScore: 0, currentStreak: 0 },
-          };
-
       const modeStr = Array.isArray(mode) ? mode[0] : mode;
-      const modeKey = modeStr === "hard" ? "hard" : "normal";
-
-      // Fix: Use the raw score without adding previous streak
+      const isLoggedIn = await AuthAPI.isLoggedIn();
       const rawScore = finalScore;
-
-      // Always add current score to streak before potentially resetting
-      const updatedStreak = savedScores[modeKey].currentStreak + rawScore;
-
-      // If completed, keep the updated streak
-      // Otherwise reset the streak to 0 for next game (after updating the streak)
-      const newStreak = completed ? updatedStreak : 0;
-
-      // Store current best score
-      const currentHighScore = savedScores[modeKey].highScore;
-      // Update high score
-      const newHighScore = Math.max(currentHighScore, updatedStreak);
-
-      // Set state for display
-      setBestScore(newHighScore);
-      // Check if we have a new record
-      setIsNewRecord(updatedStreak > currentHighScore);
-
-      savedScores[modeKey] = {
-        highScore: newHighScore,
-        currentStreak: newStreak,
-      };
-
-      await AsyncStorage.setItem(storageKey, JSON.stringify(savedScores));
-
-      // Update server scores if logged in
+      
       if (isLoggedIn) {
-        const modeStr = Array.isArray(mode) ? mode[0] : mode;
-        // Send both the accumulated streak (for high score) and new streak (for next game)
-        await submitScore(modeStr, rawScore, updatedStreak, newStreak);
+        // For logged-in users, send score to server and get updated values
+        const updatedStreak = accumulatedScore; // Use the current accumulated score
+        const newStreak = completed ? updatedStreak : 0;
+        
+        // Submit score to server
+        const serverResponse = await submitScore(modeStr, rawScore, updatedStreak, newStreak);
+        
+        // Update local state with server values
+        setBestScore(serverResponse.highScore);
+        setIsNewRecord(updatedStreak > bestScore);
+        
+        // No need to update local storage for logged-in users as we'll always fetch from server
+      } else {
+        // For non-logged in users, use local storage
+        const storageKey = "songQuizScores";
+        const savedScoresStr = await AsyncStorage.getItem(storageKey);
+        const savedScores = savedScoresStr
+          ? JSON.parse(savedScoresStr)
+          : {
+              normal: { highScore: 0, currentStreak: 0 },
+              hard: { highScore: 0, currentStreak: 0 },
+            };
+        
+        const modeKey = modeStr === "hard" ? "hard" : "normal";
+        const updatedStreak = accumulatedScore;
+        const newStreak = completed ? updatedStreak : 0;
+        
+        // Store current best score
+        const currentHighScore = savedScores[modeKey].highScore;
+        // Update high score
+        const newHighScore = Math.max(currentHighScore, updatedStreak);
+        
+        // Set state for display
+        setBestScore(newHighScore);
+        // Check if we have a new record
+        setIsNewRecord(updatedStreak > currentHighScore);
+        
+        savedScores[modeKey] = {
+          highScore: newHighScore,
+          currentStreak: newStreak,
+        };
+        
+        await AsyncStorage.setItem(storageKey, JSON.stringify(savedScores));
       }
     } catch (error) {
       console.error("Error saving score:", error);

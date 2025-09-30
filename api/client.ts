@@ -451,6 +451,8 @@ export const submitScore = async (
     currentStreak,
     userId,
   });
+  
+  // Return the full response data which includes highScore
   return response.data;
 };
 
