@@ -189,13 +189,7 @@ export default function GamePlayScreen() {
 
       await AsyncStorage.setItem(storageKey, JSON.stringify(savedScores));
 
-      const isLoggedIn = await AuthAPI.isLoggedIn();
       // Update server scores if logged in
-      // if (isLoggedIn) {
-      //   const modeStr = Array.isArray(mode) ? mode[0] : mode;
-      //   // Pass the raw score and new streak separately
-      //   await submitScore(modeStr, rawScore, newStreak);
-      // }
       if (isLoggedIn) {
         const modeStr = Array.isArray(mode) ? mode[0] : mode;
         // Send both the accumulated streak (for high score) and new streak (for next game)
