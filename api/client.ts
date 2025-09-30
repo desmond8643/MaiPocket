@@ -474,3 +474,18 @@ export const getLeaderboard = async (
   const response = await apiClient.get(`/game/leaderboard/${mode}`);
   return response.data;
 };
+
+export const getUserStreak = async (mode: string): Promise<{ currentStreak: number, highScore: number }> => {
+  const userDataString = await AsyncStorage.getItem("userData");
+  let userId = null;
+
+  if (userDataString) {
+    const userData = JSON.parse(userDataString);
+    userId = userData.id;
+  }
+
+  const response = await apiClient.get(
+    `/game/streak/${mode}?userId=${encodeURIComponent(userId)}`
+  );
+  return response.data;
+};

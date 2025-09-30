@@ -73,28 +73,22 @@ export default function GamePlayScreen() {
 
       // Check if user is logged in
       const isLoggedIn = await AuthAPI.isLoggedIn();
-      let storageKey = "songQuizScores";
       
-      // If logged in, use user-specific storage key
       if (isLoggedIn) {
-        const userData = await AsyncStorage.getItem("userData");
-        if (userData) {
-          const user = JSON.parse(userData);
-          storageKey = `songQuizScores_${user.id}`;
+        try {
+          // Fetch streak from server
+          const userScores = await getUserStreak(modeStr);
+          setAccumulatedScore(userScores.currentStreak);
+          setBestScore(userScores.highScore);
+        } catch (error) {
+          console.error("Error fetching user streak from server:", error);
+          // Fallback to local storage
+          fallbackToLocalStorage(modeStr);
         }
+      } else {
+        // Not logged in, use local storage
+        fallbackToLocalStorage(modeStr);
       }
-
-      // Load saved scores to get the current streak
-      const savedScoresStr = await AsyncStorage.getItem(storageKey);
-      const savedScores = savedScoresStr
-        ? JSON.parse(savedScoresStr)
-        : {
-            normal: { highScore: 0, currentStreak: 0 },
-            hard: { highScore: 0, currentStreak: 0 },
-          };
-      const modeKey = modeStr === "hard" ? "hard" : "normal";
-      const currentStreak = savedScores[modeKey].currentStreak || 0;
-      setAccumulatedScore(currentStreak);
 
       setLoading(false);
       setTimeLeft(15);
@@ -102,6 +96,18 @@ export default function GamePlayScreen() {
       console.error("Error loading questions:", error);
       Alert.alert("Error", "Failed to load quiz questions. Please try again.");
       router.back();
+    }
+  };
+
+  // Helper function for local storage fallback
+  const fallbackToLocalStorage = async (modeStr) => {
+    const storageKey = "songQuizScores";
+    const savedScoresStr = await AsyncStorage.getItem(storageKey);
+    if (savedScoresStr) {
+      const savedScores = JSON.parse(savedScoresStr);
+      const modeKey = modeStr === "hard" ? "hard" : "normal";
+      const currentStreak = savedScores[modeKey].currentStreak || 0;
+      setAccumulatedScore(currentStreak);
     }
   };
 
