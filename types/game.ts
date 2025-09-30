@@ -21,4 +21,5 @@ export interface LeaderboardEntry {
   username: string;
   highScore: number;
   avatarUrl?: string;
+  displayName: string
 } 

@@ -142,7 +142,7 @@ export default function GamePlayScreen() {
       const currentHighScore = savedScores[modeKey].highScore;
       // Update high score
       const newHighScore = Math.max(currentHighScore, updatedStreak);
-      
+
       // Set state for display
       setBestScore(newHighScore);
       // Check if we have a new record
@@ -200,19 +200,22 @@ export default function GamePlayScreen() {
           size={80}
           color="#F75270"
         />
-        <ThemedText style={styles.gameOverTitle}>
+        <ThemedText style={[
+          styles.gameOverTitle,
+          { color: score === questions.length ? "#ED3F27" : "#696FC7" }
+        ]}>
           {score === questions.length ? "All Perfect" : "You Lose..."}
         </ThemedText>
         <ThemedText style={styles.scoreText}>
           Your Score: {score}/{questions.length}
         </ThemedText>
         <ThemedText style={styles.scoreText}>
-          Total Score: {accumulatedScore}
+          Current Streak 🔥: {accumulatedScore}
         </ThemedText>
         <ThemedText style={[styles.scoreText, styles.bestScoreText]}>
           Best Score: {bestScore}
         </ThemedText>
-        
+
         {isNewRecord && (
           <View style={styles.newRecordContainer}>
             <ThemedText style={styles.newRecordText}>New Record!</ThemedText>
@@ -227,7 +230,7 @@ export default function GamePlayScreen() {
             <ThemedText style={styles.buttonText}>Play Again</ThemedText>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#F75270" }]}
+            style={[styles.button, { backgroundColor: "#AA60C8" }]}
             onPress={() => router.back()}
           >
             <ThemedText style={styles.buttonText}>Back to Menu</ThemedText>
@@ -250,7 +253,12 @@ export default function GamePlayScreen() {
           </ThemedText>
         </View>
         <View style={styles.timerContainer}>
-          <ThemedText style={styles.timerText}>{timeLeft}</ThemedText>
+          <ThemedText style={[
+            styles.timerText,
+            timeLeft <= 5 && styles.timerTextWarning
+          ]}>
+            {timeLeft}
+          </ThemedText>
         </View>
       </View>
 
@@ -317,15 +325,15 @@ const styles = StyleSheet.create({
   timerContainer: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#F75270",
     justifyContent: "center",
     alignItems: "center",
   },
   timerText: {
-    color: "white",
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
+  },
+  timerTextWarning: {
+    color: "#F75270",
   },
   questionContainer: {
     alignItems: "center",
@@ -389,7 +397,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 18,
     fontWeight: "bold",
-    color: "#696FC7",
+    color: "#FEB21A",
   },
   newRecordContainer: {
     backgroundColor: "#4CAF50",

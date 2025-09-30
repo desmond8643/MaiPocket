@@ -49,13 +49,28 @@ export default function LeaderboardScreen() {
   }: {
     item: LeaderboardEntry;
     index: number;
-  }) => (
-    <View style={styles.leaderboardItem}>
-      <ThemedText style={styles.rankText}>#{index + 1}</ThemedText>
-      <ThemedText style={styles.usernameText}>{item.username}</ThemedText>
-      <ThemedText style={styles.scoreText}>{item.highScore}</ThemedText>
-    </View>
-  );
+  }) => {
+    // Special styling for top 3 positions
+    let rankStyle = styles.rankText;
+
+    if (index === 0) {
+      rankStyle = styles.firstRank;
+    } else if (index === 1) {
+      rankStyle = styles.secondRank;
+    } else if (index === 2) {
+      rankStyle = styles.thirdRank;
+    }
+
+    return (
+      <View style={styles.leaderboardItem}>
+        <ThemedText style={rankStyle}>{index + 1}</ThemedText>
+        <ThemedText style={styles.usernameText}>
+          {item.displayName} (@{item.username})
+        </ThemedText>
+        <ThemedText style={styles.scoreText}>{item.highScore}</ThemedText>
+      </View>
+    );
+  };
 
   return (
     <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
@@ -187,6 +202,24 @@ const styles = StyleSheet.create({
   rankText: {
     width: 50,
     fontWeight: "bold",
+  },
+  firstRank: {
+    width: 50,
+    fontWeight: "bold",
+    color: "#FFD700", // Yellow/gold color
+    fontSize: 18,
+  },
+  secondRank: {
+    width: 50,
+    fontWeight: "bold",
+    color: "#C0C0C0", // Silver/gray color
+    fontSize: 17,
+  },
+  thirdRank: {
+    width: 50,
+    fontWeight: "bold",
+    color: "#CD7F32", // Bronze/brown color
+    fontSize: 16,
   },
   usernameText: {
     flex: 1,
