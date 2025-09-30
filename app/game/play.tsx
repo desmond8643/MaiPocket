@@ -133,7 +133,8 @@ export default function GamePlayScreen() {
             hard: { highScore: 0, currentStreak: 0 },
           };
 
-      const modeKey = mode === "hard" ? "hard" : "normal";
+      const modeStr = Array.isArray(mode) ? mode[0] : mode;
+      const modeKey = modeStr === "hard" ? "hard" : "normal";
 
       // Fix: Use the raw score without adding previous streak
       const rawScore = finalScore;
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
   },
   answerButton: {
     padding: 16,
-    backgroundColor: "#696FC7",
+    backgroundColor: "#7D8597", // Changed to a neutral slate gray
     borderRadius: 12,
   },
   answerButtonText: {

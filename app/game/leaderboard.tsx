@@ -133,7 +133,7 @@ export default function LeaderboardScreen() {
       </View>
 
       <View style={styles.leaderboardHeader}>
-        <ThemedText style={styles.headerRankText}>Rank</ThemedText>
+        <ThemedText style={styles.headerRankText}></ThemedText>
         <ThemedText style={styles.headerUsernameText}>Player</ThemedText>
         <ThemedText style={styles.headerScoreText}>Score</ThemedText>
       </View>
