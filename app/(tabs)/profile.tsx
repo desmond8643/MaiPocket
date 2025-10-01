@@ -37,14 +37,12 @@ export default function ProfileScreen() {
     try {
       const isLoggedIn = await AuthAPI.isLoggedIn();
       if (isLoggedIn) {
-        const userDataStr = await AsyncStorage.getItem("userData");
-        if (userDataStr) {
-          setUserData(JSON.parse(userDataStr));
-        } else {
-          // Fetch fresh user data
-          const freshUserData = await AuthAPI.getCurrentUser();
-          setUserData(freshUserData);
-        }
+        // Always fetch fresh user data
+        const freshUserData = await AuthAPI.getCurrentUser();
+        setUserData(freshUserData);
+        
+        // Optionally update AsyncStorage with latest data
+        await AsyncStorage.setItem("userData", JSON.stringify(freshUserData));
       }
     } catch (error) {
       console.error("Error checking login status:", error);
