@@ -42,6 +42,8 @@ export default function GamePlayScreen() {
   const [bestScore, setBestScore] = useState(0);
   const [audioLoaded, setAudioLoaded] = useState(false);
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
+  // Add this state to store preloaded players
+  const [audioPlayers, setAudioPlayers] = useState<any[]>([]);
   const audioPlayer = useAudioPlayer(currentAudioUrl);
   const insets = useSafeAreaInsets();
   const { showAds } = useShowAds(false);
@@ -96,8 +98,15 @@ export default function GamePlayScreen() {
 
       setQuestions(quizData);
 
-      // If in audio mode, preload the first audio
+      // Preload audio for all questions if in audio mode
       if (modeStr === "audio" && quizData.length > 0) {
+        // Create audio players for each question
+        const players = quizData.map(q => {
+          return q.audioUrl ? useAudioPlayer(q.audioUrl) : null;
+        });
+        setAudioPlayers(players);
+        
+        // Set current audio URL for immediate play
         setCurrentAudioUrl(quizData[0].audioUrl);
       }
 
@@ -166,6 +175,14 @@ export default function GamePlayScreen() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setTimeLeft(15);
       setSelectedAnswer(null);
+      
+      // If we're in audio mode, the next player is already loaded
+      if (mode === "audio" && audioPlayers[currentQuestionIndex + 1]) {
+        setTimeout(() => {
+          audioPlayers[currentQuestionIndex + 1].seekTo(0);
+          audioPlayers[currentQuestionIndex + 1].play();
+        }, 300);
+      }
     } else {
       // Pass the correct score to handleGameOver
       handleGameOver(true, newScore, newAccumulatedScore);
@@ -262,7 +279,10 @@ export default function GamePlayScreen() {
   };
 
   const playAudio = () => {
-    if (audioPlayer) {
+    if (mode === "audio" && audioPlayers[currentQuestionIndex]) {
+      audioPlayers[currentQuestionIndex].seekTo(0);
+      audioPlayers[currentQuestionIndex].play();
+    } else if (audioPlayer) {
       audioPlayer.seekTo(0);
       audioPlayer.play();
     }
