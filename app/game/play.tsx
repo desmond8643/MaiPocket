@@ -26,6 +26,7 @@ import {
   showInterstitialAd,
 } from "@/components/InterstitialAdComponent";
 import { useShowAds } from "@/hooks/useShowAds";
+import { useAudioPlayer } from 'expo-audio';
 
 export default function GamePlayScreen() {
   const { mode } = useLocalSearchParams();
@@ -39,6 +40,9 @@ export default function GamePlayScreen() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [bestScore, setBestScore] = useState(0);
+  const [audioLoaded, setAudioLoaded] = useState(false);
+  const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
+  const audioPlayer = useAudioPlayer(currentAudioUrl);
   const insets = useSafeAreaInsets();
   const { showAds } = useShowAds(false);
 
@@ -69,12 +73,23 @@ export default function GamePlayScreen() {
     }
   }, [showAds]);
 
+  useEffect(() => {
+    if (!loading && questions.length > 0 && mode === "audio") {
+      setCurrentAudioUrl(questions[currentQuestionIndex]?.audioUrl || null);
+    }
+  }, [currentQuestionIndex, questions, loading, mode]);
+
   const loadQuestions = async () => {
     try {
-      const modeStr = "visual";
+      const modeStr = Array.isArray(mode) ? mode[0] : mode || "visual";
       const quizData = await getQuizQuestions(modeStr);
 
       setQuestions(quizData);
+
+      // If in audio mode, preload the first audio
+      if (modeStr === "audio" && quizData.length > 0) {
+        setCurrentAudioUrl(quizData[0].audioUrl);
+      }
 
       // Check if user is logged in
       const isLoggedIn = await AuthAPI.isLoggedIn();
@@ -236,6 +251,13 @@ export default function GamePlayScreen() {
     loadQuestions();
   };
 
+  const playAudio = () => {
+    if (audioPlayer) {
+      audioPlayer.seekTo(0);
+      audioPlayer.play();
+    }
+  };
+
   if (loading) {
     return (
       <ThemedView style={[styles.container, styles.centered]}>
@@ -316,11 +338,28 @@ export default function GamePlayScreen() {
       </View>
 
       <View style={styles.questionContainer}>
-        <Image
-          source={{ uri: currentQuestion.thumbnailUrl }}
-          style={styles.thumbnail}
-          resizeMode="cover"
-        />
+        {mode === "audio" ? (
+          <>
+            <Image
+              source={{ uri: currentQuestion.thumbnailUrl }}
+              style={styles.thumbnail}
+              resizeMode="cover"
+            />
+            <TouchableOpacity
+              style={styles.playButton}
+              onPress={playAudio}
+            >
+              <Ionicons name="play-circle" size={60} color="#696FC7" />
+              <ThemedText style={styles.playButtonText}>Play Audio</ThemedText>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <Image
+            source={{ uri: currentQuestion.thumbnailUrl }}
+            style={styles.thumbnail}
+            resizeMode="cover"
+          />
+        )}
       </View>
 
       <View style={styles.answersContainer}>
@@ -463,5 +502,15 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  playButton: {
+    marginTop: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playButtonText: {
+    marginTop: 8,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

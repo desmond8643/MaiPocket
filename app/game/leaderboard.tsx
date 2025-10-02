@@ -25,7 +25,7 @@ import { useAds } from "@/context/AdContext";
 
 export default function LeaderboardScreen() {
   const [loading, setLoading] = useState(true);
-  const [activeMode, setActiveMode] = useState("normal");
+  const [activeMode, setActiveMode] = useState("visual");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();

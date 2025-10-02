@@ -1,9 +1,10 @@
 export interface QuizQuestion {
   id: string;
   thumbnailUrl: string;
+  audioUrl: string
   choices: string[];
   correctAnswer: string;
-  questionType: 'thumbnail' | 'screenshot'; // Type is now required
+  questionType: 'thumbnail' | 'screenshot' | 'audio'; // Type is now required
 }
 
 export interface UserScore {

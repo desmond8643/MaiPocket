@@ -24,9 +24,11 @@ export default function GameHomeScreen() {
   const [user, setUser] = useState(null);
   const [localScores, setLocalScores] = useState({
     visual: { highScore: 0, currentStreak: 0 },
+    audio: { highScore: 0, currentStreak: 0 },
   });
   const [serverScores, setServerScores] = useState({
     visual: { highScore: 0, currentStreak: 0 },
+    audio: { highScore: 0, currentStreak: 0 },
   });
   const [isLoading, setIsLoading] = useState(true);
   const insets = useSafeAreaInsets();
@@ -84,7 +86,10 @@ export default function GameHomeScreen() {
           highScore: 0,
           currentStreak: 0,
         },
-       
+        audio: scores.find((s: UserScore) => s.mode === "audio") || {
+          highScore: 0,
+          currentStreak: 0,
+        },
       });
     } catch (error) {
       console.error("Error loading server scores:", error);
@@ -125,7 +130,7 @@ export default function GameHomeScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <IconSymbol name="chevron.left" size={20} color="#AE75DA" />
+          <IconSymbol name="chevron.left" size={20} color="#4CAF50" />
         </TouchableOpacity>
         <ThemedText
           style={{
@@ -176,27 +181,37 @@ export default function GameHomeScreen() {
           </View>
         </TouchableOpacity>
 
-        {/* <TouchableOpacity
-          style={[styles.modeButton, { backgroundColor: "#E9A5F1" }]}
-          onPress={() => startGame("hard")}
+        <TouchableOpacity
+          style={[styles.modeButton, { backgroundColor: "#4C8BF5" }]}
+          onPress={() => startGame("audio")}
         >
-          <ThemedText style={styles.modeButtonText}>Hard Mode</ThemedText>
+          <ThemedText style={styles.modeButtonText}>Audio Mode</ThemedText>
           <ThemedText style={styles.modeDescription}>
-            Includes deleted songs
+            Guess songs from audio clips
           </ThemedText>
           <View style={styles.scoreContainer}>
             <ThemedText style={styles.scoreText}>
               High Score:{" "}
-              {user ? serverScores.hard.highScore : localScores.hard.highScore}
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : user ? (
+                serverScores.audio?.highScore || 0
+              ) : (
+                localScores.audio?.highScore || 0
+              )}
             </ThemedText>
             <ThemedText style={styles.scoreText}>
               Current Streak:{" "}
-              {user
-                ? serverScores.hard.currentStreak
-                : localScores.hard.currentStreak}
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : user ? (
+                serverScores.audio?.currentStreak || 0
+              ) : (
+                localScores.audio?.currentStreak || 0
+              )}
             </ThemedText>
           </View>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity

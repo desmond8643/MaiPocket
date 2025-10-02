@@ -129,27 +129,6 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         </TouchableOpacity>
-
-        {/* <ThemedView style={styles.featureContainer}>
-          <ThemedText type="subtitle">Your Profile</ThemedText>
-          <ThemedText>
-            Manage your account, track your favorite songs, and customize your
-            experience.
-          </ThemedText>
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: "#9944DD",
-              },
-            ]}
-            onPress={() => router.push("/profile")}
-          >
-            <ThemedText style={styles.buttonText}>View Profile</ThemedText>
-            <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
-          </TouchableOpacity>
-        </ThemedView> */}
-
         {socialFeedPreference !== "off" && (
           <ThemedView
             style={{ ...styles.featureContainer, paddingHorizontal: 0 }}
@@ -192,30 +171,6 @@ export default function HomeScreen() {
             </View>
           </ThemedView>
         )}
-        {/* {showAdsSection && (
-          <ThemedView style={styles.featureContainer}>
-            <ThemedText type="subtitle">Remove Ads</ThemedText>
-            <ThemedText>
-              {temporaryAdRemoval
-                ? "Ads temporarily removed. Visit to see remaining time."
-                : "Enjoy an ad-free experience by watching a video or making a one-time purchase."}
-            </ThemedText>
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                {
-                  backgroundColor: "#9944DD",
-                },
-              ]}
-              onPress={() => router.push("/remove-ads")}
-            >
-              <ThemedText style={styles.buttonText}>
-                {temporaryAdRemoval ? "View Ad-Free Status" : "Remove Ads"}
-              </ThemedText>
-              <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
-            </TouchableOpacity>
-          </ThemedView>
-        )} */}
         {showAdsSection && (
           <TouchableOpacity
             style={{ ...styles.featureContainer, backgroundColor: "#AA60C8" }}
