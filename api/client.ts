@@ -433,15 +433,15 @@ export const submitScore = async (
 };
 
 export const getHighScores = async () => {
-  const userDataString = await AsyncStorage.getItem("userData");
-  let userId = null;
+  // const userDataString = await AsyncStorage.getItem("userData");
+  // let userId = null;
 
-  if (userDataString) {
-    const userData = JSON.parse(userDataString);
-    userId = userData.id; // Assuming the user ID is stored as _id
-  }
+  // if (userDataString) {
+  //   const userData = JSON.parse(userDataString);
+  //   userId = userData.id; // Assuming the user ID is stored as _id
+  // }
   const response = await apiClient.get(
-    `/game/scores?userId=${encodeURIComponent(userId)}`
+    `/game/scores`
   );
   return response.data;
 };
