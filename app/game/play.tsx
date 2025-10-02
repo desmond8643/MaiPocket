@@ -81,11 +81,17 @@ export default function GamePlayScreen() {
   }, [playerStatus]);
 
   // Modify your timer effect to only start when audio is playing in audio mode
+  // or when images are fully loaded in visual mode
   useEffect(() => {
     if (loading || gameOver) return;
     
     // For audio mode, only start timer when audio is playing
     if (mode === "audio" && !isAudioPlaying && timeLeft === 15) {
+      return; // Don't start timer yet
+    }
+
+    // For visual mode, only start timer when images are loaded
+    if (mode === "visual" && isImageLoading && timeLeft === 15) {
       return; // Don't start timer yet
     }
 
@@ -101,7 +107,7 @@ export default function GamePlayScreen() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [loading, gameOver, currentQuestionIndex, isAudioPlaying]);
+  }, [loading, gameOver, currentQuestionIndex, isAudioPlaying, isImageLoading]);
 
   useEffect(() => {
     if (showAds) {
