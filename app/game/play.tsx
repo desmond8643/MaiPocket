@@ -105,8 +105,11 @@ export default function GamePlayScreen() {
     }
   }, [showAds]);
 
+  // Update the effect that handles audio URL changes
   useEffect(() => {
     if (!loading && questions.length > 0 && mode === "audio") {
+      // Set loading state to true when changing audio URL
+      setIsAudioLoading(true);
       setCurrentAudioUrl(questions[currentQuestionIndex]?.audioUrl || null);
       
       // Add a small delay to ensure the audio URL is set before playing
@@ -303,12 +306,15 @@ export default function GamePlayScreen() {
     loadQuestions();
   };
 
+  // Update the playAudio function to toggle between play and pause
   const playAudio = () => {
-    if (mode === "audio" && audioUrls[currentQuestionIndex]) {
-      setCurrentAudioUrl(audioUrls[currentQuestionIndex]);
-      audioPlayer.seekTo(0);
-      audioPlayer.play();
-    } else if (audioPlayer) {
+    if (!audioPlayer) return;
+    
+    // If audio is currently playing, pause it
+    if (isAudioPlaying) {
+      audioPlayer.pause();
+    } else {
+      // If audio is not playing, play it from the beginning
       audioPlayer.seekTo(0);
       audioPlayer.play();
     }
@@ -410,7 +416,7 @@ export default function GamePlayScreen() {
                 ) : isAudioPlaying ? (
                   <>
                     <Ionicons name="pause-circle" size={80} color="#696FC7" />
-                    <ThemedText style={styles.playButtonText}>Playing...</ThemedText>
+                    <ThemedText style={styles.playButtonText}>Pause</ThemedText>
                   </>
                 ) : (
                   <>
