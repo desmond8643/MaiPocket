@@ -413,13 +413,13 @@ export const submitScore = async (
   accumulatedStreak: number, // This is for high score comparison
   currentStreak: number      // This is for next game (0 if lost)
 ) => {
-  const userDataString = await AsyncStorage.getItem("userData");
-  let userId = null;
+  // const userDataString = await AsyncStorage.getItem("userData");
+  // let userId = null;
 
-  if (userDataString) {
-    const userData = JSON.parse(userDataString);
-    userId = userData.id;
-  }
+  // if (userDataString) {
+  //   const userData = JSON.parse(userDataString);
+  //   userId = userData.id;
+  // }
 
   const response = await apiClient.post("/game/score", {
     mode,
