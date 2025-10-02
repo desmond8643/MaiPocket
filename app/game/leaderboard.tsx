@@ -101,33 +101,33 @@ export default function LeaderboardScreen() {
         <TouchableOpacity
           style={[
             styles.tabButton,
-            activeMode === "normal" && styles.activeTabButton,
+            activeMode === "visual" && styles.activeTabButton,
           ]}
-          onPress={() => setActiveMode("normal")}
+          onPress={() => setActiveMode("visual")}
         >
           <ThemedText
             style={[
               styles.tabButtonText,
-              activeMode === "normal" && styles.activeTabButtonText,
+              activeMode === "visual" && styles.activeTabButtonText,
             ]}
           >
-            Normal Mode
+            Visual Mode
           </ThemedText>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.tabButton,
-            activeMode === "hard" && styles.activeTabButton,
+            activeMode === "audio" && styles.activeTabButton,
           ]}
-          onPress={() => setActiveMode("hard")}
+          onPress={() => setActiveMode("audio")}
         >
           <ThemedText
             style={[
               styles.tabButtonText,
-              activeMode === "hard" && styles.activeTabButtonText,
+              activeMode === "audio" && styles.activeTabButtonText,
             ]}
           >
-            Hard Mode
+            Audio Mode
           </ThemedText>
         </TouchableOpacity>
       </View>
