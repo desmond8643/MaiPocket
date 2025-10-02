@@ -23,11 +23,11 @@ import { useAds } from "@/context/AdContext";
 export default function GameHomeScreen() {
   const [user, setUser] = useState(null);
   const [localScores, setLocalScores] = useState({
-    normal: { highScore: 0, currentStreak: 0 },
+    visual: { highScore: 0, currentStreak: 0 },
     hard: { highScore: 0, currentStreak: 0 },
   });
   const [serverScores, setServerScores] = useState({
-    normal: { highScore: 0, currentStreak: 0 },
+    visual: { highScore: 0, currentStreak: 0 },
     hard: { highScore: 0, currentStreak: 0 },
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -82,11 +82,10 @@ export default function GameHomeScreen() {
       setIsLoading(true);
       const scores = await getHighScores();
       setServerScores({
-        normal: scores.find((s: UserScore) => s.mode === "normal") || {
+        visual: scores.find((s: UserScore) => s.mode === "visual") || {
           highScore: 0,
           currentStreak: 0,
         },
-
         hard: scores.find((s: UserScore) => s.mode === "hard") || {
           highScore: 0,
           currentStreak: 0,
@@ -136,17 +135,17 @@ export default function GameHomeScreen() {
         <View style={{ width: 36 }} />
       </View>
       <ThemedText style={styles.description}>
-        Test your maimai knowledge! Guess the song from its thumbnail.
+        Test your maimai knowledge! Guess songs from thumbnails and screenshots.
       </ThemedText>
 
       <View style={styles.modeContainer}>
         <TouchableOpacity
           style={[styles.modeButton, { backgroundColor: "#9944DD" }]}
-          onPress={() => startGame("normal")}
+          onPress={() => startGame("visual")}
         >
-          <ThemedText style={styles.modeButtonText}>Normal Mode</ThemedText>
+          <ThemedText style={styles.modeButtonText}>Visual Mode</ThemedText>
           <ThemedText style={styles.modeDescription}>
-            Current songs only
+            Guess songs from thumbnails and screenshots
           </ThemedText>
           <View style={styles.scoreContainer}>
             <ThemedText style={styles.scoreText}>
@@ -154,9 +153,9 @@ export default function GameHomeScreen() {
               {isLoading ? (
                 <ActivityIndicator size="small" color="#FFF" />
               ) : user ? (
-                serverScores.normal.highScore
+                serverScores.visual.highScore
               ) : (
-                localScores.normal.highScore
+                localScores.visual.highScore
               )}
             </ThemedText>
             <ThemedText style={styles.scoreText}>
@@ -164,9 +163,9 @@ export default function GameHomeScreen() {
               {isLoading ? (
                 <ActivityIndicator size="small" color="#FFF" />
               ) : user ? (
-                serverScores.normal.currentStreak
+                serverScores.visual.currentStreak
               ) : (
-                localScores.normal.currentStreak
+                localScores.visual.currentStreak
               )}
             </ThemedText>
           </View>

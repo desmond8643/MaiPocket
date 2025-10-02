@@ -75,8 +75,9 @@ export default function GamePlayScreen() {
 
   const loadQuestions = async () => {
     try {
-      const modeStr = Array.isArray(mode) ? mode[0] : mode;
+      const modeStr = "visual";
       const quizData = await getQuizQuestions(modeStr);
+
       setQuestions(quizData);
 
       // Check if user is logged in
@@ -150,7 +151,11 @@ export default function GamePlayScreen() {
     }
   };
 
-  const updateScores = async (completed = false, finalScore = score, finalAccumulated = accumulatedScore) => {
+  const updateScores = async (
+    completed = false,
+    finalScore = score,
+    finalAccumulated = accumulatedScore
+  ) => {
     try {
       const modeStr = Array.isArray(mode) ? mode[0] : mode;
       const isLoggedIn = await AuthAPI.isLoggedIn();
@@ -211,7 +216,11 @@ export default function GamePlayScreen() {
     }
   };
 
-  const handleGameOver = async (completed = false, finalScore = score, finalAccumulated = accumulatedScore) => {
+  const handleGameOver = async (
+    completed = false,
+    finalScore = score,
+    finalAccumulated = accumulatedScore
+  ) => {
     if (showAds) {
       showInterstitialAd(() => {
         setGameOver(true);

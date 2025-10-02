@@ -3,13 +3,14 @@ export interface QuizQuestion {
   thumbnailUrl: string;
   choices: string[];
   correctAnswer: string;
+  questionType: 'thumbnail' | 'screenshot'; // Type is now required
 }
 
 export interface UserScore {
   id: string;
   userId: string;
   username: string;
-  mode: 'normal' | 'hard';
+  mode: 'visual' | 'audio'; // Updated mode types
   highScore: number;
   currentStreak: number;
   lastPlayed: string;
