@@ -46,6 +46,10 @@ export default function GamePlayScreen() {
   const [audioUrls, setAudioUrls] = useState<string[]>([]);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
   const audioPlayer = useAudioPlayer(currentAudioUrl);
+  // Add this new state to store image URLs
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [isImageLoading, setIsImageLoading] = useState(false);
+  const [preloadedImages, setPreloadedImages] = useState<{[key: string]: boolean}>({});
   const insets = useSafeAreaInsets();
   const { showAds } = useShowAds(false);
 
@@ -124,6 +128,24 @@ export default function GamePlayScreen() {
     }
   }, [currentQuestionIndex, questions, loading, mode, audioPlayer]);
 
+  // Add this function after the loadQuestions function
+  const preloadImages = async (urls: string[]) => {
+    const preloadPromises = urls.map(url => Image.prefetch(url));
+    try {
+      await Promise.all(preloadPromises);
+      // Mark all images as preloaded
+      const loadedImages = urls.reduce((obj, url) => {
+        obj[url] = true;
+        return obj;
+      }, {} as {[key: string]: boolean});
+      
+      setPreloadedImages(loadedImages);
+    } catch (error) {
+      console.error("Error preloading images:", error);
+    }
+  };
+
+  // Update the loadQuestions function to preload images
   const loadQuestions = async () => {
     try {
       const modeStr = Array.isArray(mode) ? mode[0] : mode || "visual";
@@ -138,6 +160,17 @@ export default function GamePlayScreen() {
         
         // Set current audio URL for immediate play
         setCurrentAudioUrl(quizData[0].audioUrl);
+      }
+      // Store all image URLs if in visual mode
+      else if (modeStr === "visual" && quizData.length > 0) {
+        const urls = quizData.map(q => q.thumbnailUrl || "");
+        setImageUrls(urls);
+        
+        // Set loading state to true while images are preloading
+        setIsImageLoading(true);
+        
+        // Start preloading all images
+        preloadImages(urls);
       }
 
       // Check if user is logged in
@@ -167,6 +200,13 @@ export default function GamePlayScreen() {
       router.back();
     }
   };
+
+  // Add a new effect to track image loading status
+  useEffect(() => {
+    if (imageUrls.length > 0 && Object.keys(preloadedImages).length === imageUrls.length) {
+      setIsImageLoading(false);
+    }
+  }, [preloadedImages, imageUrls]);
 
   // Helper function for local storage fallback
   const fallbackToLocalStorage = async (modeStr: string) => {
@@ -428,11 +468,20 @@ export default function GamePlayScreen() {
             </View>
           </>
         ) : (
-          <Image
-            source={{ uri: currentQuestion.thumbnailUrl }}
-            style={styles.thumbnail}
-            resizeMode="cover"
-          />
+          <>
+            {isImageLoading && currentQuestionIndex === 0 ? (
+              <View style={styles.audioContainer}>
+                <ActivityIndicator size="large" color="#696FC7" />
+                <ThemedText style={styles.playButtonText}>Loading Images...</ThemedText>
+              </View>
+            ) : (
+              <Image
+                source={{ uri: currentQuestion.thumbnailUrl }}
+                style={styles.thumbnail}
+                resizeMode="cover"
+              />
+            )}
+          </>
         )}
       </View>
 
