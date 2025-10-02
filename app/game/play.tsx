@@ -76,8 +76,18 @@ export default function GamePlayScreen() {
   useEffect(() => {
     if (!loading && questions.length > 0 && mode === "audio") {
       setCurrentAudioUrl(questions[currentQuestionIndex]?.audioUrl || null);
+      
+      // Add a small delay to ensure the audio URL is set before playing
+      const timer = setTimeout(() => {
+        if (audioPlayer) {
+          audioPlayer.seekTo(0);
+          audioPlayer.play();
+        }
+      }, 300);
+      
+      return () => clearTimeout(timer);
     }
-  }, [currentQuestionIndex, questions, loading, mode]);
+  }, [currentQuestionIndex, questions, loading, mode, audioPlayer]);
 
   const loadQuestions = async () => {
     try {
