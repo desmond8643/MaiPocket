@@ -41,16 +41,8 @@ export default function GamePlayScreen() {
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [bestScore, setBestScore] = useState(0);
   const [audioLoaded, setAudioLoaded] = useState(false);
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
-  const audioPlayer = useAudioPlayer(currentAudioUrl, {
-    onLoad: () => setAudioLoaded(true),
-    onPlaybackStatusUpdate: (status) => {
-      if (status.isLoaded) {
-        setIsAudioPlaying(status.isPlaying);
-      }
-    },
-  });
+  const audioPlayer = useAudioPlayer(currentAudioUrl);
   const insets = useSafeAreaInsets();
   const { showAds } = useShowAds(false);
 
@@ -83,9 +75,9 @@ export default function GamePlayScreen() {
 
   useEffect(() => {
     if (!loading && questions.length > 0 && mode === "audio") {
-      setAudioLoaded(false);
       setCurrentAudioUrl(questions[currentQuestionIndex]?.audioUrl || null);
       
+      // Add a small delay to ensure the audio URL is set before playing
       const timer = setTimeout(() => {
         if (audioPlayer) {
           audioPlayer.seekTo(0);
@@ -273,7 +265,6 @@ export default function GamePlayScreen() {
     if (audioPlayer) {
       audioPlayer.seekTo(0);
       audioPlayer.play();
-      setIsAudioPlaying(true);
     }
   };
 
@@ -363,24 +354,9 @@ export default function GamePlayScreen() {
               <TouchableOpacity
                 style={styles.playButton}
                 onPress={playAudio}
-                disabled={!audioLoaded || isAudioPlaying}
               >
-                {!audioLoaded ? (
-                  <>
-                    <ActivityIndicator size="large" color="#696FC7" />
-                    <ThemedText style={styles.playButtonText}>Loading Audio...</ThemedText>
-                  </>
-                ) : isAudioPlaying ? (
-                  <>
-                    <Ionicons name="musical-notes" size={70} color="#696FC7" />
-                    <ThemedText style={styles.playButtonText}>Playing...</ThemedText>
-                  </>
-                ) : (
-                  <>
-                    <Ionicons name="play-circle" size={80} color="#696FC7" />
-                    <ThemedText style={styles.playButtonText}>Play Audio</ThemedText>
-                  </>
-                )}
+                <Ionicons name="play-circle" size={80} color="#696FC7" />
+                <ThemedText style={styles.playButtonText}>Play Audio</ThemedText>
               </TouchableOpacity>
             </View>
           </>
