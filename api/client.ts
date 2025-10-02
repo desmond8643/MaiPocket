@@ -426,7 +426,6 @@ export const submitScore = async (
     score,
     accumulatedStreak, // Send both values
     currentStreak,
-    userId,
   });
   
   // Return the full response data which includes highScore
