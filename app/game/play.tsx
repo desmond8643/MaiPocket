@@ -27,10 +27,6 @@ import {
 } from "@/components/InterstitialAdComponent";
 import { useShowAds } from "@/hooks/useShowAds";
 
-// import { User } from "@/types/user"; // Import your User type
-// const [user, setUser] = useState<User | null>(null);
-// const [isLoading, setIsLoading] = useState(true);
-
 export default function GamePlayScreen() {
   const { mode } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
@@ -186,11 +182,10 @@ export default function GamePlayScreen() {
         const savedScores = savedScoresStr
           ? JSON.parse(savedScoresStr)
           : {
-              normal: { highScore: 0, currentStreak: 0 },
-              hard: { highScore: 0, currentStreak: 0 },
+              visual: { highScore: 0, currentStreak: 0 },
             };
 
-        const modeKey = modeStr === "hard" ? "hard" : "normal";
+        const modeKey = modeStr === "visual" ? "visual" : "audio";
         const updatedStreak = finalAccumulated;
         const newStreak = completed ? updatedStreak : 0;
 
@@ -324,7 +319,7 @@ export default function GamePlayScreen() {
         <Image
           source={{ uri: currentQuestion.thumbnailUrl }}
           style={styles.thumbnail}
-          resizeMode="contain"
+          resizeMode="cover"
         />
       </View>
 
