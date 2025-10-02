@@ -340,18 +340,15 @@ export default function GamePlayScreen() {
       <View style={styles.questionContainer}>
         {mode === "audio" ? (
           <>
-            <Image
-              source={{ uri: currentQuestion.thumbnailUrl }}
-              style={styles.thumbnail}
-              resizeMode="cover"
-            />
-            <TouchableOpacity
-              style={styles.playButton}
-              onPress={playAudio}
-            >
-              <Ionicons name="play-circle" size={60} color="#696FC7" />
-              <ThemedText style={styles.playButtonText}>Play Audio</ThemedText>
-            </TouchableOpacity>
+            <View style={styles.audioContainer}>
+              <TouchableOpacity
+                style={styles.playButton}
+                onPress={playAudio}
+              >
+                <Ionicons name="play-circle" size={80} color="#696FC7" />
+                <ThemedText style={styles.playButtonText}>Play Audio</ThemedText>
+              </TouchableOpacity>
+            </View>
           </>
         ) : (
           <Image
@@ -512,5 +509,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  audioContainer: {
+    width: 250,
+    height: 250,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(105, 111, 199, 0.1)',
+    borderRadius: 12,
+    marginBottom: 16,
   },
 });
