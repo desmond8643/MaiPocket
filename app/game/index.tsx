@@ -24,11 +24,9 @@ export default function GameHomeScreen() {
   const [user, setUser] = useState(null);
   const [localScores, setLocalScores] = useState({
     visual: { highScore: 0, currentStreak: 0 },
-    hard: { highScore: 0, currentStreak: 0 },
   });
   const [serverScores, setServerScores] = useState({
     visual: { highScore: 0, currentStreak: 0 },
-    hard: { highScore: 0, currentStreak: 0 },
   });
   const [isLoading, setIsLoading] = useState(true);
   const insets = useSafeAreaInsets();
@@ -86,10 +84,7 @@ export default function GameHomeScreen() {
           highScore: 0,
           currentStreak: 0,
         },
-        hard: scores.find((s: UserScore) => s.mode === "hard") || {
-          highScore: 0,
-          currentStreak: 0,
-        },
+       
       });
     } catch (error) {
       console.error("Error loading server scores:", error);
@@ -126,10 +121,20 @@ export default function GameHomeScreen() {
   return (
     <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <IconSymbol name="chevron.left" size={20} color="#AE75DA" />
         </TouchableOpacity>
-        <ThemedText style={{ fontSize: 24, fontWeight: "bold", flex: 1, textAlign: 'center' }}>
+        <ThemedText
+          style={{
+            fontSize: 24,
+            fontWeight: "bold",
+            flex: 1,
+            textAlign: "center",
+          }}
+        >
           Song Quiz Game
         </ThemedText>
         <View style={{ width: 36 }} />
@@ -171,7 +176,7 @@ export default function GameHomeScreen() {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[styles.modeButton, { backgroundColor: "#E9A5F1" }]}
           onPress={() => startGame("hard")}
         >
@@ -191,7 +196,7 @@ export default function GameHomeScreen() {
                 : localScores.hard.currentStreak}
             </ThemedText>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <TouchableOpacity
