@@ -26,7 +26,7 @@ import {
   showInterstitialAd,
 } from "@/components/InterstitialAdComponent";
 import { useShowAds } from "@/hooks/useShowAds";
-import { useAudioPlayer } from 'expo-audio';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 
 export default function GamePlayScreen() {
   const { mode } = useLocalSearchParams();
@@ -49,12 +49,41 @@ export default function GamePlayScreen() {
   const insets = useSafeAreaInsets();
   const { showAds } = useShowAds(false);
 
+  // Add these states to track audio status
+  const [isAudioLoading, setIsAudioLoading] = useState(true);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+
+  // Add this to track player status
+  const playerStatus = useAudioPlayerStatus(audioPlayer);
+
   useEffect(() => {
     loadQuestions();
   }, []);
 
+  // Add a useEffect to track audio status changes
+  useEffect(() => {
+    if (!playerStatus) return;
+    
+    if (playerStatus.isLoaded && isAudioLoading) {
+      setIsAudioLoading(false);
+    }
+    
+    setIsAudioPlaying(playerStatus.playing);
+    
+    // Start timer only when audio starts playing in audio mode
+    if (mode === "audio" && playerStatus.playing && timeLeft === 15) {
+      // Timer starts automatically when isAudioPlaying becomes true
+    }
+  }, [playerStatus]);
+
+  // Modify your timer effect to only start when audio is playing in audio mode
   useEffect(() => {
     if (loading || gameOver) return;
+    
+    // For audio mode, only start timer when audio is playing
+    if (mode === "audio" && !isAudioPlaying && timeLeft === 15) {
+      return; // Don't start timer yet
+    }
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -68,7 +97,7 @@ export default function GamePlayScreen() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [loading, gameOver, currentQuestionIndex]);
+  }, [loading, gameOver, currentQuestionIndex, isAudioPlaying]);
 
   useEffect(() => {
     if (showAds) {
@@ -371,9 +400,24 @@ export default function GamePlayScreen() {
               <TouchableOpacity
                 style={styles.playButton}
                 onPress={playAudio}
+                disabled={isAudioLoading}
               >
-                <Ionicons name="play-circle" size={80} color="#696FC7" />
-                <ThemedText style={styles.playButtonText}>Play Audio</ThemedText>
+                {isAudioLoading ? (
+                  <>
+                    <ActivityIndicator size="large" color="#696FC7" />
+                    <ThemedText style={styles.playButtonText}>Loading Audio...</ThemedText>
+                  </>
+                ) : isAudioPlaying ? (
+                  <>
+                    <Ionicons name="pause-circle" size={80} color="#696FC7" />
+                    <ThemedText style={styles.playButtonText}>Playing...</ThemedText>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="play-circle" size={80} color="#696FC7" />
+                    <ThemedText style={styles.playButtonText}>Play Audio</ThemedText>
+                  </>
+                )}
               </TouchableOpacity>
             </View>
           </>
