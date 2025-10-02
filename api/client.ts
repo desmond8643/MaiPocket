@@ -406,29 +406,6 @@ export const getQuizQuestions = async (
   return response.data;
 };
 
-// export const submitScore = async (
-//   mode: string,
-//   score: number,
-//   currentStreak: number
-// ) => {
-//   // Get the user data from AsyncStorage
-//   const userDataString = await AsyncStorage.getItem("userData");
-//   let userId = null;
-
-//   if (userDataString) {
-//     const userData = JSON.parse(userDataString);
-//     userId = userData.id; // Assuming the user ID is stored as _id
-//   }
-
-//   const response = await apiClient.post("/game/score", {
-//     mode,
-//     score,
-//     currentStreak,
-//     userId, // Add this line to include userId
-//   });
-//   return response.data;
-// };
-
 // Update the function signature
 export const submitScore = async (
   mode: string,
@@ -478,16 +455,6 @@ export const getLeaderboard = async (
 };
 
 export const getUserStreak = async (mode: string): Promise<{ currentStreak: number, highScore: number }> => {
-  const userDataString = await AsyncStorage.getItem("userData");
-  let userId = null;
-
-  if (userDataString) {
-    const userData = JSON.parse(userDataString);
-    userId = userData.id;
-  }
-
-  const response = await apiClient.get(
-    `/game/streak/${mode}?userId=${encodeURIComponent(userId)}`
-  );
+  const response = await apiClient.get(`/game/streak/${mode}`);
   return response.data;
 };
