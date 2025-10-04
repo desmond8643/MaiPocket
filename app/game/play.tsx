@@ -1,7 +1,7 @@
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { useLocalSearchParams, router } from "expo-router";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -27,6 +27,8 @@ import {
 } from "@/components/InterstitialAdComponent";
 import { useShowAds } from "@/hooks/useShowAds";
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import Carousel from 'react-native-reanimated-carousel';
+import { Dimensions } from 'react-native';
 
 export default function GamePlayScreen() {
   const { mode } = useLocalSearchParams();
@@ -59,6 +61,10 @@ export default function GamePlayScreen() {
 
   // Add this to track player status
   const playerStatus = useAudioPlayerStatus(audioPlayer);
+
+  // Add this state for the carousel reference
+  const carouselRef = useRef<any>(null);
+  const { width } = Dimensions.get('window');
 
   useEffect(() => {
     loadQuestions();
@@ -256,6 +262,10 @@ export default function GamePlayScreen() {
       // Update the audio URL for the next question
       if (mode === "audio" && audioUrls[nextIndex]) {
         setCurrentAudioUrl(audioUrls[nextIndex]);
+      }
+      // Advance the carousel for visual mode
+      else if (mode === "visual" && carouselRef.current) {
+        carouselRef.current.scroll({ index: nextIndex, animated: true });
       }
     } else {
       // Pass the correct score to handleGameOver
@@ -481,11 +491,26 @@ export default function GamePlayScreen() {
                 <ThemedText style={styles.playButtonText}>Loading Images...</ThemedText>
               </View>
             ) : (
-              <Image
-                source={{ uri: currentQuestion.thumbnailUrl }}
-                style={styles.thumbnail}
-                resizeMode="cover"
-              />
+              <View style={styles.carouselContainer}>
+                <Carousel
+                  ref={carouselRef}
+                  loop={false}
+                  width={250}
+                  height={250}
+                  data={questions}
+                  scrollAnimationDuration={300}
+                  onSnapToItem={(index) => {}}
+                  defaultIndex={currentQuestionIndex}
+                  enabled={false}
+                  renderItem={({ item, index }) => (
+                    <Image
+                      source={{ uri: item.thumbnailUrl }}
+                      style={styles.thumbnail}
+                      resizeMode="cover"
+                    />
+                  )}
+                />
+              </View>
             )}
           </>
         )}
@@ -650,5 +675,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(105, 111, 199, 0.1)',
     borderRadius: 12,
     marginBottom: 16,
+  },
+  carouselContainer: {
+    width: 250,
+    height: 250,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(105, 111, 199, 0.1)',
+    borderRadius: 12,
+    marginBottom: 16,
+    overflow: 'hidden',
   },
 });
