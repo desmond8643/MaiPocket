@@ -113,7 +113,7 @@ export default function ChartListScreen() {
     chart: Chart,
     type: "level" | "version" = "level",
     value?: string
-  ): { level: number; color: string } => {
+  ): { level: number | string; color: string } => {
     let maxLevel = 0;
     let difficultyType = "";
 
@@ -180,7 +180,7 @@ export default function ChartListScreen() {
     }
 
     return {
-      level: maxLevel,
+      level: maxLevel % 1 === 0 ? `${maxLevel}.0` : maxLevel,
       color: getDifficultyColor(difficultyType),
     };
   };
