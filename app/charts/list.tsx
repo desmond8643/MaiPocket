@@ -498,6 +498,7 @@ export default function ChartListScreen() {
           numColumns={getNumColumns()}
           key={`${viewMode}-${groupMode}-sectioned`}
           contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]}
+          columnWrapperStyle={viewMode === "icon" ? styles.iconRow : undefined}
         />
       );
     }
@@ -510,6 +511,7 @@ export default function ChartListScreen() {
         numColumns={getNumColumns()}
         key={`${viewMode}-${groupMode}-flat`}
         contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]}
+        columnWrapperStyle={viewMode === "icon" ? styles.iconRow : undefined}
       />
     );
   };
@@ -928,5 +930,9 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 999,
     alignItems: "center",
+  },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
   },
 });
