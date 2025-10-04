@@ -265,7 +265,12 @@ export default function GamePlayScreen() {
       }
       // Advance the carousel for visual mode
       else if (mode === "visual" && carouselRef.current) {
-        carouselRef.current.scroll({ index: nextIndex, animated: true });
+        try {
+          carouselRef.current.scrollTo({ index: nextIndex, animated: true });
+        } catch (error) {
+          console.log("Error scrolling carousel:", error);
+          // Fallback - just update the index state
+        }
       }
     } else {
       // Pass the correct score to handleGameOver
