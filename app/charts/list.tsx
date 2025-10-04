@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  SectionList,
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
@@ -26,6 +27,12 @@ import { Chart } from "@/types/chart";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ViewMode = "list" | "icon";
+type GroupMode = "none" | "level" | "version";
+
+interface GroupedSection {
+  title: string;
+  data: Chart[];
+}
 
 export default function ChartListScreen() {
   const { type, value } = useLocalSearchParams();
@@ -36,6 +43,7 @@ export default function ChartListScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [groupMode, setGroupMode] = useState<GroupMode>("none"); // Keep this but we won't change it
   const insets = useSafeAreaInsets();
   const { showAds, dynamicStyles } = useShowAds(false);
 
@@ -89,6 +97,17 @@ export default function ChartListScreen() {
     setCharts(filtered);
   }, [searchQuery, originalCharts]);
 
+  // Group charts when groupMode or charts change
+  useEffect(() => {
+    if (groupMode === "none") {
+      // setGroupedData([]); // This line is removed as per the edit hint
+      return;
+    }
+
+    // const grouped = groupCharts(charts, groupMode); // This line is removed as per the edit hint
+    // setGroupedData(grouped); // This line is removed as per the edit hint
+  }, [charts, groupMode]);
+
   // Helper function to get max level from a chart
   const getMaxLevel = (chart: Chart): number => {
     let maxLevel = 0;
@@ -117,6 +136,61 @@ export default function ChartListScreen() {
     return Math.round((level % 1) * 100) / 100 >= 0.6
       ? `${Math.floor(level)}+`
       : `${Math.floor(level)}`;
+  };
+
+  // Helper function to get versions from a chart
+  const getVersions = (chart: Chart): string[] => {
+    const versions = [];
+    if (chart.standard && chart.standard.versionReleased) {
+      versions.push(chart.standard.versionReleased);
+    }
+    if (chart.deluxe && chart.deluxe.versionReleased) {
+      versions.push(chart.deluxe.versionReleased);
+    }
+    return [...new Set(versions)]; // Remove duplicates
+  };
+
+  // Group charts function
+  const groupCharts = (charts: Chart[], mode: GroupMode): GroupedSection[] => {
+    if (mode === "none") return [];
+
+    const groups: { [key: string]: Chart[] } = {};
+
+    charts.forEach((chart) => {
+      if (mode === "level") {
+        const maxLevel = getMaxLevel(chart);
+        const constant = getChartConstant(maxLevel);
+        if (!groups[constant]) groups[constant] = [];
+        groups[constant].push(chart);
+      } else if (mode === "version") {
+        const versions = getVersions(chart);
+        versions.forEach((version) => {
+          if (!groups[version]) groups[version] = [];
+          groups[version].push(chart);
+        });
+      }
+    });
+
+    // Sort groups
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      if (mode === "level") {
+        // Sort by level descending (15+ > 15 > 14+ > 14, etc.)
+        const getNumericValue = (key: string) => {
+          const isPlus = key.includes("+");
+          const baseValue = parseFloat(key.replace("+", ""));
+          return isPlus ? baseValue + 0.6 : baseValue;
+        };
+        return getNumericValue(b) - getNumericValue(a);
+      } else {
+        // Sort versions alphabetically
+        return a.localeCompare(b);
+      }
+    });
+
+    return sortedKeys.map((key) => ({
+      title: key,
+      data: groups[key],
+    }));
   };
 
   // Update the getDifficulties function to handle level as an object
@@ -170,7 +244,370 @@ export default function ChartListScreen() {
     return result;
   };
 
-  // Helper 
+  // Helper function to format level display
+  interface LevelObject {
+    jp?: number;
+    international?: number;
+  }
+
+  const formatLevelDisplay = (levelObj: LevelObject) => {
+    const levelValue = levelObj.jp || levelObj.international || 0;
+    return Math.round((levelValue % 1) * 100) / 100 >= 0.6
+      ? `${Math.floor(levelValue)}+`
+      : `${Math.floor(levelValue)}`;
+  };
+
+  const navigateToChart = (chartId: string) => {
+    if (showAds) {
+      showInterstitialAd(() => {
+        router.push({
+          pathname: "/charts/[id]",
+          params: { id: chartId },
+        });
+      });
+    } else {
+      router.push({
+        pathname: "/charts/[id]",
+        params: { id: chartId },
+      });
+    }
+  };
+
+  const renderChartItem = ({ item }: { item: Chart }) => {
+    const difficulties = getDifficulties(item);
+
+    if (viewMode === "icon") {
+      return (
+        <TouchableOpacity
+          style={[
+            styles.iconCard,
+            { backgroundColor: colorScheme === "dark" ? "#333333" : "#FFFFFF" },
+          ]}
+          onPress={() => navigateToChart(item._id)}
+        >
+          <Image
+            source={{ uri: item.image }}
+            style={styles.iconImage}
+            contentFit="cover"
+          />
+          <View style={styles.iconTextContainer}>
+            <ThemedText
+              numberOfLines={2}
+              style={styles.iconTitleText}
+            >
+              {item.title}
+            </ThemedText>
+            <ThemedText numberOfLines={1} style={styles.iconArtistText}>
+              {item.artist || "Unknown Artist"}
+            </ThemedText>
+          </View>
+          
+          {/* Show max level badge */}
+          <View style={styles.levelBadge}>
+            <ThemedText style={styles.levelBadgeText}>
+              {getChartConstant(getMaxLevel(item))}
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+
+    // List view (original implementation)
+    return (
+      <TouchableOpacity
+        style={[
+          styles.chartCard,
+          { backgroundColor: colorScheme === "dark" ? "#333333" : "#FFFFFF" },
+        ]}
+        onPress={() => navigateToChart(item._id)}
+      >
+        <View style={styles.topSection}>
+          <Image
+            source={{ uri: item.image }}
+            style={styles.chartImage}
+            contentFit="cover"
+          />
+          <View style={styles.textContainer}>
+            <ThemedText
+              type="defaultSemiBold"
+              numberOfLines={2}
+              style={styles.titleText}
+            >
+              {item.title}
+            </ThemedText>
+            <ThemedText numberOfLines={1} style={styles.artistText}>
+              {item.artist || "Unknown Artist"}
+            </ThemedText>
+          </View>
+        </View>
+
+        <View style={styles.bottomSection}>
+          {difficulties.standard.length > 0 && (
+            <View style={styles.difficultyRow}>
+              <View style={styles.levelsContainer}>
+                {difficulties.standard.map((diff, index) => (
+                  <ThemedView
+                    key={`standard-${diff.type}-${index}`}
+                    style={[
+                      styles.difficultyBadge,
+                      { backgroundColor: getDifficultyColor(diff.type) },
+                    ]}
+                  >
+                    <ThemedText style={styles.difficultyText}>
+                      {formatLevelDisplay(diff.level)}
+                    </ThemedText>
+                  </ThemedView>
+                ))}
+              </View>
+              <View style={styles.standardLabel}>
+                <ThemedText style={styles.standardLabelText}>
+                  スタンダード
+                </ThemedText>
+              </View>
+            </View>
+          )}
+
+          {difficulties.deluxe.length > 0 && (
+            <View style={styles.difficultyRow}>
+              <View style={styles.levelsContainer}>
+                {difficulties.deluxe.map((diff, index) => (
+                  <ThemedView
+                    key={`deluxe-${diff.type}-${index}`}
+                    style={[
+                      styles.difficultyBadge,
+                      { backgroundColor: getDifficultyColor(diff.type) },
+                    ]}
+                  >
+                    <ThemedText style={styles.difficultyText}>
+                      {formatLevelDisplay(diff.level)}
+                    </ThemedText>
+                  </ThemedView>
+                ))}
+              </View>
+              <View style={styles.deluxeLabel}>
+                <ThemedText style={styles.deluxeLabelText}>
+                  <ThemedText
+                    style={[styles.deluxeLabelText, { color: "#FF0000" }]}
+                  >
+                    で
+                  </ThemedText>
+                  <ThemedText
+                    style={[styles.deluxeLabelText, { color: "#FF8C00" }]}
+                  >
+                    ら
+                  </ThemedText>
+                  <ThemedText
+                    style={[styles.deluxeLabelText, { color: "#FFD93D" }]}
+                  >
+                    っ
+                  </ThemedText>
+                  <ThemedText
+                    style={[styles.deluxeLabelText, { color: "#7ADAA5" }]}
+                  >
+                    く
+                  </ThemedText>
+                  <ThemedText
+                    style={[styles.deluxeLabelText, { color: "#3396D3" }]}
+                  >
+                    す
+                  </ThemedText>
+                </ThemedText>
+              </View>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderSectionHeader = ({ section }: { section: GroupedSection }) => (
+    <ThemedView style={styles.sectionHeader}>
+      <ThemedText style={styles.sectionHeaderText}>
+        {groupMode === "level" ? `Level ${section.title}` : section.title} ({section.data.length})
+      </ThemedText>
+    </ThemedView>
+  );
+
+  const getNumColumns = () => {
+    return viewMode === "icon" ? 3 : 1;
+  };
+
+  // In the renderContent function, we should always use the FlatList since groupMode will always be "none"
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <ThemedView style={styles.loadingContainer}>
+          <ActivityIndicator
+            size="large"
+            color={Colors[colorScheme ?? "light"].tint}
+          />
+          <ThemedText style={styles.loadingText}>Loading charts...</ThemedText>
+        </ThemedView>
+      );
+    }
+
+    if (error) {
+      return (
+        <ThemedView style={styles.errorContainer}>
+          <IconSymbol
+            name="exclamationmark.triangle"
+            size={40}
+            color="#FF3B30"
+          />
+          <ThemedText style={styles.errorText}>{error}</ThemedText>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => {
+              setLoading(true);
+              setError(null);
+              ChartAPI.getChartsByCategory(type.toString(), value.toString())
+                .then((data) => {
+                  setCharts(data);
+                  setOriginalCharts(data);
+                  setLoading(false);
+                })
+                .catch((err) => {
+                  console.error(`Error fetching charts for ${value}:`, err);
+                  setError("Failed to load charts. Please try again.");
+                  setLoading(false);
+                });
+            }}
+          >
+            <ThemedText style={styles.retryButtonText}>Retry</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      );
+    }
+
+    if (charts.length === 0) {
+      return (
+        <ThemedView style={styles.emptyContainer}>
+          <IconSymbol name="music.note" size={60} color="#CCCCCC" />
+          <ThemedText style={styles.emptyText}>No charts found</ThemedText>
+        </ThemedView>
+      );
+    }
+
+    // Always use the FlatList since we're only using "none" groupMode
+    return (
+      <FlatList
+        data={charts}
+        renderItem={renderChartItem}
+        keyExtractor={(item) => item._id}
+        numColumns={getNumColumns()}
+        key={`${viewMode}-flat`}
+        contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]}
+      />
+    );
+  };
+
+  return (
+    <ThemedView style={{ flex: 1 }}>
+      <Stack.Screen
+        options={{
+          title: value
+            ? `${value.toString()}${!loading ? ` (${charts.length})` : ""}`
+            : "Charts",
+          headerBackTitle: "Categories",
+        }}
+      />
+
+      {/* Search and controls */}
+      <ThemedView style={styles.searchContainer}>
+        <ThemedView
+          style={[
+            styles.searchInputContainer,
+            {
+              backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0",
+            },
+          ]}
+        >
+          <IconSymbol
+            name="magnifyingglass"
+            size={20}
+            color="#888888"
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={[
+              styles.searchInput,
+              { color: colorScheme === "dark" ? "#FFFFFF" : "#000000" },
+            ]}
+            placeholder="Search charts..."
+            placeholderTextColor={
+              colorScheme === "dark" ? "#AAAAAA" : "#888888"
+            }
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </ThemedView>
+      </ThemedView>
+
+      {/* View mode and grouping controls */}
+      <ThemedView style={styles.controlsContainer}>
+        {/* View mode toggle */}
+        <View style={styles.toggleContainer}>
+          <TouchableOpacity
+            style={[
+              styles.toggleButton,
+              viewMode === "list" && styles.toggleButtonActive,
+              { backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0" },
+            ]}
+            onPress={() => setViewMode("list")}
+          >
+            <IconSymbol
+              name="list.bullet"
+              size={20}
+              color={viewMode === "list" ? Colors[colorScheme ?? "light"].tint : "#888888"}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.toggleButton,
+              viewMode === "icon" && styles.toggleButtonActive,
+              { backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0" },
+            ]}
+            onPress={() => setViewMode("icon")}
+          >
+            <IconSymbol
+              name="square.grid.3x3"
+              size={20}
+              color={viewMode === "icon" ? Colors[colorScheme ?? "light"].tint : "#888888"}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Remove the group mode toggle section entirely */}
+      </ThemedView>
+
+      {renderContent()}
+
+      {/* Add the banner ad component */}
+      {showAds && (
+        <View style={dynamicStyles.bottomAdContainer}>
+          <BannerAdComponent />
+        </View>
+      )}
+    </ThemedView>
+  );
+}
+
+function getDifficultyColor(type: string) {
+  switch (type) {
+    case "basic":
+      return "#88CC00";
+    case "advanced":
+      return "#FFCC00";
+    case "expert":
+      return "#FF5599";
+    case "master":
+      return "#9944DD";
+    case "remaster":
+      return "#E9A5F1";
+    default:
+      return "#888888";
+  }
+}
 
 const styles = StyleSheet.create({
   container: {
