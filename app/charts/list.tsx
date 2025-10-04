@@ -117,10 +117,13 @@ export default function ChartListScreen() {
         // Check standard difficulties
         if (chart.standard?.difficulties) {
           chart.standard.difficulties.forEach(diff => {
-            const levelValue = typeof diff.level === 'number' ? 
-              diff.level : 
-              (diff.level?.jp || diff.level?.international || 0);
-              
+            let levelValue = 0;
+            if (typeof diff.level === 'number') {
+              levelValue = diff.level;
+            } else if (diff.level && typeof diff.level === 'object') {
+              levelValue = diff.level.jp || diff.level.international || 0;
+            }
+            
             if (diff.type === "master" && levelValue > highestLevel) {
               highestLevel = levelValue;
             }
@@ -130,10 +133,13 @@ export default function ChartListScreen() {
         // Check deluxe difficulties
         if (chart.deluxe?.difficulties) {
           chart.deluxe.difficulties.forEach(diff => {
-            const levelValue = typeof diff.level === 'number' ? 
-              diff.level : 
-              (diff.level?.jp || diff.level?.international || 0);
-              
+            let levelValue = 0;
+            if (typeof diff.level === 'number') {
+              levelValue = diff.level;
+            } else if (diff.level && typeof diff.level === 'object') {
+              levelValue = diff.level.jp || diff.level.international || 0;
+            }
+            
             if (diff.type === "master" && levelValue > highestLevel) {
               highestLevel = levelValue;
             }
@@ -227,9 +233,16 @@ export default function ChartListScreen() {
     international?: number;
   }
 
-  const formatLevelDisplay = (levelObj: LevelObject) => {
-    // Default to JP level, fallback to international if JP isn't available
-    const levelValue = levelObj.jp || levelObj.international || 0;
+  const formatLevelDisplay = (levelObj: LevelObject | number) => {
+    // Check if levelObj is a number
+    if (typeof levelObj === 'number') {
+      return Math.round((levelObj % 1) * 100) / 100 >= 0.6
+        ? `${Math.floor(levelObj)}+`
+        : `${Math.floor(levelObj)}`;
+    }
+    
+    // If it's an object, safely extract the level value
+    const levelValue = levelObj?.jp || levelObj?.international || 0;
 
     return Math.round((levelValue % 1) * 100) / 100 >= 0.6
       ? `${Math.floor(levelValue)}+`
@@ -246,8 +259,8 @@ export default function ChartListScreen() {
     
     // Check if chart has remaster difficulty
     const hasRemaster = 
-      (chart.standard?.difficulties.some(d => d.type === "remaster")) || 
-      (chart.deluxe?.difficulties.some(d => d.type === "remaster"));
+      (chart.standard?.difficulties?.some(d => d.type === "remaster")) || 
+      (chart.deluxe?.difficulties?.some(d => d.type === "remaster"));
     
     if (hasRemaster) {
       return styles.remasterBorder;
@@ -317,7 +330,9 @@ export default function ChartListScreen() {
                       ]}
                     >
                       <ThemedText style={styles.difficultyText}>
-                        {formatLevelDisplay(diff.level)}
+                        {formatLevelDisplay(
+                          diff.level // This might be causing issues if it's not handled properly
+                        )}
                       </ThemedText>
                     </ThemedView>
                   ))}
