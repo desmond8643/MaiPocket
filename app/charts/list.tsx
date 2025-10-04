@@ -113,12 +113,32 @@ export default function ChartListScreen() {
     let maxLevel = 0;
     let difficultyType = '';
     
+    // Helper function to check if a numerical level matches a string level representation
+    const matchesLevelString = (numLevel: number, levelString: string): boolean => {
+      if (!levelString) return true;
+      
+      // Handle "X+" format
+      if (levelString.endsWith('+')) {
+        const baseLevel = parseInt(levelString.replace('+', ''));
+        return Math.floor(numLevel) === baseLevel && (numLevel % 1) >= 0.6;
+      } 
+      // Handle regular integer level
+      else {
+        const baseLevel = parseInt(levelString);
+        return Math.floor(numLevel) === baseLevel && (numLevel % 1) < 0.6;
+      }
+    };
+    
     // Helper function to process difficulties
     const processDifficulties = (difficulties: any[], versionReleased?: string) => {
       difficulties.forEach((diff) => {
-        // For type 'level', only consider difficulties where jp level matches the value
-        if (type === 'level' && value && diff.level.jp !== value) {
-          return;
+        const numLevel = diff.level.jp || diff.level.international || 0;
+        
+        // For type 'level', check if the numerical level matches the string representation
+        if (type === 'level' && value) {
+          if (!matchesLevelString(numLevel, value)) {
+            return;
+          }
         }
         
         // For type 'version', only consider charts with matching versionReleased
@@ -126,9 +146,8 @@ export default function ChartListScreen() {
           return;
         }
         
-        const level = diff.level.jp || diff.level.international || 0;
-        if (level > maxLevel) {
-          maxLevel = level;
+        if (numLevel > maxLevel) {
+          maxLevel = numLevel;
           difficultyType = diff.type;
         }
       });
