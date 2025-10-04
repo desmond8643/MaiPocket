@@ -117,7 +117,9 @@ export default function ChartListScreen() {
         // Check standard difficulties
         if (chart.standard?.difficulties) {
           chart.standard.difficulties.forEach(diff => {
-            const levelValue = diff.level 
+            const levelValue = typeof diff.level === 'number' ? 
+              diff.level : 
+              (diff.level?.jp || diff.level?.international || 0);
               
             if (diff.type === "master" && levelValue > highestLevel) {
               highestLevel = levelValue;
@@ -128,7 +130,9 @@ export default function ChartListScreen() {
         // Check deluxe difficulties
         if (chart.deluxe?.difficulties) {
           chart.deluxe.difficulties.forEach(diff => {
-            const levelValue = diff.level
+            const levelValue = typeof diff.level === 'number' ? 
+              diff.level : 
+              (diff.level?.jp || diff.level?.international || 0);
               
             if (diff.type === "master" && levelValue > highestLevel) {
               highestLevel = levelValue;
