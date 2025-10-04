@@ -43,7 +43,7 @@ export default function ChartListScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [groupMode, setGroupMode] = useState<GroupMode>("none");
+  // const [groupMode, setGroupMode] = useState<GroupMode>("none");
   const [groupedData, setGroupedData] = useState<GroupedSection[]>([]);
   const insets = useSafeAreaInsets();
   const { showAds, dynamicStyles } = useShowAds(false);
@@ -99,15 +99,15 @@ export default function ChartListScreen() {
   }, [searchQuery, originalCharts]);
 
   // Group charts when groupMode or charts change
-  useEffect(() => {
-    if (groupMode === "none") {
-      setGroupedData([]);
-      return;
-    }
+  // useEffect(() => {
+  //   if (groupMode === "none") {
+  //     setGroupedData([]);
+  //     return;
+  //   }
 
-    const grouped = groupCharts(charts, groupMode);
-    setGroupedData(grouped);
-  }, [charts, groupMode]);
+  //   const grouped = groupCharts(charts, groupMode);
+  //   setGroupedData(grouped);
+  // }, [charts, groupMode]);
 
   // Helper function to get max level from a chart
   const getMaxLevel = (chart: Chart): number => {
@@ -152,47 +152,47 @@ export default function ChartListScreen() {
   };
 
   // Group charts function
-  const groupCharts = (charts: Chart[], mode: GroupMode): GroupedSection[] => {
-    if (mode === "none") return [];
+  // const groupCharts = (charts: Chart[], mode: GroupMode): GroupedSection[] => {
+  //   if (mode === "none") return [];
 
-    const groups: { [key: string]: Chart[] } = {};
+  //   const groups: { [key: string]: Chart[] } = {};
 
-    charts.forEach((chart) => {
-      if (mode === "level") {
-        const maxLevel = getMaxLevel(chart);
-        const constant = getChartConstant(maxLevel);
-        if (!groups[constant]) groups[constant] = [];
-        groups[constant].push(chart);
-      } else if (mode === "version") {
-        const versions = getVersions(chart);
-        versions.forEach((version) => {
-          if (!groups[version]) groups[version] = [];
-          groups[version].push(chart);
-        });
-      }
-    });
+  //   charts.forEach((chart) => {
+  //     if (mode === "level") {
+  //       const maxLevel = getMaxLevel(chart);
+  //       const constant = getChartConstant(maxLevel);
+  //       if (!groups[constant]) groups[constant] = [];
+  //       groups[constant].push(chart);
+  //     } else if (mode === "version") {
+  //       const versions = getVersions(chart);
+  //       versions.forEach((version) => {
+  //         if (!groups[version]) groups[version] = [];
+  //         groups[version].push(chart);
+  //       });
+  //     }
+  //   });
 
-    // Sort groups
-    const sortedKeys = Object.keys(groups).sort((a, b) => {
-      if (mode === "level") {
-        // Sort by level descending (15+ > 15 > 14+ > 14, etc.)
-        const getNumericValue = (key: string) => {
-          const isPlus = key.includes("+");
-          const baseValue = parseFloat(key.replace("+", ""));
-          return isPlus ? baseValue + 0.6 : baseValue;
-        };
-        return getNumericValue(b) - getNumericValue(a);
-      } else {
-        // Sort versions alphabetically
-        return a.localeCompare(b);
-      }
-    });
+  //   // Sort groups
+  //   const sortedKeys = Object.keys(groups).sort((a, b) => {
+  //     if (mode === "level") {
+  //       // Sort by level descending (15+ > 15 > 14+ > 14, etc.)
+  //       const getNumericValue = (key: string) => {
+  //         const isPlus = key.includes("+");
+  //         const baseValue = parseFloat(key.replace("+", ""));
+  //         return isPlus ? baseValue + 0.6 : baseValue;
+  //       };
+  //       return getNumericValue(b) - getNumericValue(a);
+  //     } else {
+  //       // Sort versions alphabetically
+  //       return a.localeCompare(b);
+  //     }
+  //   });
 
-    return sortedKeys.map((key) => ({
-      title: key,
-      data: groups[key],
-    }));
-  };
+  //   return sortedKeys.map((key) => ({
+  //     title: key,
+  //     data: groups[key],
+  //   }));
+  // };
 
   // Update the getDifficulties function to handle level as an object
   const getDifficulties = (chart: Chart) => {
@@ -421,13 +421,13 @@ export default function ChartListScreen() {
     );
   };
 
-  const renderSectionHeader = ({ section }: { section: GroupedSection }) => (
-    <ThemedView style={styles.sectionHeader}>
-      <ThemedText style={styles.sectionHeaderText}>
-        {groupMode === "level" ? `Level ${section.title}` : section.title} ({section.data.length})
-      </ThemedText>
-    </ThemedView>
-  );
+  // const renderSectionHeader = ({ section }: { section: GroupedSection }) => (
+  //   <ThemedView style={styles.sectionHeader}>
+  //     <ThemedText style={styles.sectionHeaderText}>
+  //       {groupMode === "level" ? `Level ${section.title}` : section.title} ({section.data.length})
+  //     </ThemedText>
+  //   </ThemedView>
+  // );
 
   const getNumColumns = () => {
     return viewMode === "icon" ? 3 : 1;
@@ -488,20 +488,20 @@ export default function ChartListScreen() {
       );
     }
 
-    if (groupMode !== "none" && groupedData.length > 0) {
-      return (
-        <SectionList
-          sections={groupedData}
-          renderItem={renderChartItem}
-          renderSectionHeader={renderSectionHeader}
-          keyExtractor={(item) => item._id}
-          numColumns={getNumColumns()}
-          key={`${viewMode}-${groupMode}-sectioned`}
-          contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]}
-          columnWrapperStyle={viewMode === "icon" ? styles.iconRow : undefined}
-        />
-      );
-    }
+    // if (groupMode !== "none" && groupedData.length > 0) {
+    //   return (
+    //     <SectionList
+    //       sections={groupedData}
+    //       renderItem={renderChartItem}
+    //       renderSectionHeader={renderSectionHeader}
+    //       keyExtractor={(item) => item._id}
+    //       numColumns={getNumColumns()}
+    //       key={`${viewMode}-${groupMode}-sectioned`}
+    //       contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]}
+          
+    //     />
+    //   );
+    // }
 
     return (
       <FlatList
@@ -511,7 +511,6 @@ export default function ChartListScreen() {
         numColumns={getNumColumns()}
         key={`${viewMode}-${groupMode}-flat`}
         contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]}
-        columnWrapperStyle={viewMode === "icon" ? styles.iconRow : undefined}
       />
     );
   };
@@ -589,55 +588,6 @@ export default function ChartListScreen() {
               size={20}
               color={viewMode === "icon" ? Colors[colorScheme ?? "light"].tint : "#888888"}
             />
-          </TouchableOpacity>
-        </View>
-
-        {/* Group mode toggle */}
-        <View style={styles.toggleContainer}>
-          <TouchableOpacity
-            style={[
-              styles.groupButton,
-              groupMode === "none" && styles.toggleButtonActive,
-              { backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0" },
-            ]}
-            onPress={() => setGroupMode("none")}
-          >
-            <ThemedText style={[
-              styles.groupButtonText,
-              groupMode === "none" && { color: Colors[colorScheme ?? "light"].tint }
-            ]}>
-              None
-            </ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.groupButton,
-              groupMode === "level" && styles.toggleButtonActive,
-              { backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0" },
-            ]}
-            onPress={() => setGroupMode("level")}
-          >
-            <ThemedText style={[
-              styles.groupButtonText,
-              groupMode === "level" && { color: Colors[colorScheme ?? "light"].tint }
-            ]}>
-              Level
-            </ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.groupButton,
-              groupMode === "version" && styles.toggleButtonActive,
-              { backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0" },
-            ]}
-            onPress={() => setGroupMode("version")}
-          >
-            <ThemedText style={[
-              styles.groupButtonText,
-              groupMode === "version" && { color: Colors[colorScheme ?? "light"].tint }
-            ]}>
-              Version
-            </ThemedText>
           </TouchableOpacity>
         </View>
       </ThemedView>
@@ -930,9 +880,5 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 999,
     alignItems: "center",
-  },
-  iconRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
   },
 });
