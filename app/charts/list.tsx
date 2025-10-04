@@ -109,26 +109,45 @@ export default function ChartListScreen() {
   }, [charts, groupMode]);
 
   // Helper function to get max level from a chart
-  const getMaxLevel = (chart: Chart): number => {
+  const getMaxLevel = (chart: Chart, type: 'level' | 'version' = 'level', value?: string): { level: number, color: string } => {
     let maxLevel = 0;
+    let difficultyType = '';
+    
+    // Helper function to process difficulties
+    const processDifficulties = (difficulties: any[], versionReleased?: string) => {
+      difficulties.forEach((diff) => {
+        // For type 'level', only consider difficulties where jp level matches the value
+        if (type === 'level' && value && diff.level.jp !== value) {
+          return;
+        }
+        
+        // For type 'version', only consider charts with matching versionReleased
+        if (type === 'version' && value && versionReleased !== value) {
+          return;
+        }
+        
+        const level = diff.level.jp || diff.level.international || 0;
+        if (level > maxLevel) {
+          maxLevel = level;
+          difficultyType = diff.type;
+        }
+      });
+    };
 
     // Check standard difficulties
     if (chart.standard && chart.standard.difficulties) {
-      chart.standard.difficulties.forEach((diff) => {
-        const level = diff.level.jp || diff.level.international || 0;
-        maxLevel = Math.max(maxLevel, level);
-      });
+      processDifficulties(chart.standard.difficulties, chart.standard.versionReleased);
     }
 
     // Check deluxe difficulties
     if (chart.deluxe && chart.deluxe.difficulties) {
-      chart.deluxe.difficulties.forEach((diff) => {
-        const level = diff.level.jp || diff.level.international || 0;
-        maxLevel = Math.max(maxLevel, level);
-      });
+      processDifficulties(chart.deluxe.difficulties, chart.deluxe.versionReleased);
     }
 
-    return maxLevel;
+    return { 
+      level: maxLevel, 
+      color: getDifficultyColor(difficultyType)
+    };
   };
 
   // Helper function to get chart constant (level display)
@@ -136,61 +155,6 @@ export default function ChartListScreen() {
     return Math.round((level % 1) * 100) / 100 >= 0.6
       ? `${Math.floor(level)}+`
       : `${Math.floor(level)}`;
-  };
-
-  // Helper function to get versions from a chart
-  const getVersions = (chart: Chart): string[] => {
-    const versions = [];
-    if (chart.standard && chart.standard.versionReleased) {
-      versions.push(chart.standard.versionReleased);
-    }
-    if (chart.deluxe && chart.deluxe.versionReleased) {
-      versions.push(chart.deluxe.versionReleased);
-    }
-    return [...new Set(versions)]; // Remove duplicates
-  };
-
-  // Group charts function
-  const groupCharts = (charts: Chart[], mode: GroupMode): GroupedSection[] => {
-    if (mode === "none") return [];
-
-    const groups: { [key: string]: Chart[] } = {};
-
-    charts.forEach((chart) => {
-      if (mode === "level") {
-        const maxLevel = getMaxLevel(chart);
-        const constant = getChartConstant(maxLevel);
-        if (!groups[constant]) groups[constant] = [];
-        groups[constant].push(chart);
-      } else if (mode === "version") {
-        const versions = getVersions(chart);
-        versions.forEach((version) => {
-          if (!groups[version]) groups[version] = [];
-          groups[version].push(chart);
-        });
-      }
-    });
-
-    // Sort groups
-    const sortedKeys = Object.keys(groups).sort((a, b) => {
-      if (mode === "level") {
-        // Sort by level descending (15+ > 15 > 14+ > 14, etc.)
-        const getNumericValue = (key: string) => {
-          const isPlus = key.includes("+");
-          const baseValue = parseFloat(key.replace("+", ""));
-          return isPlus ? baseValue + 0.6 : baseValue;
-        };
-        return getNumericValue(b) - getNumericValue(a);
-      } else {
-        // Sort versions alphabetically
-        return a.localeCompare(b);
-      }
-    });
-
-    return sortedKeys.map((key) => ({
-      title: key,
-      data: groups[key],
-    }));
   };
 
   // Update the getDifficulties function to handle level as an object
@@ -305,7 +269,7 @@ export default function ChartListScreen() {
           {/* Show max level badge */}
           <View style={styles.levelBadge}>
             <ThemedText style={styles.levelBadgeText}>
-              {getChartConstant(getMaxLevel(item))}
+              {getChartConstant(getMaxLevel(item).level)}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -419,14 +383,6 @@ export default function ChartListScreen() {
       </TouchableOpacity>
     );
   };
-
-  const renderSectionHeader = ({ section }: { section: GroupedSection }) => (
-    <ThemedView style={styles.sectionHeader}>
-      <ThemedText style={styles.sectionHeaderText}>
-        {groupMode === "level" ? `Level ${section.title}` : section.title} ({section.data.length})
-      </ThemedText>
-    </ThemedView>
-  );
 
   const getNumColumns = () => {
     return viewMode === "icon" ? 3 : 1;
