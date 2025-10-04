@@ -267,7 +267,7 @@ export default function ChartListScreen() {
           </View>
           
           {/* Show max level badge */}
-          <View style={styles.levelBadge}>
+          <View style={[styles.levelBadge, { backgroundColor: getMaxLevel(item).color }]}>
             <ThemedText style={styles.levelBadgeText}>
               {getChartConstant(getMaxLevel(item).level)}
             </ThemedText>
