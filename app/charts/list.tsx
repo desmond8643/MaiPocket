@@ -109,43 +109,53 @@ export default function ChartListScreen() {
   }, [charts, groupMode]);
 
   // Helper function to get max level from a chart
-  const getMaxLevel = (chart: Chart, type: 'level' | 'version' = 'level', value?: string): { level: number, color: string } => {
+  const getMaxLevel = (
+    chart: Chart,
+    type: "level" | "version" = "level",
+    value?: string
+  ): { level: number; color: string } => {
     let maxLevel = 0;
-    let difficultyType = '';
-    
+    let difficultyType = "";
+
     // Helper function to check if a numerical level matches a string level representation
-    const matchesLevelString = (numLevel: number, levelString: string): boolean => {
+    const matchesLevelString = (
+      numLevel: number,
+      levelString: string
+    ): boolean => {
       if (!levelString) return true;
-      
+
       // Handle "X+" format
-      if (levelString.endsWith('+')) {
-        const baseLevel = parseInt(levelString.replace('+', ''));
-        return Math.floor(numLevel) === baseLevel && (numLevel % 1) >= 0.6;
-      } 
+      if (levelString.endsWith("+")) {
+        const baseLevel = parseInt(levelString.replace("+", ""));
+        return Math.floor(numLevel) === baseLevel && numLevel % 1 >= 0.6;
+      }
       // Handle regular integer level
       else {
         const baseLevel = parseInt(levelString);
-        return Math.floor(numLevel) === baseLevel && (numLevel % 1) < 0.6;
+        return Math.floor(numLevel) === baseLevel && numLevel % 1 < 0.6;
       }
     };
-    
+
     // Helper function to process difficulties
-    const processDifficulties = (difficulties: any[], versionReleased?: string) => {
+    const processDifficulties = (
+      difficulties: any[],
+      versionReleased?: string
+    ) => {
       difficulties.forEach((diff) => {
         const numLevel = diff.level.jp || diff.level.international || 0;
-        
+
         // For type 'level', check if the numerical level matches the string representation
-        if (type === 'level' && value) {
+        if (type === "level" && value) {
           if (!matchesLevelString(numLevel, value)) {
             return;
           }
         }
-        
+
         // For type 'version', only consider charts with matching versionReleased
-        if (type === 'version' && value && versionReleased !== value) {
+        if (type === "version" && value && versionReleased !== value) {
           return;
         }
-        
+
         if (numLevel > maxLevel) {
           maxLevel = numLevel;
           difficultyType = diff.type;
@@ -155,17 +165,23 @@ export default function ChartListScreen() {
 
     // Check standard difficulties
     if (chart.standard && chart.standard.difficulties) {
-      processDifficulties(chart.standard.difficulties, chart.standard.versionReleased);
+      processDifficulties(
+        chart.standard.difficulties,
+        chart.standard.versionReleased
+      );
     }
 
     // Check deluxe difficulties
     if (chart.deluxe && chart.deluxe.difficulties) {
-      processDifficulties(chart.deluxe.difficulties, chart.deluxe.versionReleased);
+      processDifficulties(
+        chart.deluxe.difficulties,
+        chart.deluxe.versionReleased
+      );
     }
 
-    return { 
-      level: maxLevel, 
-      color: getDifficultyColor(difficultyType)
+    return {
+      level: maxLevel,
+      color: getDifficultyColor(difficultyType),
     };
   };
 
@@ -274,21 +290,23 @@ export default function ChartListScreen() {
             contentFit="cover"
           />
           <View style={styles.iconTextContainer}>
-            <ThemedText
-              numberOfLines={2}
-              style={styles.iconTitleText}
-            >
+            <ThemedText numberOfLines={2} style={styles.iconTitleText}>
               {item.title}
             </ThemedText>
             <ThemedText numberOfLines={1} style={styles.iconArtistText}>
               {item.artist || "Unknown Artist"}
             </ThemedText>
           </View>
-          
+
           {/* Show max level badge */}
-          <View style={[styles.levelBadge, { backgroundColor: getMaxLevel(item).color }]}>
+          <View
+            style={[
+              styles.levelBadge,
+              { backgroundColor: getMaxLevel(item).color },
+            ]}
+          >
             <ThemedText style={styles.levelBadgeText}>
-              {getChartConstant(getMaxLevel(item).level)}
+              {getMaxLevel(item).level}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -526,33 +544,43 @@ export default function ChartListScreen() {
             style={[
               styles.toggleButton,
               viewMode === "list" && styles.toggleButtonActive,
-              { backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0" },
+              {
+                backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0",
+              },
             ]}
             onPress={() => setViewMode("list")}
           >
             <IconSymbol
               name="list.bullet"
               size={20}
-              color={viewMode === "list" ? Colors[colorScheme ?? "light"].tint : "#888888"}
+              color={
+                viewMode === "list"
+                  ? Colors[colorScheme ?? "light"].tint
+                  : "#888888"
+              }
             />
           </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.toggleButton,
               viewMode === "icon" && styles.toggleButtonActive,
-              { backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0" },
+              {
+                backgroundColor: colorScheme === "dark" ? "#444444" : "#F0F0F0",
+              },
             ]}
             onPress={() => setViewMode("icon")}
           >
             <IconSymbol
               name="square.grid.3x3"
               size={20}
-              color={viewMode === "icon" ? Colors[colorScheme ?? "light"].tint : "#888888"}
+              color={
+                viewMode === "icon"
+                  ? Colors[colorScheme ?? "light"].tint
+                  : "#888888"
+              }
             />
           </TouchableOpacity>
         </View>
-
-        {/* Remove the group mode toggle section entirely */}
       </ThemedView>
 
       {renderContent()}
@@ -614,7 +642,7 @@ const styles = StyleSheet.create({
   },
   controlsContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     alignItems: "center",
     paddingHorizontal: 8,
     marginBottom: 16,
