@@ -26,9 +26,9 @@ import {
   showInterstitialAd,
 } from "@/components/InterstitialAdComponent";
 import { useShowAds } from "@/hooks/useShowAds";
-import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
-import Carousel from 'react-native-reanimated-carousel';
-import { Dimensions } from 'react-native';
+import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+import Carousel from "react-native-reanimated-carousel";
+import { Dimensions } from "react-native";
 
 export default function GamePlayScreen() {
   const { mode } = useLocalSearchParams();
@@ -51,7 +51,9 @@ export default function GamePlayScreen() {
   // Add this new state to store image URLs
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isImageLoading, setIsImageLoading] = useState(false);
-  const [preloadedImages, setPreloadedImages] = useState<{[key: string]: boolean}>({});
+  const [preloadedImages, setPreloadedImages] = useState<{
+    [key: string]: boolean;
+  }>({});
   const insets = useSafeAreaInsets();
   const { showAds } = useShowAds(false);
 
@@ -64,7 +66,7 @@ export default function GamePlayScreen() {
 
   // Add this state for the carousel reference
   const carouselRef = useRef<any>(null);
-  const { width } = Dimensions.get('window');
+  const { width } = Dimensions.get("window");
 
   useEffect(() => {
     loadQuestions();
@@ -73,13 +75,13 @@ export default function GamePlayScreen() {
   // Add a useEffect to track audio status changes
   useEffect(() => {
     if (!playerStatus) return;
-    
+
     if (playerStatus.isLoaded && isAudioLoading) {
       setIsAudioLoading(false);
     }
-    
+
     setIsAudioPlaying(playerStatus.playing);
-    
+
     // Start timer only when audio starts playing in audio mode
     if (mode === "audio" && playerStatus.playing && timeLeft === 15) {
       // Timer starts automatically when isAudioPlaying becomes true
@@ -90,7 +92,7 @@ export default function GamePlayScreen() {
   // or when images are fully loaded in visual mode
   useEffect(() => {
     if (loading || gameOver) return;
-    
+
     // For audio mode, only start timer when audio is playing
     if (mode === "audio" && !isAudioPlaying && timeLeft === 15) {
       return; // Don't start timer yet
@@ -127,7 +129,7 @@ export default function GamePlayScreen() {
       // Set loading state to true when changing audio URL
       setIsAudioLoading(true);
       setCurrentAudioUrl(questions[currentQuestionIndex]?.audioUrl || null);
-      
+
       // Add a small delay to ensure the audio URL is set before playing
       const timer = setTimeout(() => {
         if (audioPlayer) {
@@ -135,22 +137,22 @@ export default function GamePlayScreen() {
           audioPlayer.play();
         }
       }, 300);
-      
+
       return () => clearTimeout(timer);
     }
   }, [currentQuestionIndex, questions, loading, mode, audioPlayer]);
 
   // Add this function after the loadQuestions function
   const preloadImages = async (urls: string[]) => {
-    const preloadPromises = urls.map(url => Image.prefetch(url));
+    const preloadPromises = urls.map((url) => Image.prefetch(url));
     try {
       await Promise.all(preloadPromises);
       // Mark all images as preloaded
       const loadedImages = urls.reduce((obj, url) => {
         obj[url] = true;
         return obj;
-      }, {} as {[key: string]: boolean});
-      
+      }, {} as { [key: string]: boolean });
+
       setPreloadedImages(loadedImages);
     } catch (error) {
       console.error("Error preloading images:", error);
@@ -167,20 +169,20 @@ export default function GamePlayScreen() {
 
       // Store all audio URLs if in audio mode
       if (modeStr === "audio" && quizData.length > 0) {
-        const urls = quizData.map(q => q.audioUrl || "");
+        const urls = quizData.map((q) => q.audioUrl || "");
         setAudioUrls(urls);
-        
+
         // Set current audio URL for immediate play
         setCurrentAudioUrl(quizData[0].audioUrl);
       }
       // Store all image URLs if in visual mode
       else if (modeStr === "visual" && quizData.length > 0) {
-        const urls = quizData.map(q => q.thumbnailUrl || "");
+        const urls = quizData.map((q) => q.thumbnailUrl || "");
         setImageUrls(urls);
-        
+
         // Set loading state to true while images are preloading
         setIsImageLoading(true);
-        
+
         // Start preloading all images
         preloadImages(urls);
       }
@@ -215,7 +217,10 @@ export default function GamePlayScreen() {
 
   // Add a new effect to track image loading status
   useEffect(() => {
-    if (imageUrls.length > 0 && Object.keys(preloadedImages).length === imageUrls.length) {
+    if (
+      imageUrls.length > 0 &&
+      Object.keys(preloadedImages).length === imageUrls.length
+    ) {
       setIsImageLoading(false);
     }
   }, [preloadedImages, imageUrls]);
@@ -258,7 +263,7 @@ export default function GamePlayScreen() {
       setCurrentQuestionIndex(nextIndex);
       setTimeLeft(15);
       setSelectedAnswer(null);
-      
+
       // Update the audio URL for the next question
       if (mode === "audio" && audioUrls[nextIndex]) {
         setCurrentAudioUrl(audioUrls[nextIndex]);
@@ -347,14 +352,20 @@ export default function GamePlayScreen() {
     finalScore = score,
     finalAccumulated = accumulatedScore
   ) => {
+    // First, set game over to true so the game over screen is displayed immediately
+    setGameOver(true);
+
+    // Update scores right away
+    updateScores(completed, finalScore, finalAccumulated);
+
+    // If ads are enabled, show them AFTER displaying the game over screen
+    // Use a small timeout to ensure the game over screen is fully rendered first
     if (showAds) {
-      showInterstitialAd(() => {
-        setGameOver(true);
-        updateScores(completed, finalScore, finalAccumulated);
-      });
-    } else {
-      setGameOver(true);
-      updateScores(completed, finalScore, finalAccumulated);
+      setTimeout(() => {
+        showInterstitialAd(() => {
+          // The ad has been closed - nothing more to do since the game over screen is already shown
+        });
+      }, 1000); // Delay ad by 1 second to ensure game over screen is displayed
     }
   };
 
@@ -370,7 +381,7 @@ export default function GamePlayScreen() {
   // Update the playAudio function to toggle between play and pause
   const playAudio = () => {
     if (!audioPlayer) return;
-    
+
     // If audio is currently playing, pause it
     if (isAudioPlaying) {
       audioPlayer.pause();
@@ -472,7 +483,9 @@ export default function GamePlayScreen() {
                 {isAudioLoading ? (
                   <>
                     <ActivityIndicator size="large" color="#696FC7" />
-                    <ThemedText style={styles.playButtonText}>Loading Audio...</ThemedText>
+                    <ThemedText style={styles.playButtonText}>
+                      Loading Audio...
+                    </ThemedText>
                   </>
                 ) : isAudioPlaying ? (
                   <>
@@ -482,7 +495,9 @@ export default function GamePlayScreen() {
                 ) : (
                   <>
                     <Ionicons name="play-circle" size={80} color="#696FC7" />
-                    <ThemedText style={styles.playButtonText}>Play Audio</ThemedText>
+                    <ThemedText style={styles.playButtonText}>
+                      Play Audio
+                    </ThemedText>
                   </>
                 )}
               </TouchableOpacity>
@@ -493,7 +508,9 @@ export default function GamePlayScreen() {
             {isImageLoading && currentQuestionIndex === 0 ? (
               <View style={styles.audioContainer}>
                 <ActivityIndicator size="large" color="#696FC7" />
-                <ThemedText style={styles.playButtonText}>Loading Images...</ThemedText>
+                <ThemedText style={styles.playButtonText}>
+                  Loading Images...
+                </ThemedText>
               </View>
             ) : (
               <View style={styles.carouselContainer}>
@@ -664,31 +681,31 @@ const styles = StyleSheet.create({
   },
   playButton: {
     marginTop: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   playButtonText: {
     marginTop: 8,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   audioContainer: {
     width: 250,
     height: 250,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(105, 111, 199, 0.1)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(105, 111, 199, 0.1)",
     borderRadius: 12,
     marginBottom: 16,
   },
   carouselContainer: {
     width: 250,
     height: 250,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(105, 111, 199, 0.1)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(105, 111, 199, 0.1)",
     borderRadius: 12,
     marginBottom: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
 });
