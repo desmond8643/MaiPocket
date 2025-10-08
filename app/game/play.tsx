@@ -237,6 +237,7 @@ export default function GamePlayScreen() {
     }
   };
 
+  // Modify the handleAnswer function (around line 240) to add a delay before game over
   const handleAnswer = (answer: string) => {
     const currentQuestion = questions[currentQuestionIndex];
     setSelectedAnswer(answer);
@@ -247,7 +248,11 @@ export default function GamePlayScreen() {
       } else {
         // Vibrate when answer is wrong
         Vibration.vibrate(300);
-        handleGameOver();
+        
+        // Add delay before game over to show the correct answer
+        setTimeout(() => {
+          handleGameOver();
+        }, 2000); // 2 second delay to show the correct answer
       }
     }, 1000);
   };
@@ -544,10 +549,12 @@ export default function GamePlayScreen() {
             key={index}
             style={[
               styles.answerButton,
-              selectedAnswer === choice &&
-                (choice === currentQuestion.correctAnswer
-                  ? styles.correctAnswer
-                  : styles.wrongAnswer),
+              // Modified logic to show correct answer when any wrong answer is selected
+              selectedAnswer !== null && choice === currentQuestion.correctAnswer
+                ? styles.correctAnswer
+                : selectedAnswer === choice && choice !== currentQuestion.correctAnswer
+                ? styles.wrongAnswer
+                : {},
             ]}
             onPress={() => handleAnswer(choice)}
             disabled={selectedAnswer !== null}
