@@ -68,6 +68,9 @@ export default function GamePlayScreen() {
   const carouselRef = useRef<any>(null);
   const { width } = Dimensions.get("window");
 
+  // Add a new state variable around line 40 (with the other state variables)
+  const [showingCorrectAnswer, setShowingCorrectAnswer] = useState(false);
+
   useEffect(() => {
     loadQuestions();
   }, []);
@@ -91,7 +94,7 @@ export default function GamePlayScreen() {
   // Modify your timer effect to only start when audio is playing in audio mode
   // or when images are fully loaded in visual mode
   useEffect(() => {
-    if (loading || gameOver) return;
+    if (loading || gameOver || showingCorrectAnswer) return; // Add showingCorrectAnswer check here
 
     // For audio mode, only start timer when audio is playing
     if (mode === "audio" && !isAudioPlaying && timeLeft === 15) {
@@ -115,7 +118,7 @@ export default function GamePlayScreen() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [loading, gameOver, currentQuestionIndex, isAudioPlaying, isImageLoading]);
+  }, [loading, gameOver, currentQuestionIndex, isAudioPlaying, isImageLoading, showingCorrectAnswer]); // Add showingCorrectAnswer dependency
 
   useEffect(() => {
     if (showAds) {
@@ -237,7 +240,7 @@ export default function GamePlayScreen() {
     }
   };
 
-  // Modify the handleAnswer function (around line 240) to add a delay before game over
+  // Modify the handleAnswer function to set this state
   const handleAnswer = (answer: string) => {
     const currentQuestion = questions[currentQuestionIndex];
     setSelectedAnswer(answer);
@@ -249,8 +252,12 @@ export default function GamePlayScreen() {
         // Vibrate when answer is wrong
         Vibration.vibrate(300);
         
+        // Set the flag to prevent timer countdown
+        setShowingCorrectAnswer(true);
+        
         // Add delay before game over to show the correct answer
         setTimeout(() => {
+          setShowingCorrectAnswer(false); // Reset the flag
           handleGameOver();
         }, 2000); // 2 second delay to show the correct answer
       }
