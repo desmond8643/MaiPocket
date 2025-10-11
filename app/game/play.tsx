@@ -69,6 +69,11 @@ export default function GamePlayScreen() {
   // Add a new state variable around line 40 (with the other state variables)
   const [showingCorrectAnswer, setShowingCorrectAnswer] = useState(false);
 
+  // Add these state variables for crystal tracking
+  const [crystalsEarned, setCrystalsEarned] = useState(0);
+  const [dailyCrystalsEarned, setDailyCrystalsEarned] = useState(0);
+  const [dailyLimit, setDailyLimit] = useState(50);
+
   useEffect(() => {
     loadQuestions();
   }, []);
@@ -116,7 +121,14 @@ export default function GamePlayScreen() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [loading, gameOver, currentQuestionIndex, isAudioPlaying, isImageLoading, showingCorrectAnswer]); // Add showingCorrectAnswer dependency
+  }, [
+    loading,
+    gameOver,
+    currentQuestionIndex,
+    isAudioPlaying,
+    isImageLoading,
+    showingCorrectAnswer,
+  ]); // Add showingCorrectAnswer dependency
 
   useEffect(() => {
     if (showAds) {
@@ -249,10 +261,10 @@ export default function GamePlayScreen() {
       } else {
         // Vibrate when answer is wrong
         Vibration.vibrate(300);
-        
+
         // Set the flag to prevent timer countdown
         setShowingCorrectAnswer(true);
-        
+
         // Add delay before game over to show the correct answer
         setTimeout(() => {
           setShowingCorrectAnswer(false); // Reset the flag
@@ -319,6 +331,13 @@ export default function GamePlayScreen() {
         // Update local state with server values
         setBestScore(serverResponse.highScore);
         setIsNewRecord(updatedStreak > bestScore);
+
+        // Add this to handle crystal rewards
+        if (serverResponse.crystalsEarned > 0) {
+          setCrystalsEarned(serverResponse.crystalsEarned);
+          setDailyCrystalsEarned(serverResponse.dailyCrystalsEarned);
+          setDailyLimit(serverResponse.dailyLimit);
+        }
 
         // No need to update local storage for logged-in users as we'll always fetch from server
       } else {
@@ -441,6 +460,23 @@ export default function GamePlayScreen() {
             <ThemedText style={{ color: "#4CAF50" }}>(New Record!)</ThemedText>
           )}
         </ThemedText>
+        {/* Add this section to display crystal rewards */}
+        {crystalsEarned > 0 && (
+          <View style={styles.crystalRewardContainer}>
+            <Image
+              source={require("@/assets/images/crystal.png")}
+              style={{ height: 40, width: 20, marginRight: 8 }}
+            />
+            <ThemedText style={styles.crystalRewardText}>
+              +{crystalsEarned} Crystals!
+            </ThemedText>
+          </View>
+        )}
+        {dailyCrystalsEarned > 0 && (
+          <ThemedText style={styles.crystalDailyText}>
+            {dailyCrystalsEarned}/{dailyLimit} daily crystals earned
+          </ThemedText>
+        )}
 
         <View style={styles.buttonRow}>
           <TouchableOpacity
@@ -539,7 +575,6 @@ export default function GamePlayScreen() {
                       source={{ uri: item.thumbnailUrl }}
                       style={styles.thumbnail}
                       resizeMode="cover"
-                      
                     />
                   )}
                 />
@@ -556,9 +591,11 @@ export default function GamePlayScreen() {
             style={[
               styles.answerButton,
               // Modified logic to show correct answer when any wrong answer is selected
-              selectedAnswer !== null && choice === currentQuestion.correctAnswer
+              selectedAnswer !== null &&
+              choice === currentQuestion.correctAnswer
                 ? styles.correctAnswer
-                : selectedAnswer === choice && choice !== currentQuestion.correctAnswer
+                : selectedAnswer === choice &&
+                  choice !== currentQuestion.correctAnswer
                 ? styles.wrongAnswer
                 : {},
             ]}
@@ -720,5 +757,24 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     overflow: "hidden",
+  },
+  crystalRewardContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // backgroundColor: 'rgba(153, 68, 221, 0.15)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 15,
+  },
+  crystalRewardText: {
+    color: '#4C8BF5',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  crystalDailyText: {
+    marginTop: 6,
+    fontSize: 14,
+    color: '#888',
   },
 });

@@ -10,10 +10,10 @@ import {
   ActivityIndicator,
   Image,
   ScrollView,
-  Modal, // Add this import
+  Modal
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getHighScores } from "@/api/client";
+import { getCrystalStatus, getHighScores } from "@/api/client";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { UserScore } from "@/types/game";
@@ -22,6 +22,19 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { useAds } from "@/context/AdContext";
+
+// Helper function to format the time remaining
+const formatTimeRemaining = (milliseconds: number) => {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  } else {
+    return `${minutes}m`;
+  }
+};
 
 export default function GameHomeScreen() {
   const [user, setUser] = useState(null);
@@ -41,6 +54,15 @@ export default function GameHomeScreen() {
   // Add state for the modal inside the GameHomeScreen component
   const [showCrystalInfo, setShowCrystalInfo] = useState(false);
 
+  const [crystalStatus, setCrystalStatus] = useState({
+    crystals: 0,
+    dailyCrystalsEarned: 0,
+    dailyLimit: 50,
+    remainingToday: 50,
+    nextResetTime: null,
+    timeUntilReset: null
+  });
+
   useEffect(() => {
     // Check if user is logged in using your existing method
     checkUserAuth();
@@ -53,6 +75,7 @@ export default function GameHomeScreen() {
       loadLocalScores();
       if (user) {
         loadServerScores();
+        loadCrystalStatus();
       }
     }, [user])
   );
@@ -101,6 +124,19 @@ export default function GameHomeScreen() {
       console.error("Error loading server scores:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Add this function after loadServerScores()
+  const loadCrystalStatus = async () => {
+    try {
+      if (!user) return;
+      const status = await getCrystalStatus();
+      if (status) {
+        setCrystalStatus(status);
+      }
+    } catch (error) {
+      console.error("Error loading crystal status:", error);
     }
   };
 
@@ -232,7 +268,6 @@ export default function GameHomeScreen() {
               Customize your play experience
             </ThemedText>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={[
               styles.modeButton,
@@ -251,9 +286,17 @@ export default function GameHomeScreen() {
               style={{ height: 100, width: 50 }}
             />
             <View style={{ flex: 1 }}>
-              <ThemedText style={{ fontSize: 16, fontWeight: "bold" }}>
-                Get 50 Crystals daily!
-              </ThemedText>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <ThemedText style={{ fontSize: 16, fontWeight: "bold" }}>
+                  Get 50 Crystals daily!
+                </ThemedText>
+              </View>
               <View
                 style={{
                   marginTop: 16,
@@ -264,12 +307,17 @@ export default function GameHomeScreen() {
                   position: "relative",
                 }}
               >
+                {/* Progress bar and other elements remain the same */}
                 <View
                   style={{
-                    width: "60%", // Set to 10/50 = 20%
+                    width: `${Math.min(
+                      100,
+                      (crystalStatus.dailyCrystalsEarned /
+                        crystalStatus.dailyLimit) *
+                        100
+                    )}%`,
                     height: "100%",
-                    // backgroundColor: "#4CAF50",
-                    backgroundColor: '#4C8BF5',
+                    backgroundColor: "#4C8BF5",
                   }}
                 />
                 <View
@@ -293,12 +341,23 @@ export default function GameHomeScreen() {
                       textShadowRadius: 2,
                     }}
                   >
-                    30 / 50
+                    {user
+                      ? `${crystalStatus.dailyCrystalsEarned} / ${crystalStatus.dailyLimit}`
+                      : "Login to earn crystals!"}
                   </ThemedText>
                 </View>
               </View>
+              {/* Add time remaining display */}
+              {user && crystalStatus.timeUntilReset && (
+                <ThemedText
+                  style={{ fontSize: 12, color: "gray", marginTop: 10 }}
+                >
+                  Resets in: {formatTimeRemaining(crystalStatus.timeUntilReset)}
+                </ThemedText>
+              )}
             </View>
           </TouchableOpacity>
+
           {/* <TouchableOpacity
             style={styles.leaderboardButton}
             onPress={() => router.push("/game/leaderboard")}
@@ -332,12 +391,16 @@ export default function GameHomeScreen() {
                 source={require("@/assets/images/crystal.png")}
                 style={{ height: 50, width: 25, marginRight: 10 }}
               />
-              <ThemedText style={styles.modalTitle}>Daily Crystal Rewards</ThemedText>
+              <ThemedText style={styles.modalTitle}>
+                Daily Crystal Rewards
+              </ThemedText>
             </View>
-            
+
             <View style={styles.modalContent}>
-              <ThemedText style={styles.modalSubtitle}>How to earn crystals:</ThemedText>
-              
+              <ThemedText style={styles.modalSubtitle}>
+                How to earn crystals:
+              </ThemedText>
+
               <View style={styles.rewardItem}>
                 <ThemedText style={styles.rewardLabel}>
                   Visual Mode & Audio Mode:
@@ -346,18 +409,16 @@ export default function GameHomeScreen() {
                   Get All Perfect (10/10) → 25 crystals
                 </ThemedText>
               </View>
-              
+
               <View style={styles.rewardItem}>
-                <ThemedText style={styles.rewardLabel}>
-                  Casual Mode:
-                </ThemedText>
+                <ThemedText style={styles.rewardLabel}>Casual Mode:</ThemedText>
                 <ThemedText style={styles.rewardDescription}>
                   Get at least 5/10 → 10 crystals
                 </ThemedText>
               </View>
-              
+
               <View style={styles.divider} />
-              
+
               <ThemedText style={styles.limitText}>
                 Maximum 50 crystals can be earned daily
               </ThemedText>
@@ -365,12 +426,12 @@ export default function GameHomeScreen() {
                 Resets daily at 4:00 AM (GMT+8)
               </ThemedText>
             </View>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setShowCrystalInfo(false)}
             >
-              <ThemedText style={styles.closeButtonText}>Got it!</ThemedText>
+              <ThemedText style={styles.closeButtonText}>Got it</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </TouchableOpacity>
@@ -455,38 +516,38 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   modalContainer: {
-    width: '90%',
+    width: "90%",
     borderRadius: 12,
     // backgroundColor: "#FFFFFF", // Assuming a light theme background
     padding: 20,
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
   modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 15,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#9944DD',
+    fontWeight: "bold",
+    color: "#9944DD",
   },
   modalContent: {
     marginBottom: 20,
   },
   modalSubtitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   rewardItem: {
@@ -494,7 +555,7 @@ const styles = StyleSheet.create({
   },
   rewardLabel: {
     fontSize: 15,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   rewardDescription: {
     fontSize: 14,
@@ -502,30 +563,30 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: "rgba(0,0,0,0.1)",
     marginVertical: 15,
   },
   limitText: {
     fontSize: 15,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     // color: '#4CAF50',
     // color: '#4C8BF5'
-    color: '#9944DD',
+    color: "#9944DD",
   },
   resetText: {
     fontSize: 13,
     marginTop: 5,
-    color: 'gray',
+    color: "gray",
   },
   closeButton: {
-    backgroundColor: '#9944DD',
+    backgroundColor: "#9944DD",
     borderRadius: 8,
     padding: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   closeButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     fontSize: 16,
   },
 });

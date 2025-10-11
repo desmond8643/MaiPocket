@@ -413,14 +413,6 @@ export const submitScore = async (
   accumulatedStreak: number, // This is for high score comparison
   currentStreak: number      // This is for next game (0 if lost)
 ) => {
-  // const userDataString = await AsyncStorage.getItem("userData");
-  // let userId = null;
-
-  // if (userDataString) {
-  //   const userData = JSON.parse(userDataString);
-  //   userId = userData.id;
-  // }
-
   const response = await apiClient.post("/game/score", {
     mode,
     score,
@@ -433,13 +425,6 @@ export const submitScore = async (
 };
 
 export const getHighScores = async () => {
-  // const userDataString = await AsyncStorage.getItem("userData");
-  // let userId = null;
-
-  // if (userDataString) {
-  //   const userData = JSON.parse(userDataString);
-  //   userId = userData.id; // Assuming the user ID is stored as _id
-  // }
   const response = await apiClient.get(
     `/game/scores`
   );
@@ -456,4 +441,14 @@ export const getLeaderboard = async (
 export const getUserStreak = async (mode: string): Promise<{ currentStreak: number, highScore: number }> => {
   const response = await apiClient.get(`/game/streak/${mode}`);
   return response.data;
+};
+
+export const getCrystalStatus = async () => {
+  try {
+    const response = await apiClient.get('/game/crystal-status');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching crystal status:', error);
+    return null;
+  }
 };
