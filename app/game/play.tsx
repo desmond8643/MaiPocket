@@ -42,11 +42,9 @@ export default function GamePlayScreen() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [bestScore, setBestScore] = useState(0);
-  const [audioLoaded, setAudioLoaded] = useState(false);
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
   // Add this state to store preloaded players
   const [audioUrls, setAudioUrls] = useState<string[]>([]);
-  const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
   const audioPlayer = useAudioPlayer(currentAudioUrl);
   // Add this new state to store image URLs
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -541,6 +539,7 @@ export default function GamePlayScreen() {
                       source={{ uri: item.thumbnailUrl }}
                       style={styles.thumbnail}
                       resizeMode="cover"
+                      
                     />
                   )}
                 />
