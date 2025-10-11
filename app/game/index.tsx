@@ -8,6 +8,9 @@ import {
   View,
   Alert,
   ActivityIndicator,
+  Image,
+  ScrollView,
+  Modal, // Add this import
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getHighScores } from "@/api/client";
@@ -34,6 +37,9 @@ export default function GameHomeScreen() {
   const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();
   const showActualAds = !adsRemoved && !temporaryAdRemoval;
+
+  // Add state for the modal inside the GameHomeScreen component
+  const [showCrystalInfo, setShowCrystalInfo] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in using your existing method
@@ -142,91 +148,233 @@ export default function GameHomeScreen() {
         >
           Song Quiz Game
         </ThemedText>
-        <View style={{ width: 36 }} />
+        {/* <View style={{ width: 36 }} /> */}
+        <TouchableOpacity
+          style={styles.trophyContainer}
+          onPress={() => router.push("/game/leaderboard")}
+        >
+          <Ionicons name="trophy-outline" size={24} color="#FFD700" />
+        </TouchableOpacity>
       </View>
       <ThemedText style={styles.description}>
-        Test your maimai knowledge! Guess songs from thumbnails and screenshots.
+        Test your maimai knowledge! Guess songs from thumbnails and audio.
       </ThemedText>
+      <ScrollView>
+        <View style={styles.modeContainer}>
+          <TouchableOpacity
+            style={[styles.modeButton, { backgroundColor: "#9944DD" }]}
+            onPress={() => startGame("visual")}
+          >
+            <ThemedText style={styles.modeButtonText}>Visual Mode</ThemedText>
+            <ThemedText style={styles.modeDescription}>
+              Guess songs from thumbnails and screenshots
+            </ThemedText>
+            <View style={styles.scoreContainer}>
+              <ThemedText style={styles.scoreText}>
+                High Score:{" "}
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : user ? (
+                  serverScores.visual.highScore
+                ) : (
+                  localScores.visual.highScore
+                )}
+              </ThemedText>
+              <ThemedText style={styles.scoreText}>
+                Current Streak:{" "}
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : user ? (
+                  serverScores.visual.currentStreak
+                ) : (
+                  localScores.visual.currentStreak
+                )}
+              </ThemedText>
+            </View>
+          </TouchableOpacity>
 
-      <View style={styles.modeContainer}>
-        <TouchableOpacity
-          style={[styles.modeButton, { backgroundColor: "#9944DD" }]}
-          onPress={() => startGame("visual")}
-        >
-          <ThemedText style={styles.modeButtonText}>Visual Mode</ThemedText>
-          <ThemedText style={styles.modeDescription}>
-            Guess songs from thumbnails and screenshots
-          </ThemedText>
-          <View style={styles.scoreContainer}>
-            <ThemedText style={styles.scoreText}>
-              High Score:{" "}
-              {isLoading ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : user ? (
-                serverScores.visual.highScore
-              ) : (
-                localScores.visual.highScore
-              )}
+          <TouchableOpacity
+            style={[styles.modeButton, { backgroundColor: "#4C8BF5" }]}
+            onPress={() => startGame("audio")}
+          >
+            <ThemedText style={styles.modeButtonText}>Audio Mode</ThemedText>
+            <ThemedText style={styles.modeDescription}>
+              Guess songs from audio clips
             </ThemedText>
-            <ThemedText style={styles.scoreText}>
-              Current Streak:{" "}
-              {isLoading ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : user ? (
-                serverScores.visual.currentStreak
-              ) : (
-                localScores.visual.currentStreak
-              )}
+            <View style={styles.scoreContainer}>
+              <ThemedText style={styles.scoreText}>
+                High Score:{" "}
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : user ? (
+                  serverScores.audio?.highScore || 0
+                ) : (
+                  localScores.audio?.highScore || 0
+                )}
+              </ThemedText>
+              <ThemedText style={styles.scoreText}>
+                Current Streak:{" "}
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : user ? (
+                  serverScores.audio?.currentStreak || 0
+                ) : (
+                  localScores.audio?.currentStreak || 0
+                )}
+              </ThemedText>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.modeButton, { backgroundColor: "#4CAF50" }]}
+          >
+            <ThemedText style={styles.modeButtonText}>Casual Mode</ThemedText>
+            <ThemedText style={styles.modeDescription}>
+              Customize your play experience
             </ThemedText>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.modeButton, { backgroundColor: "#4C8BF5" }]}
-          onPress={() => startGame("audio")}
-        >
-          <ThemedText style={styles.modeButtonText}>Audio Mode</ThemedText>
-          <ThemedText style={styles.modeDescription}>
-            Guess songs from audio clips
-          </ThemedText>
-          <View style={styles.scoreContainer}>
-            <ThemedText style={styles.scoreText}>
-              High Score:{" "}
-              {isLoading ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : user ? (
-                serverScores.audio?.highScore || 0
-              ) : (
-                localScores.audio?.highScore || 0
-              )}
+          <TouchableOpacity
+            style={[
+              styles.modeButton,
+              {
+                flexDirection: "row",
+                justifyContent: "flex-start",
+                gap: 25,
+                alignItems: "center",
+                backgroundColor: "rgba(174, 117, 218, 0.1)",
+              },
+            ]}
+            onPress={() => setShowCrystalInfo(true)}
+          >
+            <Image
+              source={require("@/assets/images/crystal.png")}
+              style={{ height: 100, width: 50 }}
+            />
+            <View style={{ flex: 1 }}>
+              <ThemedText style={{ fontSize: 16, fontWeight: "bold" }}>
+                Get 50 Crystals daily!
+              </ThemedText>
+              <View
+                style={{
+                  marginTop: 16,
+                  height: 25,
+                  backgroundColor: "rgba(0, 0, 0, 0.2)",
+                  borderRadius: 6,
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+              >
+                <View
+                  style={{
+                    width: "60%", // Set to 10/50 = 20%
+                    height: "100%",
+                    // backgroundColor: "#4CAF50",
+                    backgroundColor: '#4C8BF5',
+                  }}
+                />
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <ThemedText
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "bold",
+                      color: "white",
+                      textShadowColor: "rgba(0, 0, 0, 0.5)",
+                      textShadowOffset: { width: 1, height: 1 },
+                      textShadowRadius: 2,
+                    }}
+                  >
+                    30 / 50
+                  </ThemedText>
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+          {/* <TouchableOpacity
+            style={styles.leaderboardButton}
+            onPress={() => router.push("/game/leaderboard")}
+          >
+            <ThemedText style={styles.leaderboardButtonText}>
+              View Leaderboards
             </ThemedText>
-            <ThemedText style={styles.scoreText}>
-              Current Streak:{" "}
-              {isLoading ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : user ? (
-                serverScores.audio?.currentStreak || 0
-              ) : (
-                localScores.audio?.currentStreak || 0
-              )}
-            </ThemedText>
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity
-        style={styles.leaderboardButton}
-        onPress={() => router.push("/game/leaderboard")}
-      >
-        <ThemedText style={styles.leaderboardButtonText}>
-          View Leaderboards
-        </ThemedText>
-      </TouchableOpacity>
+          </TouchableOpacity> */}
+        </View>
+      </ScrollView>
       {showActualAds && (
         <View style={dynamicStyles.bottomAdContainer}>
           <BannerAdComponent />
         </View>
       )}
+
+      <Modal
+        visible={showCrystalInfo}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowCrystalInfo(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowCrystalInfo(false)}
+        >
+          <ThemedView style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Image
+                source={require("@/assets/images/crystal.png")}
+                style={{ height: 50, width: 25, marginRight: 10 }}
+              />
+              <ThemedText style={styles.modalTitle}>Daily Crystal Rewards</ThemedText>
+            </View>
+            
+            <View style={styles.modalContent}>
+              <ThemedText style={styles.modalSubtitle}>How to earn crystals:</ThemedText>
+              
+              <View style={styles.rewardItem}>
+                <ThemedText style={styles.rewardLabel}>
+                  Visual Mode & Audio Mode:
+                </ThemedText>
+                <ThemedText style={styles.rewardDescription}>
+                  Get All Perfect (10/10) → 25 crystals
+                </ThemedText>
+              </View>
+              
+              <View style={styles.rewardItem}>
+                <ThemedText style={styles.rewardLabel}>
+                  Casual Mode:
+                </ThemedText>
+                <ThemedText style={styles.rewardDescription}>
+                  Get at least 5/10 → 10 crystals
+                </ThemedText>
+              </View>
+              
+              <View style={styles.divider} />
+              
+              <ThemedText style={styles.limitText}>
+                Maximum 50 crystals can be earned daily
+              </ThemedText>
+              <ThemedText style={styles.resetText}>
+                Resets daily at 4:00 AM (GMT+8)
+              </ThemedText>
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setShowCrystalInfo(false)}
+            >
+              <ThemedText style={styles.closeButtonText}>Got it!</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        </TouchableOpacity>
+      </Modal>
     </ThemedView>
   );
 }
@@ -290,6 +438,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     // paddingHorizontal: 16,
+    alignItems: "center",
     paddingVertical: 12,
     justifyContent: "space-between",
   },
@@ -300,5 +449,83 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 999,
     alignItems: "center",
+  },
+  trophyContainer: {
+    marginLeft: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContainer: {
+    width: '90%',
+    borderRadius: 12,
+    // backgroundColor: "#FFFFFF", // Assuming a light theme background
+    padding: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#9944DD',
+  },
+  modalContent: {
+    marginBottom: 20,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  rewardItem: {
+    marginBottom: 12,
+  },
+  rewardLabel: {
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  rewardDescription: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    marginVertical: 15,
+  },
+  limitText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    // color: '#4CAF50',
+    // color: '#4C8BF5'
+    color: '#9944DD',
+  },
+  resetText: {
+    fontSize: 13,
+    marginTop: 5,
+    color: 'gray',
+  },
+  closeButton: {
+    backgroundColor: '#9944DD',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });

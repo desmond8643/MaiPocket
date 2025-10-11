@@ -40,7 +40,7 @@ export default function ProfileScreen() {
         // Always fetch fresh user data
         const freshUserData = await AuthAPI.getCurrentUser();
         setUserData(freshUserData);
-        
+
         // Optionally update AsyncStorage with latest data
         await AsyncStorage.setItem("userData", JSON.stringify(freshUserData));
       }
@@ -124,17 +124,25 @@ export default function ProfileScreen() {
               </ThemedText>
 
               <View style={styles.statsContainer}>
-                <View style={styles.statItem}>
+                <View
+                  style={{ ...styles.statItem, flexDirection: "row", gap: 20 }}
+                >
+                  <ThemedText style={styles.statLabel}>EXP</ThemedText>
                   <ThemedText style={styles.statValue}>
                     {userData.exp || 0}
                   </ThemedText>
-                  <ThemedText style={styles.statLabel}>EXP</ThemedText>
                 </View>
-                <View style={styles.statItem}>
+                <View
+                  style={{ ...styles.statItem, flexDirection: "row", gap: 20 }}
+                >
+                  <Image
+                    source={require("@/assets/images/crystal.png")}
+                    style={styles.crystal}
+                  />
                   <ThemedText style={styles.statValue}>
                     {userData.crystals || 0}
                   </ThemedText>
-                  <ThemedText style={styles.statLabel}>Crystals</ThemedText>
+                  {/* <ThemedText style={styles.statLabel}>Crystals</ThemedText> */}
                 </View>
                 {userData.isPro && (
                   <View style={[styles.statItem, styles.proBadge]}>
@@ -240,6 +248,10 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  crystal: {
+    width: 20,
+    height: 40,
+  },
   container: {
     flex: 1,
   },
