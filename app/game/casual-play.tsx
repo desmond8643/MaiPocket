@@ -23,7 +23,12 @@ import {
 import { useShowAds } from "@/hooks/useShowAds";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import Carousel from "react-native-reanimated-carousel";
-import { getCasualQuizQuestions } from "@/api/client";
+import {
+  AuthAPI,
+  getCasualQuizQuestions,
+  submitCasualScore,
+} from "@/api/client";
+import { fetchDataImmediately } from "@/context/GameQueryProvider";
 
 export default function CasualGamePlayScreen() {
   const { mode } = useLocalSearchParams();
@@ -68,10 +73,15 @@ export default function CasualGamePlayScreen() {
   // Add these state variables for tracking player status
   const playerStatus = useAudioPlayerStatus(audioPlayer);
 
+  // Add these state variables for crystal tracking
+  const [crystalsEarned, setCrystalsEarned] = useState(0);
+  const [dailyCrystalsEarned, setDailyCrystalsEarned] = useState(0);
+  const [dailyLimit, setDailyLimit] = useState(50);
+
   // Categories
   const genres = [
     { display: "POPS＆アニメ", value: "POPS＆アニメ" },
-    { display: "NICONICO＆ボーカロイド", value: "NICONICO＆ボーカロイド" },
+    { display: "NICONICO＆ボーカロイド", value: "niconico＆ボーカロイド" },
     { display: "東方Project", value: "東方Project" },
     { display: "ゲーム&バラエティー", value: "ゲーム＆バラエティ" },
     { display: "MAIMAI", value: "maimai" },
@@ -248,6 +258,32 @@ export default function CasualGamePlayScreen() {
 
   const handleGameOver = async () => {
     setGameOver(true);
+
+    // Add submission of score for crystal rewards when score is 5 or more
+    try {
+      const isLoggedIn = await AuthAPI.isLoggedIn();
+      if (isLoggedIn && score >= 5) {
+        // Submit score to earn crystals but don't track game scores
+        const response = await submitCasualScore(score);
+
+        // Set crystal values - add this line to reset crystalsEarned to 0 if not earned
+        setCrystalsEarned(response.crystalsEarned || 0);
+        if (response.crystalsEarned > 0) {
+          setDailyCrystalsEarned(response.dailyCrystalsEarned);
+          setDailyLimit(response.dailyLimit);
+        }
+
+        // Refresh global crystal status
+        await fetchDataImmediately("crystalStatus");
+      } else {
+        // Make sure crystalsEarned is 0 for users with score < 5
+        setCrystalsEarned(0);
+      }
+    } catch (error) {
+      console.error("Error submitting casual score:", error);
+      // Ensure crystalsEarned is 0 in case of error
+      setCrystalsEarned(0);
+    }
 
     if (showAds) {
       setTimeout(() => {
@@ -643,7 +679,17 @@ export default function CasualGamePlayScreen() {
     return (
       <ThemedView style={[styles.container, styles.centered]}>
         <Ionicons
-          name={score === 10 ? "trophy" : "checkmark-circle"}
+          name={
+            score === 10
+              ? "trophy"
+              : score >= 7
+              ? "star"
+              : score >= 5
+              ? "checkmark-circle"
+              : score >= 1
+              ? "remove-circle"
+              : "close-circle"
+          }
           size={80}
           color={performanceColor}
         />
@@ -653,6 +699,23 @@ export default function CasualGamePlayScreen() {
         <ThemedText style={styles.scoreText}>
           Your Score: {score}/{questions.length}
         </ThemedText>
+
+        {crystalsEarned > 0 && (
+          <View style={styles.crystalContainer}>
+            <Image
+              source={require("@/assets/images/crystal.png")}
+              style={{ height: 40, width: 20 }}
+            />
+            <ThemedText style={styles.crystalText}>
+              +{crystalsEarned} Crystals Earned!
+            </ThemedText>
+          </View>
+        )}
+        {dailyCrystalsEarned > 0 && (
+          <ThemedText style={styles.dailyCrystalText}>
+            {dailyCrystalsEarned}/{dailyLimit} daily crystals earned
+          </ThemedText>
+        )}
 
         <View style={styles.buttonRow}>
           <TouchableOpacity
@@ -991,5 +1054,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#F44336",
     alignItems: "center",
+  },
+  crystalContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 12,
+  },
+  crystalText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#4C8BF5",
+    marginLeft: 8,
+  },
+  dailyCrystalText: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#888",
   },
 });

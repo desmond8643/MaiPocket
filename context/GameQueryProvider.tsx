@@ -89,10 +89,10 @@ export function useGameScores() {
       }
       return getHighScores();
     },
-    refetchOnMount: true,
-    retry: 2,
-    refetchInterval: 5000,
-    enabled: isLoggedIn, // Now using a boolean state
+    // refetchOnMount: true,
+    // retry: 2,
+    // refetchInterval: 5000,
+    // enabled: isLoggedIn, // Now using a boolean state
   });
 }
 
@@ -124,10 +124,10 @@ export function useCrystalStatus() {
       }
       return getCrystalStatus();
     },
-    refetchOnMount: true,
-    retry: 2,
-    refetchInterval: 5000,
-    enabled: isLoggedIn, // Now using a boolean state
+    // refetchOnMount: true,
+    // retry: 2,
+    // refetchInterval: 5000,
+    // enabled: isLoggedIn, // Now using a boolean state
     placeholderData: {
       crystals: 0,
       dailyCrystalsEarned: 0,

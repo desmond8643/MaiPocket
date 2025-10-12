@@ -22,7 +22,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { useAds } from "@/context/AdContext";
-import { useCrystalStatus, useGameScores } from "@/context/GameQueryProvider";
+import {
+  fetchDataImmediately,
+  useCrystalStatus,
+  useGameScores,
+} from "@/context/GameQueryProvider";
 
 // Helper function to format the time remaining
 const formatTimeRemaining = (milliseconds: number) => {
@@ -73,6 +77,14 @@ export default function GameHomeScreen() {
     // Check if user is logged in using your existing method
     checkUserAuth();
     loadLocalScores();
+
+    // Create and call an async function
+    const fetchData = async () => {
+      await fetchDataImmediately("gameScores");
+      await fetchDataImmediately("crystalStatus");
+    };
+
+    fetchData();
   }, []);
 
   // Add focus listener to refresh scores when returning to this screen
@@ -342,6 +354,7 @@ export default function GameHomeScreen() {
               <ThemedText style={styles.modalTitle}>
                 Daily Crystal Rewards
               </ThemedText>
+              <View></View>
             </View>
 
             <View style={styles.modalContent}>
@@ -482,6 +495,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 15,
+    justifyContent: "space-between",
   },
   modalTitle: {
     fontSize: 20,

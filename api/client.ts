@@ -475,3 +475,11 @@ export const getCasualQuizQuestions = async (
   );
   return response.data;
 };
+
+// Add to api/client.ts
+export const submitCasualScore = async (score: number) => {
+  const response = await apiClient.post("/game/casual-crystals", {
+    score,
+  });
+  return response.data;
+};
