@@ -29,6 +29,7 @@ import { useShowAds } from "@/hooks/useShowAds";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import Carousel from "react-native-reanimated-carousel";
 import { Dimensions } from "react-native";
+import { fetchDataImmediately, queryClient } from "@/context/GameQueryProvider";
 
 export default function GamePlayScreen() {
   const { mode } = useLocalSearchParams();
@@ -64,7 +65,7 @@ export default function GamePlayScreen() {
 
   // Add this state for the carousel reference
   const carouselRef = useRef<any>(null);
-  const { width } = Dimensions.get("window");
+  // const { width } = Dimensions.get("window");
 
   // Add a new state variable around line 40 (with the other state variables)
   const [showingCorrectAnswer, setShowingCorrectAnswer] = useState(false);
@@ -338,8 +339,8 @@ export default function GamePlayScreen() {
           setDailyCrystalsEarned(serverResponse.dailyCrystalsEarned);
           setDailyLimit(serverResponse.dailyLimit);
         }
-
-        // No need to update local storage for logged-in users as we'll always fetch from server
+        await fetchDataImmediately("gameScores");
+        await fetchDataImmediately("crystalStatus");
       } else {
         // For non-logged in users, use local storage
         const storageKey = "songQuizScores";
@@ -381,20 +382,14 @@ export default function GamePlayScreen() {
     finalScore = score,
     finalAccumulated = accumulatedScore
   ) => {
-    // First, set game over to true so the game over screen is displayed immediately
     setGameOver(true);
 
-    // Update scores right away
     updateScores(completed, finalScore, finalAccumulated);
 
-    // If ads are enabled, show them AFTER displaying the game over screen
-    // Use a small timeout to ensure the game over screen is fully rendered first
     if (showAds) {
       setTimeout(() => {
-        showInterstitialAd(() => {
-          // The ad has been closed - nothing more to do since the game over screen is already shown
-        });
-      }, 1000); // Delay ad by 1 second to ensure game over screen is displayed
+        showInterstitialAd(() => {});
+      }, 1000);
     }
   };
 
@@ -598,11 +593,28 @@ export default function GamePlayScreen() {
                   choice !== currentQuestion.correctAnswer
                 ? styles.wrongAnswer
                 : {},
+              // Add disabled style when buttons are disabled
+              ((mode === "audio" && isAudioLoading) ||
+                (mode === "visual" && isImageLoading)) &&
+                styles.disabledButton,
             ]}
             onPress={() => handleAnswer(choice)}
-            disabled={selectedAnswer !== null}
+            disabled={
+              selectedAnswer !== null ||
+              (mode === "audio" && isAudioLoading) ||
+              (mode === "visual" && isImageLoading)
+            }
           >
-            <ThemedText style={styles.answerButtonText}>{choice}</ThemedText>
+            <ThemedText
+              style={[
+                styles.answerButtonText,
+                ((mode === "audio" && isAudioLoading) ||
+                  (mode === "visual" && isImageLoading)) &&
+                  styles.disabledButtonText,
+              ]}
+            >
+              {choice}
+            </ThemedText>
           </TouchableOpacity>
         ))}
       </View>
@@ -759,8 +771,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   crystalRewardContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     // backgroundColor: 'rgba(153, 68, 221, 0.15)',
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -768,13 +780,20 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   crystalRewardText: {
-    color: '#4C8BF5',
-    fontWeight: 'bold',
+    color: "#4C8BF5",
+    fontWeight: "bold",
     fontSize: 18,
   },
   crystalDailyText: {
     marginTop: 6,
     fontSize: 14,
-    color: '#888',
+    color: "#888",
+  },
+  disabledButton: {
+    backgroundColor: "#7D8597AA", // Add transparency to indicate disabled state
+    opacity: 0.7,
+  },
+  disabledButtonText: {
+    opacity: 0.7,
   },
 });

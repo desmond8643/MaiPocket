@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   Image,
   ScrollView,
-  Modal
+  Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getCrystalStatus, getHighScores } from "@/api/client";
@@ -22,6 +22,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { useAds } from "@/context/AdContext";
+import { useCrystalStatus, useGameScores } from "@/context/GameQueryProvider";
 
 // Helper function to format the time remaining
 const formatTimeRemaining = (milliseconds: number) => {
@@ -42,26 +43,31 @@ export default function GameHomeScreen() {
     visual: { highScore: 0, currentStreak: 0 },
     audio: { highScore: 0, currentStreak: 0 },
   });
-  const [serverScores, setServerScores] = useState({
-    visual: { highScore: 0, currentStreak: 0 },
-    audio: { highScore: 0, currentStreak: 0 },
-  });
-  const [isLoading, setIsLoading] = useState(true);
+
+  const { data: scores, isLoading: scoresLoading } = useGameScores();
+  const { data: crystalStatus, isLoading: crystalsLoading } =
+    useCrystalStatus();
+
+  const serverScores = {
+    visual: scores?.find((s: UserScore) => s.mode === "visual") || {
+      highScore: 0,
+      currentStreak: 0,
+    },
+    audio: scores?.find((s: UserScore) => s.mode === "audio") || {
+      highScore: 0,
+      currentStreak: 0,
+    },
+  };
+
+  // const [isLoading, setIsLoading] = useState(true);
+  const isLoading = scoresLoading || crystalsLoading;
+
   const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();
   const showActualAds = !adsRemoved && !temporaryAdRemoval;
 
   // Add state for the modal inside the GameHomeScreen component
   const [showCrystalInfo, setShowCrystalInfo] = useState(false);
-
-  const [crystalStatus, setCrystalStatus] = useState({
-    crystals: 0,
-    dailyCrystalsEarned: 0,
-    dailyLimit: 50,
-    remainingToday: 50,
-    nextResetTime: null,
-    timeUntilReset: null
-  });
 
   useEffect(() => {
     // Check if user is logged in using your existing method
@@ -73,10 +79,6 @@ export default function GameHomeScreen() {
   useFocusEffect(
     useCallback(() => {
       loadLocalScores();
-      if (user) {
-        loadServerScores();
-        loadCrystalStatus();
-      }
     }, [user])
   );
 
@@ -85,7 +87,6 @@ export default function GameHomeScreen() {
       const userData = await AsyncStorage.getItem("userData");
       if (userData) {
         setUser(JSON.parse(userData));
-        loadServerScores();
       }
     } catch (error) {
       console.error("Error checking auth:", error);
@@ -94,64 +95,16 @@ export default function GameHomeScreen() {
 
   const loadLocalScores = async () => {
     try {
-      setIsLoading(true);
       const savedScores = await AsyncStorage.getItem("songQuizScores");
       if (savedScores) {
         setLocalScores(JSON.parse(savedScores));
       }
     } catch (error) {
       console.error("Error loading local scores:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadServerScores = async () => {
-    try {
-      setIsLoading(true);
-      const scores = await getHighScores();
-      setServerScores({
-        visual: scores.find((s: UserScore) => s.mode === "visual") || {
-          highScore: 0,
-          currentStreak: 0,
-        },
-        audio: scores.find((s: UserScore) => s.mode === "audio") || {
-          highScore: 0,
-          currentStreak: 0,
-        },
-      });
-    } catch (error) {
-      console.error("Error loading server scores:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Add this function after loadServerScores()
-  const loadCrystalStatus = async () => {
-    try {
-      if (!user) return;
-      const status = await getCrystalStatus();
-      if (status) {
-        setCrystalStatus(status);
-      }
-    } catch (error) {
-      console.error("Error loading crystal status:", error);
     }
   };
 
   const startGame = (mode: string) => {
-    if (!user && mode === "hard") {
-      Alert.alert(
-        "Login Required",
-        "You need to be logged in to play Hard mode.",
-        [
-          { text: "Login", onPress: () => router.push("/auth/login") },
-          { text: "Cancel", style: "cancel" },
-        ]
-      );
-      return;
-    }
     router.push({
       pathname: "game/play",
       params: { mode },
@@ -161,7 +114,7 @@ export default function GameHomeScreen() {
   const dynamicStyles = {
     bottomAdContainer: {
       ...styles.bottomAdContainer,
-      bottom: insets.bottom, // Adjust for bottom inset
+      bottom: insets.bottom,
     },
   };
 
@@ -184,7 +137,6 @@ export default function GameHomeScreen() {
         >
           Song Quiz Game
         </ThemedText>
-        {/* <View style={{ width: 36 }} /> */}
         <TouchableOpacity
           style={styles.trophyContainer}
           onPress={() => router.push("/game/leaderboard")}
@@ -279,7 +231,13 @@ export default function GameHomeScreen() {
                 backgroundColor: "rgba(174, 117, 218, 0.1)",
               },
             ]}
-            onPress={() => setShowCrystalInfo(true)}
+            onPress={() => {
+              if (user) {
+                setShowCrystalInfo(true);
+              } else {
+                router.replace("/auth/login");
+              }
+            }}
           >
             <Image
               source={require("@/assets/images/crystal.png")}
@@ -307,13 +265,12 @@ export default function GameHomeScreen() {
                   position: "relative",
                 }}
               >
-                {/* Progress bar and other elements remain the same */}
                 <View
                   style={{
                     width: `${Math.min(
                       100,
-                      (crystalStatus.dailyCrystalsEarned /
-                        crystalStatus.dailyLimit) *
+                      ((crystalStatus?.dailyCrystalsEarned || 0) /
+                        (crystalStatus?.dailyLimit || 50)) *
                         100
                     )}%`,
                     height: "100%",
@@ -347,7 +304,6 @@ export default function GameHomeScreen() {
                   </ThemedText>
                 </View>
               </View>
-              {/* Add time remaining display */}
               {user && crystalStatus.timeUntilReset && (
                 <ThemedText
                   style={{ fontSize: 12, color: "gray", marginTop: 10 }}
@@ -357,15 +313,6 @@ export default function GameHomeScreen() {
               )}
             </View>
           </TouchableOpacity>
-
-          {/* <TouchableOpacity
-            style={styles.leaderboardButton}
-            onPress={() => router.push("/game/leaderboard")}
-          >
-            <ThemedText style={styles.leaderboardButtonText}>
-              View Leaderboards
-            </ThemedText>
-          </TouchableOpacity> */}
         </View>
       </ScrollView>
       {showActualAds && (
@@ -498,7 +445,6 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    // paddingHorizontal: 16,
     alignItems: "center",
     paddingVertical: 12,
     justifyContent: "space-between",
@@ -524,7 +470,6 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: "90%",
     borderRadius: 12,
-    // backgroundColor: "#FFFFFF", // Assuming a light theme background
     padding: 20,
     elevation: 5,
     shadowColor: "#000",
@@ -569,8 +514,6 @@ const styles = StyleSheet.create({
   limitText: {
     fontSize: 15,
     fontWeight: "bold",
-    // color: '#4CAF50',
-    // color: '#4C8BF5'
     color: "#9944DD",
   },
   resetText: {
