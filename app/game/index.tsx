@@ -214,6 +214,7 @@ export default function GameHomeScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.modeButton, { backgroundColor: "#4CAF50" }]}
+            onPress={() => router.push("/game/casual-play")}
           >
             <ThemedText style={styles.modeButtonText}>Casual Mode</ThemedText>
             <ThemedText style={styles.modeDescription}>

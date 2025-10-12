@@ -411,7 +411,7 @@ export const submitScore = async (
   mode: string,
   score: number,
   accumulatedStreak: number, // This is for high score comparison
-  currentStreak: number      // This is for next game (0 if lost)
+  currentStreak: number // This is for next game (0 if lost)
 ) => {
   const response = await apiClient.post("/game/score", {
     mode,
@@ -419,15 +419,13 @@ export const submitScore = async (
     accumulatedStreak, // Send both values
     currentStreak,
   });
-  
+
   // Return the full response data which includes highScore
   return response.data;
 };
 
 export const getHighScores = async () => {
-  const response = await apiClient.get(
-    `/game/scores`
-  );
+  const response = await apiClient.get(`/game/scores`);
   return response.data;
 };
 
@@ -438,17 +436,42 @@ export const getLeaderboard = async (
   return response.data;
 };
 
-export const getUserStreak = async (mode: string): Promise<{ currentStreak: number, highScore: number }> => {
+export const getUserStreak = async (
+  mode: string
+): Promise<{ currentStreak: number; highScore: number }> => {
   const response = await apiClient.get(`/game/streak/${mode}`);
   return response.data;
 };
 
 export const getCrystalStatus = async () => {
   try {
-    const response = await apiClient.get('/game/crystal-status');
+    const response = await apiClient.get("/game/crystal-status");
     return response.data;
   } catch (error) {
-    console.error('Error fetching crystal status:', error);
+    console.error("Error fetching crystal status:", error);
     return null;
   }
+};
+
+export const getCasualQuizQuestions = async (
+  mode: string,
+  categoryType?: string,
+  subCategory?: string
+): Promise<QuizQuestion[]> => {
+  console.log(mode, categoryType, subCategory);
+  const params = new URLSearchParams();
+  params.append("mode", mode);
+
+  if (categoryType && categoryType !== "all") {
+    params.append("categoryType", categoryType);
+
+    if (subCategory) {
+      params.append("subCategory", subCategory);
+    }
+  }
+
+  const response = await apiClient.get(
+    `/game/casual-questions?${params.toString()}`
+  );
+  return response.data;
 };
