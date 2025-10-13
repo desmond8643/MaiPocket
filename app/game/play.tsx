@@ -112,7 +112,7 @@ export default function GamePlayScreen() {
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 1) {
+        if (prev <= 0) {
           clearInterval(timer);
           handleGameOver();
           return 0;
