@@ -5,13 +5,14 @@ import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useAds } from "@/context/AdContext";
+import { fetchDataImmediately } from "@/context/GameQueryProvider";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
@@ -46,10 +47,44 @@ export default function HomeScreen() {
     }
   };
 
+  useEffect(() => {
+    const preloadData = async () => {
+      try {
+        // Check if user is logged in
+        const userData = await AsyncStorage.getItem("userData");
+        if (userData) {
+          // Preload crystal status and game scores if logged in
+          await fetchDataImmediately("crystalStatus");
+          await fetchDataImmediately("gameScores");
+          console.log("Preloaded crystal status and game scores");
+        }
+      } catch (error) {
+        console.error("Error preloading data:", error);
+      }
+    };
+
+    preloadData();
+  }, []);
+
   // This will run both on initial mount AND whenever the screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       loadPreference();
+
+      const refreshData = async () => {
+        try {
+          const userData = await AsyncStorage.getItem("userData");
+          if (userData) {
+            await fetchDataImmediately("crystalStatus");
+            await fetchDataImmediately("gameScores");
+          }
+        } catch (error) {
+          console.error("Error refreshing data:", error);
+        }
+      };
+
+      refreshData();
+
       return () => {}; // cleanup function
     }, [])
   );
@@ -190,7 +225,7 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         </TouchableOpacity>
-        
+
         {/* {showAdsSection && (
           <TouchableOpacity
             style={{ ...styles.featureContainer, backgroundColor: "#AA60C8" }}
