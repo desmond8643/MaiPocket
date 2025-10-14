@@ -88,6 +88,7 @@ export default function ShopScreen() {
     restorePurchases,
     temporaryAdRemoval,
     temporaryAdRemovalEndTime,
+    adsRemoved,
   } = useAds();
   const { crystalBalance, purchaseItem } = useShop();
 
@@ -99,7 +100,7 @@ export default function ShopScreen() {
       const userData = await AsyncStorage.getItem("userData");
       setIsLoggedIn(!!userData);
     };
-    
+
     checkLoginStatus();
   }, []);
 
@@ -211,7 +212,7 @@ export default function ShopScreen() {
         {/* Empty view with the same width as the back button for balance */}
         <View style={{ width: 32 }}></View>
       </View>
-      
+
       {/* Only display crystal count if user is logged in */}
       {isLoggedIn && (
         <View
@@ -231,104 +232,100 @@ export default function ShopScreen() {
           </View>
         </View>
       )}
-      
-      <ScrollView style={styles.scrollContainer}>
-        <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Remove Ads</ThemedText>
 
-          <ThemedView style={styles.itemCard}>
-            <View style={styles.itemInfo}>
-              <ThemedText style={styles.itemTitle}>
-                Remove Ads (1 Day)
-              </ThemedText>
-              {/* <ThemedText style={styles.itemDescription}>
-                Remove all ads from the app for 24 hours
-              </ThemedText> */}
-            </View>
+      <ScrollView style={styles.scrollContainer}>
+        {!adsRemoved && (
+          <ThemedView style={styles.section}>
+            <ThemedText type="subtitle">Remove Ads</ThemedText>
+
+            <ThemedView style={styles.itemCard}>
+              <View style={styles.itemInfo}>
+                <ThemedText style={styles.itemTitle}>
+                  Remove Ads (1 Day)
+                </ThemedText>
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  styles.adFreeButton,
+                  temporaryAdRemoval && styles.disabledButton,
+                ]}
+                onPress={() => {
+                  setLoading(true);
+                  showRewardedAd(
+                    async () => {
+                      await removeAdsTemporarily();
+                      setLoading(false);
+                      Alert.alert(
+                        "Ads Removed Temporarily",
+                        "Thanks for watching! Ads have been removed for 1 day."
+                      );
+                    },
+                    () => {
+                      setLoading(false);
+                    }
+                  );
+                }}
+                disabled={loading || temporaryAdRemoval}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <ThemedText style={styles.buttonText}>
+                    {temporaryAdRemoval
+                      ? `Active (${remainingTime})`
+                      : "Watch Ad"}
+                  </ThemedText>
+                )}
+              </TouchableOpacity>
+            </ThemedView>
+
+            <ThemedView style={styles.itemCard}>
+              <View style={styles.itemInfo}>
+                <ThemedText style={styles.itemTitle}>
+                  Remove Ads Permanently
+                </ThemedText>
+              </View>
+              <TouchableOpacity
+                style={[styles.button, styles.premiumButton]}
+                onPress={() =>
+                  handlePurchase(
+                    "remove_ads_perm",
+                    "Remove Ads Permanently",
+                    28,
+                    "USD",
+                    removeAdsPermanently
+                  )
+                }
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <ThemedText style={styles.buttonText}>$28</ThemedText>
+                )}
+              </TouchableOpacity>
+            </ThemedView>
+
             <TouchableOpacity
-              style={[
-                styles.button,
-                styles.adFreeButton,
-                temporaryAdRemoval && styles.disabledButton,
-              ]}
-              onPress={() => {
+              style={styles.restoreButton}
+              onPress={async () => {
                 setLoading(true);
-                showRewardedAd(
-                  async () => {
-                    await removeAdsTemporarily();
-                    setLoading(false);
-                    Alert.alert(
-                      "Ads Removed Temporarily",
-                      "Thanks for watching! Ads have been removed for 1 day."
-                    );
-                  },
-                  () => {
-                    setLoading(false);
-                  }
-                );
+                await restorePurchases();
+                setLoading(false);
               }}
-              disabled={loading || temporaryAdRemoval}
+              disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator />
               ) : (
-                <ThemedText style={styles.buttonText}>
-                  {temporaryAdRemoval
-                    ? `Active (${remainingTime})`
-                    : "Watch Ad"}
+                <ThemedText style={styles.restoreText}>
+                  Restore Purchase
                 </ThemedText>
               )}
             </TouchableOpacity>
           </ThemedView>
-
-          <ThemedView style={styles.itemCard}>
-            <View style={styles.itemInfo}>
-              <ThemedText style={styles.itemTitle}>
-                Remove Ads Permanently
-              </ThemedText>
-              {/* <ThemedText style={styles.itemDescription}>
-                Never see ads again with one-time purchase
-              </ThemedText> */}
-            </View>
-            <TouchableOpacity
-              style={[styles.button, styles.premiumButton]}
-              onPress={() =>
-                handlePurchase(
-                  "remove_ads_perm",
-                  "Remove Ads Permanently",
-                  28,
-                  "USD",
-                  removeAdsPermanently
-                )
-              }
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <ThemedText style={styles.buttonText}>$28</ThemedText>
-              )}
-            </TouchableOpacity>
-          </ThemedView>
-
-          <TouchableOpacity
-            style={styles.restoreButton}
-            onPress={async () => {
-              setLoading(true);
-              await restorePurchases();
-              setLoading(false);
-            }}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator />
-            ) : (
-              <ThemedText style={styles.restoreText}>
-                Restore Purchase
-              </ThemedText>
-            )}
-          </TouchableOpacity>
-        </ThemedView>
+        )}
 
         {/* Only display 3 Day Pass if user is logged in */}
         {isLoggedIn && (
@@ -337,7 +334,9 @@ export default function ShopScreen() {
 
             <ThemedView style={styles.itemCard}>
               <View style={styles.itemInfo}>
-                <ThemedText style={styles.itemTitle}>3 Life Day Pass</ThemedText>
+                <ThemedText style={styles.itemTitle}>
+                  3 Life Day Pass
+                </ThemedText>
                 {/* <ThemedText style={styles.itemDescription}>
                   Visual and Audio Mode (24 hours)
                 </ThemedText> */}
