@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { showRewardedAd } from "@/components/RewardedAd";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // This would be moved to a separate context file in a real implementation
 interface ShopContext {
@@ -80,6 +81,7 @@ const useShop = (): ShopContext => {
 export default function ShopScreen() {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const {
     removeAdsTemporarily,
     removeAdsPermanently,
@@ -90,6 +92,16 @@ export default function ShopScreen() {
   const { crystalBalance, purchaseItem } = useShop();
 
   const [remainingTime, setRemainingTime] = useState("");
+
+  useEffect(() => {
+    // Check if user is logged in
+    const checkLoginStatus = async () => {
+      const userData = await AsyncStorage.getItem("userData");
+      setIsLoggedIn(!!userData);
+    };
+    
+    checkLoginStatus();
+  }, []);
 
   useEffect(() => {
     if (!temporaryAdRemoval || !temporaryAdRemovalEndTime) {
@@ -199,22 +211,27 @@ export default function ShopScreen() {
         {/* Empty view with the same width as the back button for balance */}
         <View style={{ width: 32 }}></View>
       </View>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "flex-end",
-          paddingBottom: 8,
-          paddingHorizontal: 16,
-        }}
-      >
-        <View style={styles.crystalContainer}>
-          <Image
-            source={require("@/assets/images/crystal.png")}
-            style={styles.crystalIcon}
-          />
-          <ThemedText style={styles.crystalText}>{crystalBalance}</ThemedText>
+      
+      {/* Only display crystal count if user is logged in */}
+      {isLoggedIn && (
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            paddingBottom: 8,
+            paddingHorizontal: 16,
+          }}
+        >
+          <View style={styles.crystalContainer}>
+            <Image
+              source={require("@/assets/images/crystal.png")}
+              style={styles.crystalIcon}
+            />
+            <ThemedText style={styles.crystalText}>{crystalBalance}</ThemedText>
+          </View>
         </View>
-      </View>
+      )}
+      
       <ScrollView style={styles.scrollContainer}>
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle">Remove Ads</ThemedText>
@@ -313,98 +330,104 @@ export default function ShopScreen() {
           </TouchableOpacity>
         </ThemedView>
 
-        <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Game Passes</ThemedText>
+        {/* Only display 3 Day Pass if user is logged in */}
+        {isLoggedIn && (
+          <ThemedView style={styles.section}>
+            <ThemedText type="subtitle">Game Passes</ThemedText>
 
-          <ThemedView style={styles.itemCard}>
-            <View style={styles.itemInfo}>
-              <ThemedText style={styles.itemTitle}>3 Life Day Pass</ThemedText>
-              {/* <ThemedText style={styles.itemDescription}>
-                Visual and Audio Mode (24 hours)
-              </ThemedText> */}
-            </View>
-            <TouchableOpacity
-              style={[styles.button, styles.crystalButton]}
-              onPress={() =>
-                handlePurchase(
-                  "day_pass",
-                  "3 Life Day Pass",
-                  150,
-                  "crystal",
-                  async () => {
-                    /* Apply day pass logic */
-                  }
-                )
-              }
-              //   disabled={loading}
-              disabled
-            >
-              {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <View style={styles.crystalButtonContent}>
-                  <Image
-                    source={require("@/assets/images/crystal.png")}
-                    style={styles.buttonCrystalIcon}
-                  />
-                  <ThemedText style={styles.buttonText}>150</ThemedText>
-                </View>
-              )}
-            </TouchableOpacity>
-          </ThemedView>
-        </ThemedView>
-
-        <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Crystals</ThemedText>
-
-          {[
-            { id: "crystal_100", amount: 100, price: 8 },
-            { id: "crystal_200", amount: 200, price: 15 },
-            { id: "crystal_400", amount: 400, price: 28 },
-            { id: "crystal_1000", amount: 1000, price: 58 },
-          ].map((item) => (
-            <ThemedView key={item.id} style={styles.itemCard}>
+            <ThemedView style={styles.itemCard}>
               <View style={styles.itemInfo}>
-                <View style={styles.crystalPurchaseTitle}>
-                  <Image
-                    source={require("@/assets/images/crystal.png")}
-                    style={styles.crystalIconMedium}
-                  />
-                  <ThemedText style={styles.itemTitle}>
-                    {item.amount} Crystals
-                  </ThemedText>
-                </View>
+                <ThemedText style={styles.itemTitle}>3 Life Day Pass</ThemedText>
                 {/* <ThemedText style={styles.itemDescription}>
-                  Use crystals to purchase special items and passes
+                  Visual and Audio Mode (24 hours)
                 </ThemedText> */}
               </View>
               <TouchableOpacity
-                style={[styles.button, styles.purchaseButton]}
+                style={[styles.button, styles.crystalButton]}
                 onPress={() =>
                   handlePurchase(
-                    item.id,
-                    `${item.amount} Crystals`,
-                    item.price,
-                    "USD",
+                    "day_pass",
+                    "3 Life Day Pass",
+                    150,
+                    "crystal",
                     async () => {
-                      /* Add crystals to balance */
+                      /* Apply day pass logic */
                     }
                   )
                 }
-                // disabled={loading}
+                //   disabled={loading}
                 disabled
               >
                 {loading ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
-                  <ThemedText style={styles.buttonText}>
-                    ${item.price}
-                  </ThemedText>
+                  <View style={styles.crystalButtonContent}>
+                    <Image
+                      source={require("@/assets/images/crystal.png")}
+                      style={styles.buttonCrystalIcon}
+                    />
+                    <ThemedText style={styles.buttonText}>150</ThemedText>
+                  </View>
                 )}
               </TouchableOpacity>
             </ThemedView>
-          ))}
-        </ThemedView>
+          </ThemedView>
+        )}
+
+        {/* Only display Crystals section if user is logged in */}
+        {isLoggedIn && (
+          <ThemedView style={styles.section}>
+            <ThemedText type="subtitle">Crystals</ThemedText>
+
+            {[
+              { id: "crystal_100", amount: 100, price: 8 },
+              { id: "crystal_200", amount: 200, price: 15 },
+              { id: "crystal_400", amount: 400, price: 28 },
+              { id: "crystal_1000", amount: 1000, price: 58 },
+            ].map((item) => (
+              <ThemedView key={item.id} style={styles.itemCard}>
+                <View style={styles.itemInfo}>
+                  <View style={styles.crystalPurchaseTitle}>
+                    <Image
+                      source={require("@/assets/images/crystal.png")}
+                      style={styles.crystalIconMedium}
+                    />
+                    <ThemedText style={styles.itemTitle}>
+                      {item.amount} Crystals
+                    </ThemedText>
+                  </View>
+                  {/* <ThemedText style={styles.itemDescription}>
+                    Use crystals to purchase special items and passes
+                  </ThemedText> */}
+                </View>
+                <TouchableOpacity
+                  style={[styles.button, styles.purchaseButton]}
+                  onPress={() =>
+                    handlePurchase(
+                      item.id,
+                      `${item.amount} Crystals`,
+                      item.price,
+                      "USD",
+                      async () => {
+                        /* Add crystals to balance */
+                      }
+                    )
+                  }
+                  // disabled={loading}
+                  disabled
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <ThemedText style={styles.buttonText}>
+                      ${item.price}
+                    </ThemedText>
+                  )}
+                </TouchableOpacity>
+              </ThemedView>
+            ))}
+          </ThemedView>
+        )}
       </ScrollView>
     </View>
   );
