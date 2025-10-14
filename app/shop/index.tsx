@@ -4,7 +4,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { useAds } from "@/context/AdContext";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { showRewardedAd } from "@/components/RewardedAd";
 
 // This would be moved to a separate context file in a real implementation
 interface ShopContext {
@@ -79,9 +80,48 @@ const useShop = (): ShopContext => {
 export default function ShopScreen() {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
-  const { removeAdsTemporarily, removeAdsPermanently, restorePurchases } =
-    useAds();
+  const {
+    removeAdsTemporarily,
+    removeAdsPermanently,
+    restorePurchases,
+    temporaryAdRemoval,
+    temporaryAdRemovalEndTime,
+  } = useAds();
   const { crystalBalance, purchaseItem } = useShop();
+
+  const [remainingTime, setRemainingTime] = useState("");
+
+  useEffect(() => {
+    if (!temporaryAdRemoval || !temporaryAdRemovalEndTime) {
+      setRemainingTime("");
+      return;
+    }
+
+    const calculateRemainingTime = () => {
+      const now = Date.now();
+      const diff = temporaryAdRemovalEndTime - now;
+
+      if (diff <= 0) {
+        setRemainingTime("Expired");
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setRemainingTime(
+        `${hours.toString().padStart(2, "0")}:${minutes
+          .toString()
+          .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+      );
+    };
+
+    calculateRemainingTime();
+    const interval = setInterval(calculateRemainingTime, 1000);
+
+    return () => clearInterval(interval);
+  }, [temporaryAdRemoval, temporaryAdRemovalEndTime]);
 
   const handlePurchase = async (
     itemId: string,
@@ -189,22 +229,37 @@ export default function ShopScreen() {
               </ThemedText> */}
             </View>
             <TouchableOpacity
-              style={[styles.button, styles.adFreeButton]}
-              onPress={() =>
-                handlePurchase(
-                  "remove_ads_temp",
-                  "Remove Ads (1 Day)",
-                  null,
-                  "USD",
-                  removeAdsTemporarily
-                )
-              }
-              disabled={loading}
+              style={[
+                styles.button,
+                styles.adFreeButton,
+                temporaryAdRemoval && styles.disabledButton,
+              ]}
+              onPress={() => {
+                setLoading(true);
+                showRewardedAd(
+                  async () => {
+                    await removeAdsTemporarily();
+                    setLoading(false);
+                    Alert.alert(
+                      "Ads Removed Temporarily",
+                      "Thanks for watching! Ads have been removed for 1 day."
+                    );
+                  },
+                  () => {
+                    setLoading(false);
+                  }
+                );
+              }}
+              disabled={loading || temporaryAdRemoval}
             >
               {loading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <ThemedText style={styles.buttonText}>Watch Ad</ThemedText>
+                <ThemedText style={styles.buttonText}>
+                  {temporaryAdRemoval
+                    ? `Active (${remainingTime})`
+                    : "Watch Ad"}
+                </ThemedText>
               )}
             </TouchableOpacity>
           </ThemedView>
@@ -281,8 +336,8 @@ export default function ShopScreen() {
                   }
                 )
               }
-            //   disabled={loading}
-            disabled
+              //   disabled={loading}
+              disabled
             >
               {loading ? (
                 <ActivityIndicator color="#FFFFFF" />
@@ -462,7 +517,7 @@ const styles = StyleSheet.create({
   crystalButtonContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10
+    gap: 10,
   },
   restoreButton: {
     alignItems: "center",
@@ -470,5 +525,9 @@ const styles = StyleSheet.create({
   },
   restoreText: {
     textDecorationLine: "underline",
+  },
+  disabledButton: {
+    backgroundColor: "#8a8a8a",
+    opacity: 0.7,
   },
 });

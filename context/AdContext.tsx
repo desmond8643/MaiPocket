@@ -201,9 +201,24 @@ export const AdProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   };
 
   // Rest of your functions...
-   const removeAdsTemporarily = async () => {
-    const oneDayInMs = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    const endTime = Date.now() + oneDayInMs;
+  const removeAdsTemporarily = async () => {
+    // Calculate the next 4 AM GMT+8 time
+    const now = new Date();
+    
+    // Convert to GMT+8
+    const gmt8Now = new Date(now.getTime() + (now.getTimezoneOffset() + 480) * 60000); // GMT+8 = 480 minutes
+    
+    // Set target time to 4 AM GMT+8
+    let targetDate = new Date(gmt8Now);
+    targetDate.setHours(4, 0, 0, 0);
+    
+    // If it's already past 4 AM GMT+8, set target to next day 4 AM
+    if (gmt8Now.getHours() >= 4) {
+      targetDate.setDate(targetDate.getDate() + 1);
+    }
+    
+    // Convert back to local time for storage
+    const endTime = targetDate.getTime() - (now.getTimezoneOffset() + 480) * 60000;
     
     try {
       await AsyncStorage.setItem(
