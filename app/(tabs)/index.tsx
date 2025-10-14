@@ -171,7 +171,27 @@ export default function HomeScreen() {
             </View>
           </ThemedView>
         )}
-        {showAdsSection && (
+        <TouchableOpacity
+          style={{ ...styles.featureContainer, backgroundColor: "#AA60C8" }}
+          onPress={() => router.push("/shop")}
+        >
+          <View style={styles.featureTitleContainer}>
+            <ThemedText
+              type="subtitle"
+              style={{ color: "white", marginTop: 8 }}
+            >
+              Shop
+            </ThemedText>
+            <Ionicons name="bag-outline" size={48} color="white" />
+          </View>
+          <View style={styles.featureDescription}>
+            <ThemedText style={{ color: "white" }}>
+              Unlock features and special items
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
+        
+        {/* {showAdsSection && (
           <TouchableOpacity
             style={{ ...styles.featureContainer, backgroundColor: "#AA60C8" }}
             onPress={() => router.push("/remove-ads")}
@@ -193,7 +213,7 @@ export default function HomeScreen() {
               </ThemedText>
             </View>
           </TouchableOpacity>
-        )}
+        )} */}
 
         <ThemedView style={styles.copyrightContainer}>
           <TouchableOpacity

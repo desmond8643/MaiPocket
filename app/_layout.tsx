@@ -119,7 +119,7 @@ export default function RootLayout() {
               name="game/casual-play"
               options={{ headerShown: false }}
             />
-
+            <Stack.Screen name="shop/index" options={{ headerShown: false }} />
           </Stack>
         </GestureHandlerRootView>
       </AdProvider>
