@@ -4,7 +4,11 @@ import {
   QueryClientProvider,
   useQuery,
 } from "@tanstack/react-query";
-import { getCrystalStatus, getHighScores } from "@/api/client";
+import {
+  getCrystalStatus,
+  getHighScores,
+  getThreeLifeDayPassStatus,
+} from "@/api/client";
 import React, { createContext, ReactNode, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -20,6 +24,9 @@ export function fetchDataImmediately(queryKey: string | string[]) {
         case "crystalStatus":
         case ["crystalStatus"]:
           return getCrystalStatus();
+        case "threeLifeDayPassStatus":
+        case ["threeLifeDayPassStatus"]:
+          return getThreeLifeDayPassStatus();
         default:
           throw new Error(`Unknown query key: ${queryKey}`);
       }
@@ -135,6 +142,20 @@ export function useCrystalStatus() {
       remainingToday: 50,
       nextResetTime: null,
       timeUntilReset: null,
+    },
+  });
+}
+
+export function useThreeLifeDayPassStatus() {
+  return useQuery({
+    queryKey: ["threeLifeDayPassStatus"],
+    queryFn: async () => {
+      try {
+        return await getThreeLifeDayPassStatus();
+      } catch (error) {
+        console.error("Error fetching day pass status:", error);
+        return { active: false, expiration: null };
+      }
     },
   });
 }

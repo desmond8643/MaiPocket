@@ -1,4 +1,9 @@
-import { queryClient, useCrystalStatus } from "@/context/GameQueryProvider";
+import {
+  fetchDataImmediately,
+  queryClient,
+  useCrystalStatus,
+  useThreeLifeDayPassStatus,
+} from "@/context/GameQueryProvider";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useAds } from "@/context/AdContext";
@@ -17,6 +22,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { showRewardedAd } from "@/components/RewardedAd";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { purchaseThreeLifeDayPass } from "@/api/client";
 
 // This would be moved to a separate context file in a real implementation
 interface ShopContext {
@@ -94,6 +100,10 @@ export default function ShopScreen() {
 
   const [remainingTime, setRemainingTime] = useState("");
 
+  const [threeLifedayPassRemainingTime, setThreeLifeDayPassRemainingTime] =
+    useState("");
+  const { data: threeLifeDayPassStatus } = useThreeLifeDayPassStatus();
+
   useEffect(() => {
     // Check if user is logged in
     const checkLoginStatus = async () => {
@@ -136,6 +146,42 @@ export default function ShopScreen() {
     return () => clearInterval(interval);
   }, [temporaryAdRemoval, temporaryAdRemovalEndTime]);
 
+  useEffect(() => {
+    if (
+      !threeLifeDayPassStatus?.active ||
+      !threeLifeDayPassStatus?.expiration
+    ) {
+      setThreeLifeDayPassRemainingTime("");
+      return;
+    }
+
+    const calculateRemainingTime = () => {
+      const now = Date.now();
+      const expiration = new Date(threeLifeDayPassStatus.expiration).getTime();
+      const diff = expiration - now;
+
+      if (diff <= 0) {
+        setThreeLifeDayPassRemainingTime("Expired");
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setThreeLifeDayPassRemainingTime(
+        `${hours.toString().padStart(2, "0")}:${minutes
+          .toString()
+          .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+      );
+    };
+
+    calculateRemainingTime();
+    const interval = setInterval(calculateRemainingTime, 1000);
+
+    return () => clearInterval(interval);
+  }, [threeLifeDayPassStatus]);
+
   const handlePurchase = async (
     itemId: string,
     itemName: string,
@@ -175,13 +221,34 @@ export default function ShopScreen() {
           ]
         );
       } else {
-        // Crystal purchase
-        const success = await purchaseItem(itemId, price);
-        if (success) {
-          await onSuccess();
-          Alert.alert("Purchase Successful", `You have purchased ${itemName}!`);
-        }
-        setLoading(false);
+        // Crystal purchase - Add confirmation alert
+        Alert.alert(
+          "Confirm Purchase",
+          `Are you sure you want to purchase ${itemName} for ${price} crystals?`,
+          [
+            {
+              text: "Yes",
+              onPress: async () => {
+                const success = await purchaseItem(itemId, price);
+                if (success) {
+                  await onSuccess();
+                  Alert.alert(
+                    "Purchase Successful",
+                    `You have purchased ${itemName}!`
+                  );
+                }
+                setLoading(false);
+              },
+            },
+            {
+              text: "Cancel",
+              style: "cancel",
+              onPress: () => {
+                setLoading(false);
+              },
+            },
+          ]
+        );
       }
     } catch (error) {
       console.error("Purchase error:", error);
@@ -342,7 +409,11 @@ export default function ShopScreen() {
                 </ThemedText> */}
               </View>
               <TouchableOpacity
-                style={[styles.button, styles.crystalButton]}
+                style={[
+                  styles.button,
+                  styles.crystalButton,
+                  threeLifeDayPassStatus?.active && styles.disabledButton, // Add this to apply disabled style
+                ]}
                 onPress={() =>
                   handlePurchase(
                     "day_pass",
@@ -350,22 +421,39 @@ export default function ShopScreen() {
                     150,
                     "crystal",
                     async () => {
-                      /* Apply day pass logic */
+                      try {
+                        await purchaseThreeLifeDayPass();
+                        await fetchDataImmediately("crystalStatus");
+                        await fetchDataImmediately("threeLifeDayPassStatus");
+                      } catch (error) {
+                        console.error("Failed to apply day pass:", error);
+                        Alert.alert(
+                          "Purchase Error",
+                          "Failed to apply day pass"
+                        );
+                      }
                     }
                   )
                 }
-                //   disabled={loading}
-                disabled
+                disabled={loading || threeLifeDayPassStatus?.active} // Add this to disable the button when pass is active
               >
                 {loading ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <View style={styles.crystalButtonContent}>
-                    <Image
-                      source={require("@/assets/images/crystal.png")}
-                      style={styles.buttonCrystalIcon}
-                    />
-                    <ThemedText style={styles.buttonText}>150</ThemedText>
+                    {threeLifeDayPassStatus?.active ? (
+                      <ThemedText style={styles.buttonText}>
+                        Active ({threeLifedayPassRemainingTime})
+                      </ThemedText>
+                    ) : (
+                      <>
+                        <Image
+                          source={require("@/assets/images/crystal.png")}
+                          style={styles.buttonCrystalIcon}
+                        />
+                        <ThemedText style={styles.buttonText}>150</ThemedText>
+                      </>
+                    )}
                   </View>
                 )}
               </TouchableOpacity>

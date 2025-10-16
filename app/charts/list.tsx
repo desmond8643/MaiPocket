@@ -275,6 +275,8 @@ export default function ChartListScreen() {
   const renderChartItem = ({ item }: { item: Chart }) => {
     const difficulties = getDifficulties(item);
 
+    console.log(difficulties.deluxe);
+
     if (viewMode === "icon") {
       return (
         <TouchableOpacity
@@ -371,19 +373,22 @@ export default function ChartListScreen() {
           {difficulties.deluxe.length > 0 && (
             <View style={styles.difficultyRow}>
               <View style={styles.levelsContainer}>
-                {difficulties.deluxe.map((diff, index) => (
-                  <ThemedView
-                    key={`deluxe-${diff.type}-${index}`}
-                    style={[
-                      styles.difficultyBadge,
-                      { backgroundColor: getDifficultyColor(diff.type) },
-                    ]}
-                  >
-                    <ThemedText style={styles.difficultyText}>
-                      {formatLevelDisplay(diff.level)}
-                    </ThemedText>
-                  </ThemedView>
-                ))}
+                {difficulties.deluxe.map(
+                  (diff, index) =>
+                    diff.level.jp && (
+                      <ThemedView
+                        key={`deluxe-${diff.type}-${index}`}
+                        style={[
+                          styles.difficultyBadge,
+                          { backgroundColor: getDifficultyColor(diff.type) },
+                        ]}
+                      >
+                        <ThemedText style={styles.difficultyText}>
+                          {formatLevelDisplay(diff.level)}
+                        </ThemedText>
+                      </ThemedView>
+                    )
+                )}
               </View>
               <View style={styles.deluxeLabel}>
                 <ThemedText style={styles.deluxeLabelText}>

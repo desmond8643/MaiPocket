@@ -77,6 +77,7 @@ export default function HomeScreen() {
           if (userData) {
             await fetchDataImmediately("crystalStatus");
             await fetchDataImmediately("gameScores");
+            await fetchDataImmediately('threeLifeDayPassStatus')
           }
         } catch (error) {
           console.error("Error refreshing data:", error);

@@ -476,10 +476,29 @@ export const getCasualQuizQuestions = async (
   return response.data;
 };
 
-// Add to api/client.ts
 export const submitCasualScore = async (score: number) => {
   const response = await apiClient.post("/game/casual-crystals", {
     score,
   });
   return response.data;
+};
+
+export const purchaseThreeLifeDayPass = async () => {
+  try {
+    const response = await apiClient.post("/shop/purchase/threelifedaypass");
+    return response.data;
+  } catch (error) {
+    console.error("Error purchasing day pass:", error);
+    throw error;
+  }
+};
+
+export const getThreeLifeDayPassStatus = async () => {
+  try {
+    const response = await apiClient.get("/shop/threelifedaypass/status");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching day pass status:", error);
+    throw error;
+  }
 };
