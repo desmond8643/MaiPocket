@@ -21,6 +21,7 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const showAdsSection = !adsRemoved; // Only hide for permanent removal
   const showActualAds = !adsRemoved && !temporaryAdRemoval;
@@ -77,7 +78,7 @@ export default function HomeScreen() {
           if (userData) {
             await fetchDataImmediately("crystalStatus");
             await fetchDataImmediately("gameScores");
-            await fetchDataImmediately('threeLifeDayPassStatus')
+            await fetchDataImmediately("threeLifeDayPassStatus");
           }
         } catch (error) {
           console.error("Error refreshing data:", error);
@@ -89,6 +90,15 @@ export default function HomeScreen() {
       return () => {}; // cleanup function
     }, [])
   );
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const userData = await AsyncStorage.getItem("userData");
+      setIsLoggedIn(!!userData);
+    };
+
+    checkLoginStatus();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -165,6 +175,27 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         </TouchableOpacity>
+        {(isLoggedIn || !adsRemoved) && (
+          <TouchableOpacity
+            style={{ ...styles.featureContainer, backgroundColor: "#AA60C8" }}
+            onPress={() => router.push("/shop")}
+          >
+            <View style={styles.featureTitleContainer}>
+              <ThemedText
+                type="subtitle"
+                style={{ color: "white", marginTop: 8 }}
+              >
+                Shop
+              </ThemedText>
+              <Ionicons name="bag-outline" size={48} color="white" />
+            </View>
+            <View style={styles.featureDescription}>
+              <ThemedText style={{ color: "white" }}>
+                Unlock features and special items
+              </ThemedText>
+            </View>
+          </TouchableOpacity>
+        )}
         {socialFeedPreference !== "off" && (
           <ThemedView
             style={{ ...styles.featureContainer, paddingHorizontal: 0 }}
@@ -207,25 +238,6 @@ export default function HomeScreen() {
             </View>
           </ThemedView>
         )}
-        <TouchableOpacity
-          style={{ ...styles.featureContainer, backgroundColor: "#AA60C8" }}
-          onPress={() => router.push("/shop")}
-        >
-          <View style={styles.featureTitleContainer}>
-            <ThemedText
-              type="subtitle"
-              style={{ color: "white", marginTop: 8 }}
-            >
-              Shop
-            </ThemedText>
-            <Ionicons name="bag-outline" size={48} color="white" />
-          </View>
-          <View style={styles.featureDescription}>
-            <ThemedText style={{ color: "white" }}>
-              Unlock features and special items
-            </ThemedText>
-          </View>
-        </TouchableOpacity>
 
         {/* {showAdsSection && (
           <TouchableOpacity

@@ -26,6 +26,7 @@ import {
   fetchDataImmediately,
   useCrystalStatus,
   useGameScores,
+  useThreeLifeDayPassStatus,
 } from "@/context/GameQueryProvider";
 
 // Helper function to format the time remaining
@@ -51,6 +52,12 @@ export default function GameHomeScreen() {
   const { data: scores, isLoading: scoresLoading } = useGameScores();
   const { data: crystalStatus, isLoading: crystalsLoading } =
     useCrystalStatus();
+
+  const { data: threeLifeDayPassStatus, isLoading: threeLifeDayPassLoading } =
+    useThreeLifeDayPassStatus();
+
+  console.log(crystalStatus); // check this before 10 am
+  console.log(threeLifeDayPassStatus);
 
   const serverScores = {
     visual: scores?.find((s: UserScore) => s.mode === "visual") || {
@@ -82,6 +89,7 @@ export default function GameHomeScreen() {
     const fetchData = async () => {
       await fetchDataImmediately("gameScores");
       await fetchDataImmediately("crystalStatus");
+      await fetchDataImmediately("threeLifeDayPassStatus");
     };
 
     fetchData();
@@ -165,7 +173,18 @@ export default function GameHomeScreen() {
             style={[styles.modeButton, { backgroundColor: "#9944DD" }]}
             onPress={() => startGame("visual")}
           >
-            <ThemedText style={styles.modeButtonText}>Visual Mode</ThemedText>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <ThemedText style={styles.modeButtonText}>Visual Mode</ThemedText>
+              {threeLifeDayPassStatus?.active && (
+                <View style={{ flexDirection: "row", gap: 1 }}>
+                  <Ionicons name="heart" size={24} style={{ color: "red" }} />
+                  <Ionicons name="heart" size={24} style={{ color: "red" }} />
+                  <Ionicons name="heart" size={24} style={{ color: "red" }} />
+                </View>
+              )}
+            </View>
             <ThemedText style={styles.modeDescription}>
               Guess songs from thumbnails and screenshots
             </ThemedText>
@@ -197,7 +216,18 @@ export default function GameHomeScreen() {
             style={[styles.modeButton, { backgroundColor: "#4C8BF5" }]}
             onPress={() => startGame("audio")}
           >
-            <ThemedText style={styles.modeButtonText}>Audio Mode</ThemedText>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <ThemedText style={styles.modeButtonText}>Audio Mode</ThemedText>
+              {threeLifeDayPassStatus?.active && (
+                <View style={{ flexDirection: "row", gap: 1 }}>
+                  <Ionicons name="heart" size={24} style={{ color: "red" }} />
+                  <Ionicons name="heart" size={24} style={{ color: "red" }} />
+                  <Ionicons name="heart" size={24} style={{ color: "red" }} />
+                </View>
+              )}
+            </View>
             <ThemedText style={styles.modeDescription}>
               Guess songs from audio clips
             </ThemedText>

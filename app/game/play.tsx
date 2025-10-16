@@ -349,6 +349,7 @@ export default function GamePlayScreen() {
           ? JSON.parse(savedScoresStr)
           : {
               visual: { highScore: 0, currentStreak: 0 },
+              audio: { highScore: 0, currentStreak: 0 },
             };
 
         const modeKey = modeStr === "visual" ? "visual" : "audio";

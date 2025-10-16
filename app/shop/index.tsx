@@ -305,46 +305,58 @@ export default function ShopScreen() {
           <ThemedView style={styles.section}>
             <ThemedText type="subtitle">Remove Ads</ThemedText>
 
-            <ThemedView style={styles.itemCard}>
-              <View style={styles.itemInfo}>
-                <ThemedText style={styles.itemTitle}>
-                  Remove Ads (1 Day)
-                </ThemedText>
-              </View>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  styles.adFreeButton,
-                  temporaryAdRemoval && styles.disabledButton,
-                ]}
-                onPress={() => {
-                  setLoading(true);
-                  showRewardedAd(
-                    async () => {
-                      await removeAdsTemporarily();
-                      setLoading(false);
-                      Alert.alert(
-                        "Ads Removed Temporarily",
-                        "Thanks for watching! Ads have been removed for 1 day."
-                      );
-                    },
-                    () => {
-                      setLoading(false);
-                    }
-                  );
+            <ThemedView style={[styles.itemCard, { flexDirection: "column" }]}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  width: "100%",
                 }}
-                disabled={loading || temporaryAdRemoval}
               >
-                {loading ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <ThemedText style={styles.buttonText}>
-                    {temporaryAdRemoval
-                      ? `Active (${remainingTime})`
-                      : "Watch Ad"}
+                <View style={styles.itemInfo}>
+                  <ThemedText style={styles.itemTitle}>
+                    Remove Ads (1 Day)
                   </ThemedText>
-                )}
-              </TouchableOpacity>
+                </View>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    styles.adFreeButton,
+                    temporaryAdRemoval && styles.disabledButton,
+                  ]}
+                  onPress={() => {
+                    setLoading(true);
+                    showRewardedAd(
+                      async () => {
+                        await removeAdsTemporarily();
+                        setLoading(false);
+                        Alert.alert(
+                          "Ads Removed Temporarily",
+                          "Thanks for watching! Ads have been removed for 1 day."
+                        );
+                      },
+                      () => {
+                        setLoading(false);
+                      }
+                    );
+                  }}
+                  disabled={loading || temporaryAdRemoval}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <ThemedText style={styles.buttonText}>
+                      {temporaryAdRemoval ? "Active" : "Watch Ad"}
+                    </ThemedText>
+                  )}
+                </TouchableOpacity>
+              </View>
+              {temporaryAdRemoval && (
+                <ThemedText style={{ alignSelf: "flex-start", marginTop: 10 }}>
+                  Time Remaining: {remainingTime}
+                </ThemedText>
+              )}
             </ThemedView>
 
             <ThemedView style={styles.itemCard}>
@@ -398,65 +410,78 @@ export default function ShopScreen() {
         {isLoggedIn && (
           <ThemedView style={styles.section}>
             <ThemedText type="subtitle">Game Passes</ThemedText>
-
-            <ThemedView style={styles.itemCard}>
-              <View style={styles.itemInfo}>
-                <ThemedText style={styles.itemTitle}>
-                  3 Life Day Pass
-                </ThemedText>
-                {/* <ThemedText style={styles.itemDescription}>
+            <ThemedView style={[styles.itemCard, { flexDirection: "column" }]}>
+              <View style={{ flexDirection: "row" }}>
+                <View style={styles.itemInfo}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      gap: 12,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Ionicons name="heart" size={36} color={"red"} />
+                    <ThemedText style={styles.itemTitle}>
+                      3 Life Day Pass
+                    </ThemedText>
+                  </View>
+                  {/* <ThemedText style={styles.itemDescription}>
                   Visual and Audio Mode (24 hours)
                 </ThemedText> */}
-              </View>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  styles.crystalButton,
-                  threeLifeDayPassStatus?.active && styles.disabledButton, // Add this to apply disabled style
-                ]}
-                onPress={() =>
-                  handlePurchase(
-                    "day_pass",
-                    "3 Life Day Pass",
-                    150,
-                    "crystal",
-                    async () => {
-                      try {
-                        await purchaseThreeLifeDayPass();
-                        await fetchDataImmediately("crystalStatus");
-                        await fetchDataImmediately("threeLifeDayPassStatus");
-                      } catch (error) {
-                        console.error("Failed to apply day pass:", error);
-                        Alert.alert(
-                          "Purchase Error",
-                          "Failed to apply day pass"
-                        );
+                </View>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    styles.crystalButton,
+                    threeLifeDayPassStatus?.active && styles.disabledButton, // Add this to apply disabled style
+                  ]}
+                  onPress={() =>
+                    handlePurchase(
+                      "day_pass",
+                      "3 Life Day Pass",
+                      150,
+                      "crystal",
+                      async () => {
+                        try {
+                          await purchaseThreeLifeDayPass();
+                          await fetchDataImmediately("crystalStatus");
+                          await fetchDataImmediately("threeLifeDayPassStatus");
+                        } catch (error) {
+                          console.error("Failed to apply day pass:", error);
+                          Alert.alert(
+                            "Purchase Error",
+                            "Failed to apply day pass"
+                          );
+                        }
                       }
-                    }
-                  )
-                }
-                disabled={loading || threeLifeDayPassStatus?.active} // Add this to disable the button when pass is active
-              >
-                {loading ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <View style={styles.crystalButtonContent}>
-                    {threeLifeDayPassStatus?.active ? (
-                      <ThemedText style={styles.buttonText}>
-                        Active ({threeLifedayPassRemainingTime})
-                      </ThemedText>
-                    ) : (
-                      <>
-                        <Image
-                          source={require("@/assets/images/crystal.png")}
-                          style={styles.buttonCrystalIcon}
-                        />
-                        <ThemedText style={styles.buttonText}>150</ThemedText>
-                      </>
-                    )}
-                  </View>
-                )}
-              </TouchableOpacity>
+                    )
+                  }
+                  disabled={loading || threeLifeDayPassStatus?.active} // Add this to disable the button when pass is active
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <View style={styles.crystalButtonContent}>
+                      {threeLifeDayPassStatus?.active ? (
+                        <ThemedText style={styles.buttonText}>
+                          Active
+                        </ThemedText>
+                      ) : (
+                        <>
+                          <Image
+                            source={require("@/assets/images/crystal.png")}
+                            style={styles.buttonCrystalIcon}
+                          />
+                          <ThemedText style={styles.buttonText}>150</ThemedText>
+                        </>
+                      )}
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
+              <ThemedText style={{ alignSelf: "flex-start", marginTop: 10 }}>
+                Time Remaining: {threeLifedayPassRemainingTime}
+              </ThemedText>
             </ThemedView>
           </ThemedView>
         )}
@@ -562,7 +587,7 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 4,
+    // marginBottom: 4,
   },
   itemDescription: {
     fontSize: 14,

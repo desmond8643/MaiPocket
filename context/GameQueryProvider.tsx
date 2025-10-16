@@ -17,6 +17,9 @@ export function fetchDataImmediately(queryKey: string | string[]) {
   return queryClient.fetchQuery({
     queryKey: Array.isArray(queryKey) ? queryKey : [queryKey],
     queryFn: async () => {
+      const userData = await AsyncStorage.getItem("userData");
+      const isLoggedIn = !!userData;
+
       switch (queryKey) {
         case "gameScores":
         case ["gameScores"]:
@@ -26,7 +29,9 @@ export function fetchDataImmediately(queryKey: string | string[]) {
           return getCrystalStatus();
         case "threeLifeDayPassStatus":
         case ["threeLifeDayPassStatus"]:
-          return getThreeLifeDayPassStatus();
+          return isLoggedIn
+            ? getThreeLifeDayPassStatus()
+            : { active: false, expiration: null };
         default:
           throw new Error(`Unknown query key: ${queryKey}`);
       }
@@ -76,16 +81,6 @@ function GameQueryContextProvider({ children }: { children: ReactNode }) {
 }
 
 export function useGameScores() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-
-  useEffect(() => {
-    const checkLogin = async () => {
-      const userData = await AsyncStorage.getItem("userData");
-      setIsLoggedIn(!!userData);
-    };
-    checkLogin();
-  }, []);
-
   return useQuery({
     queryKey: ["gameScores"],
     queryFn: async () => {
@@ -104,16 +99,6 @@ export function useGameScores() {
 }
 
 export function useCrystalStatus() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-
-  useEffect(() => {
-    const checkLogin = async () => {
-      const userData = await AsyncStorage.getItem("userData");
-      setIsLoggedIn(!!userData);
-    };
-    checkLogin();
-  }, []);
-
   return useQuery({
     queryKey: ["crystalStatus"],
     queryFn: async () => {
@@ -150,12 +135,22 @@ export function useThreeLifeDayPassStatus() {
   return useQuery({
     queryKey: ["threeLifeDayPassStatus"],
     queryFn: async () => {
+      // Check if user is logged in before making the API call
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) {
+        return { active: false, expiration: null };
+      }
       try {
         return await getThreeLifeDayPassStatus();
       } catch (error) {
         console.error("Error fetching day pass status:", error);
         return { active: false, expiration: null };
       }
+    },
+    // Default data to return when not logged in
+    placeholderData: {
+      active: false,
+      expiration: null,
     },
   });
 }
