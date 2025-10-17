@@ -6,14 +6,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  Alert,
   ActivityIndicator,
   Image,
   ScrollView,
   Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getCrystalStatus, getHighScores } from "@/api/client";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { UserScore } from "@/types/game";
@@ -29,7 +27,7 @@ import {
   useThreeLifeDayPassStatus,
 } from "@/context/GameQueryProvider";
 
-// Helper function to format the time remaining
+
 const formatTimeRemaining = (milliseconds: number) => {
   const totalSeconds = Math.floor(milliseconds / 1000);
   const hours = Math.floor(totalSeconds / 3600);
@@ -70,7 +68,6 @@ export default function GameHomeScreen() {
     },
   };
 
-  // const [isLoading, setIsLoading] = useState(true);
   const isLoading = scoresLoading || crystalsLoading;
 
   const insets = useSafeAreaInsets();

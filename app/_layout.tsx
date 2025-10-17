@@ -8,8 +8,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SHOW_ADS } from "@/constants/adsConfig";
 import { AdProvider } from "@/context/AdContext";
 import { GameQueryProvider } from "@/context/GameQueryProvider";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchDataImmediately } from "@/context/GameQueryProvider";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -45,34 +43,6 @@ export default function RootLayout() {
       );
     }
   }, [loaded]);
-
-  useEffect(() => {
-    if (loaded) {
-      // Preload important game data
-      const preloadGameData = async () => {
-        try {
-          const userData = await AsyncStorage.getItem("userData");
-          if (userData) {
-            // Preload all needed data if user is logged in
-            await Promise.all([
-              fetchDataImmediately("crystalStatus"),
-              fetchDataImmediately("gameScores"),
-              fetchDataImmediately("threeLifeDayPassStatus")
-            ]);
-            console.log("Preloaded all game data at app start");
-          }
-        } catch (error) {
-          console.error("Error preloading game data:", error);
-        }
-      };
-
-      preloadGameData();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
 
   return (
     <GameQueryProvider>

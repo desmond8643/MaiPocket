@@ -28,7 +28,6 @@ import {
 import { useShowAds } from "@/hooks/useShowAds";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import Carousel from "react-native-reanimated-carousel";
-import { Dimensions } from "react-native";
 import { fetchDataImmediately, queryClient } from "@/context/GameQueryProvider";
 
 export default function GamePlayScreen() {
@@ -65,7 +64,6 @@ export default function GamePlayScreen() {
 
   // Add this state for the carousel reference
   const carouselRef = useRef<any>(null);
-  // const { width } = Dimensions.get("window");
 
   // Add a new state variable around line 40 (with the other state variables)
   const [showingCorrectAnswer, setShowingCorrectAnswer] = useState(false);
@@ -74,6 +72,8 @@ export default function GamePlayScreen() {
   const [crystalsEarned, setCrystalsEarned] = useState(0);
   const [dailyCrystalsEarned, setDailyCrystalsEarned] = useState(0);
   const [dailyLimit, setDailyLimit] = useState(50);
+
+  const [loadedImageCount, setLoadedImageCount] = useState(0);
 
   useEffect(() => {
     loadQuestions();
@@ -95,8 +95,6 @@ export default function GamePlayScreen() {
     }
   }, [playerStatus]);
 
-  // Modify your timer effect to only start when audio is playing in audio mode
-  // or when images are fully loaded in visual mode
   useEffect(() => {
     if (loading || gameOver || showingCorrectAnswer) return; // Add showingCorrectAnswer check here
 
@@ -158,12 +156,28 @@ export default function GamePlayScreen() {
 
   // Add this function after the loadQuestions function
   const preloadImages = async (urls: string[]) => {
-    const preloadPromises = urls.map((url) => Image.prefetch(url));
+    setLoadedImageCount(0);
+
+    // Instead of waiting for all promises to complete at once,
+    // track each one individually
+    const preloadPromises = urls.map((url) =>
+      Image.prefetch(url)
+        .then(() => {
+          setLoadedImageCount((prev) => prev + 1);
+          return { url, loaded: true };
+        })
+        .catch(() => {
+          // Count failed loads too, to avoid getting stuck
+          setLoadedImageCount((prev) => prev + 1);
+          return { url, loaded: false };
+        })
+    );
+
     try {
-      await Promise.all(preloadPromises);
-      // Mark all images as preloaded
-      const loadedImages = urls.reduce((obj, url) => {
-        obj[url] = true;
+      const results = await Promise.all(preloadPromises);
+      // Convert the results to the expected format
+      const loadedImages = results.reduce((obj, item) => {
+        if (item.loaded) obj[item.url] = true;
         return obj;
       }, {} as { [key: string]: boolean });
 
@@ -213,7 +227,7 @@ export default function GamePlayScreen() {
         } catch (error) {
           console.error("Error fetching user streak from server:", error);
           // Fallback to local storage
-          fallbackToLocalStorage(modeStr);
+          await fallbackToLocalStorage(modeStr);
         }
       } else {
         // Not logged in, use local storage
@@ -245,7 +259,7 @@ export default function GamePlayScreen() {
     const savedScoresStr = await AsyncStorage.getItem(storageKey);
     if (savedScoresStr) {
       const savedScores = JSON.parse(savedScoresStr);
-      const modeKey = modeStr === "hard" ? "hard" : "normal";
+      const modeKey = modeStr === "visual" ? "visual" : "audio";
       const currentStreak = savedScores[modeKey].currentStreak || 0;
       setAccumulatedScore(currentStreak);
     }
@@ -297,7 +311,6 @@ export default function GamePlayScreen() {
           carouselRef.current.scrollTo({ index: nextIndex, animated: true });
         } catch (error) {
           console.log("Error scrolling carousel:", error);
-          // Fallback - just update the index state
         }
       }
     } else {
@@ -551,7 +564,7 @@ export default function GamePlayScreen() {
               <View style={styles.audioContainer}>
                 <ActivityIndicator size="large" color="#696FC7" />
                 <ThemedText style={styles.playButtonText}>
-                  Loading Images...
+                  Loading Images... {loadedImageCount}/{imageUrls.length}
                 </ThemedText>
               </View>
             ) : (
@@ -774,7 +787,6 @@ const styles = StyleSheet.create({
   crystalRewardContainer: {
     flexDirection: "row",
     alignItems: "center",
-    // backgroundColor: 'rgba(153, 68, 221, 0.15)',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
