@@ -13,7 +13,12 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 
@@ -22,6 +27,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
   const showAdsSection = !adsRemoved; // Only hide for permanent removal
   const showActualAds = !adsRemoved && !temporaryAdRemoval;
@@ -51,16 +57,22 @@ export default function HomeScreen() {
   useEffect(() => {
     const preloadData = async () => {
       try {
+        setIsDataLoading(true);
         // Check if user is logged in
         const userData = await AsyncStorage.getItem("userData");
         if (userData) {
           // Preload crystal status and game scores if logged in
-          await fetchDataImmediately("crystalStatus");
-          await fetchDataImmediately("gameScores");
-          console.log("Preloaded crystal status and game scores");
+          await Promise.all([
+            fetchDataImmediately("crystalStatus"),
+            fetchDataImmediately("gameScores"),
+            fetchDataImmediately("threeLifeDayPassStatus"),
+          ]);
+          console.log("Preloaded all game data");
         }
       } catch (error) {
         console.error("Error preloading data:", error);
+      } finally {
+        setIsDataLoading(false);
       }
     };
 
@@ -76,9 +88,13 @@ export default function HomeScreen() {
         try {
           const userData = await AsyncStorage.getItem("userData");
           if (userData) {
-            await fetchDataImmediately("crystalStatus");
-            await fetchDataImmediately("gameScores");
-            await fetchDataImmediately("threeLifeDayPassStatus");
+            // Load all data in parallel for better performance
+            await Promise.all([
+              fetchDataImmediately("crystalStatus"),
+              fetchDataImmediately("gameScores"),
+              fetchDataImmediately("threeLifeDayPassStatus"),
+            ]);
+            console.log("Refreshed all game data on home screen focus");
           }
         } catch (error) {
           console.error("Error refreshing data:", error);
@@ -159,6 +175,7 @@ export default function HomeScreen() {
         <TouchableOpacity
           style={{ ...styles.featureContainer, backgroundColor: "#4CAF50" }}
           onPress={() => router.push("/game")}
+          disabled={isLoggedIn && isDataLoading}
         >
           <View style={styles.featureTitleContainer}>
             <ThemedText
@@ -167,11 +184,14 @@ export default function HomeScreen() {
             >
               Song Quiz Game
             </ThemedText>
+
             <Ionicons name="game-controller-outline" size={48} color="white" />
           </View>
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
-              Test your maimai knowledge
+              {isLoggedIn && isDataLoading
+                ? "Loading..."
+                : "Test your maimai knowledge"}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -179,6 +199,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={{ ...styles.featureContainer, backgroundColor: "#AA60C8" }}
             onPress={() => router.push("/shop")}
+            disabled={isLoggedIn && isDataLoading}
           >
             <View style={styles.featureTitleContainer}>
               <ThemedText
@@ -187,11 +208,14 @@ export default function HomeScreen() {
               >
                 Shop
               </ThemedText>
+
               <Ionicons name="bag-outline" size={48} color="white" />
             </View>
             <View style={styles.featureDescription}>
               <ThemedText style={{ color: "white" }}>
-                Unlock features and special items
+                {isLoggedIn && isDataLoading
+                  ? "Loading..."
+                  : "Unlock features and special items"}
               </ThemedText>
             </View>
           </TouchableOpacity>
@@ -221,7 +245,6 @@ export default function HomeScreen() {
                   }}
                 />
               ) : (
-                // Keep the Facebook implementation as before
                 <WebView
                   source={{ uri: "https://www.facebook.com/maimaiDX" }}
                   style={styles.socialFeedWebView}
@@ -238,31 +261,6 @@ export default function HomeScreen() {
             </View>
           </ThemedView>
         )}
-
-        {/* {showAdsSection && (
-          <TouchableOpacity
-            style={{ ...styles.featureContainer, backgroundColor: "#AA60C8" }}
-            onPress={() => router.push("/remove-ads")}
-          >
-            <View style={styles.featureTitleContainer}>
-              <ThemedText
-                type="subtitle"
-                style={{ color: "white", marginTop: 8 }}
-              >
-                Remove Ads
-              </ThemedText>
-              <Ionicons name="play-outline" size={48} color="white" />
-            </View>
-            <View style={styles.featureDescription}>
-              <ThemedText style={{ color: "white" }}>
-                {temporaryAdRemoval
-                  ? "Ads temporarily removed"
-                  : "Enjoy an ad-free experience"}
-              </ThemedText>
-            </View>
-          </TouchableOpacity>
-        )} */}
-
         <ThemedView style={styles.copyrightContainer}>
           <TouchableOpacity
             style={[
@@ -307,15 +305,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 12,
     borderWidth: 0,
-    // backgroundColor: "rgba(255, 255, 255, 0.7)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   featureDescription: {
-    // backgroundColor: "#44444E",
-    // backgroundColor: "#758694",
     backgroundColor: "rgba(0, 0, 0, 0.2)",
     display: "flex",
     justifyContent: "center",

@@ -479,9 +479,11 @@ export default function ShopScreen() {
                   )}
                 </TouchableOpacity>
               </View>
-              <ThemedText style={{ alignSelf: "flex-start", marginTop: 10 }}>
-                Time Remaining: {threeLifedayPassRemainingTime}
-              </ThemedText>
+              {threeLifeDayPassStatus?.active && (
+                <ThemedText style={{ alignSelf: "flex-start", marginTop: 10 }}>
+                  Time Remaining: {threeLifedayPassRemainingTime}
+                </ThemedText>
+              )}
             </ThemedView>
           </ThemedView>
         )}
