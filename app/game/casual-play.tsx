@@ -78,6 +78,8 @@ export default function CasualGamePlayScreen() {
   const [dailyCrystalsEarned, setDailyCrystalsEarned] = useState(0);
   const [dailyLimit, setDailyLimit] = useState(50);
 
+  const [loadedImageCount, setLoadedImageCount] = useState(0);
+
   // Categories
   const genres = [
     { display: "POPS＆アニメ", value: "POPS＆アニメ" },
@@ -178,11 +180,28 @@ export default function CasualGamePlayScreen() {
 
   // Function to preload images
   const preloadImages = async (urls: string[]) => {
-    const preloadPromises = urls.map((url) => Image.prefetch(url));
+    setLoadedImageCount(0);
+
+    // Instead of waiting for all promises to complete at once,
+    // track each one individually
+    const preloadPromises = urls.map((url) =>
+      Image.prefetch(url)
+        .then(() => {
+          setLoadedImageCount((prev) => prev + 1);
+          return { url, loaded: true };
+        })
+        .catch(() => {
+          // Count failed loads too, to avoid getting stuck
+          setLoadedImageCount((prev) => prev + 1);
+          return { url, loaded: false };
+        })
+    );
+
     try {
-      await Promise.all(preloadPromises);
-      const loadedImages = urls.reduce((obj, url) => {
-        obj[url] = true;
+      const results = await Promise.all(preloadPromises);
+      // Convert the results to the expected format
+      const loadedImages = results.reduce((obj, item) => {
+        if (item.loaded) obj[item.url] = true;
         return obj;
       }, {} as { [key: string]: boolean });
 
@@ -792,7 +811,7 @@ export default function CasualGamePlayScreen() {
               <View style={styles.audioContainer}>
                 <ActivityIndicator size="large" color="#696FC7" />
                 <ThemedText style={styles.playButtonText}>
-                  Loading Images...
+                  Loading Images... {loadedImageCount}/{imageUrls.length}
                 </ThemedText>
               </View>
             ) : (
