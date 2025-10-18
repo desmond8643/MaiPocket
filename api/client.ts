@@ -1,3 +1,4 @@
+import { queryClient } from "@/context/GameQueryProvider";
 import { LeaderboardEntry, QuizQuestion } from "@/types/game";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -229,6 +230,9 @@ export const AuthAPI = {
     try {
       await AsyncStorage.removeItem("authToken");
       await AsyncStorage.removeItem("userData");
+
+      queryClient.resetQueries({ queryKey: ["threeLifeDayPassStatus"] });
+
       return { success: true };
     } catch (error) {
       console.error("Logout error:", error);

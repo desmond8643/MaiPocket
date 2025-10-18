@@ -188,6 +188,9 @@ export default function HomeScreen() {
             <Ionicons name="game-controller-outline" size={48} color="white" />
           </View>
           <View style={styles.featureDescription}>
+            {isLoggedIn && isDataLoading && (
+              <ActivityIndicator size="small" color="white" />
+            )}
             <ThemedText style={{ color: "white" }}>
               {isLoggedIn && isDataLoading
                 ? "Loading..."
@@ -212,6 +215,9 @@ export default function HomeScreen() {
               <Ionicons name="bag-outline" size={48} color="white" />
             </View>
             <View style={styles.featureDescription}>
+              {isLoggedIn && isDataLoading && (
+                <ActivityIndicator size="small" color="white" />
+              )}
               <ThemedText style={{ color: "white" }}>
                 {isLoggedIn && isDataLoading
                   ? "Loading..."
@@ -313,11 +319,13 @@ const styles = StyleSheet.create({
   featureDescription: {
     backgroundColor: "rgba(0, 0, 0, 0.2)",
     display: "flex",
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 2,
     borderRadius: 8,
     opacity: 80,
+    gap: 8,
   },
   featureTitleContainer: {
     display: "flex",

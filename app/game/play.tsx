@@ -5,7 +5,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
-  Image,
   View,
   ActivityIndicator,
   Alert,
@@ -15,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   AuthAPI,
   getQuizQuestions,
+  getThreeLifeDayPassStatus,
   getUserStreak,
   submitScore,
 } from "@/api/client";
@@ -29,6 +29,7 @@ import { useShowAds } from "@/hooks/useShowAds";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import Carousel from "react-native-reanimated-carousel";
 import { fetchDataImmediately, queryClient } from "@/context/GameQueryProvider";
+import { Image } from "expo-image";
 
 export default function GamePlayScreen() {
   const { mode } = useLocalSearchParams();
@@ -75,6 +76,9 @@ export default function GamePlayScreen() {
 
   const [loadedImageCount, setLoadedImageCount] = useState(0);
 
+  const [hasThreeLifePass, setHasThreeLifePass] = useState(false);
+  const [livesRemaining, setLivesRemaining] = useState(1); // Default 1 life
+
   useEffect(() => {
     loadQuestions();
   }, []);
@@ -108,11 +112,65 @@ export default function GamePlayScreen() {
       return; // Don't start timer yet
     }
 
+    // const timer = setInterval(() => {
+    //   setTimeLeft((prev) => {
+    //     if (prev <= 0) {
+    //       clearInterval(timer);
+    //       handleGameOver();
+    //       return 0;
+    //     }
+    //     return prev - 1;
+    //   });
+    // }, 1000);
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 0) {
           clearInterval(timer);
-          handleGameOver();
+          // Check if the user has lives remaining
+          if (hasThreeLifePass && livesRemaining > 1) {
+            // Show the correct answer
+            setShowingCorrectAnswer(true);
+            // Decrement life
+            setLivesRemaining((prev) => prev - 1);
+
+            // Wait 2 seconds to show correct answer then proceed to next question
+            setTimeout(() => {
+              setShowingCorrectAnswer(false);
+              setSelectedAnswer(null);
+              const nextIndex = currentQuestionIndex + 1;
+
+              if (nextIndex < questions.length) {
+                setCurrentQuestionIndex(nextIndex);
+                setTimeLeft(15);
+
+                // Update media for next question based on mode
+                if (mode === "audio" && audioUrls[nextIndex]) {
+                  setCurrentAudioUrl(audioUrls[nextIndex]);
+                } else if (mode === "visual" && carouselRef.current) {
+                  try {
+                    carouselRef.current.scrollTo({
+                      index: nextIndex,
+                      animated: true,
+                    });
+                  } catch (error) {
+                    console.log("Error scrolling carousel:", error);
+                  }
+                }
+              } else {
+                // End of questions reached
+                handleGameOver(true, score, accumulatedScore);
+              }
+            }, 2000);
+          } else {
+            // No lives remaining, proceed to game over
+            setShowingCorrectAnswer(true);
+
+            // Show the correct answer for 2 seconds before game over
+            setTimeout(() => {
+              setShowingCorrectAnswer(false);
+              handleGameOver();
+            }, 2000);
+          }
           return 0;
         }
         return prev - 1;
@@ -154,37 +212,32 @@ export default function GamePlayScreen() {
     }
   }, [currentQuestionIndex, questions, loading, mode, audioPlayer]);
 
-  // Add this function after the loadQuestions function
   const preloadImages = async (urls: string[]) => {
     setLoadedImageCount(0);
 
-    // Instead of waiting for all promises to complete at once,
-    // track each one individually
-    const preloadPromises = urls.map((url) =>
+    // Create a promise for each image to track loading
+    const preloadPromises = urls.map((url, index) =>
       Image.prefetch(url)
         .then(() => {
           setLoadedImageCount((prev) => prev + 1);
           return { url, loaded: true };
         })
         .catch(() => {
-          // Count failed loads too, to avoid getting stuck
           setLoadedImageCount((prev) => prev + 1);
           return { url, loaded: false };
         })
     );
 
-    try {
-      const results = await Promise.all(preloadPromises);
-      // Convert the results to the expected format
-      const loadedImages = results.reduce((obj, item) => {
-        if (item.loaded) obj[item.url] = true;
-        return obj;
-      }, {} as { [key: string]: boolean });
+    // Wait for all images to preload
+    const results = await Promise.all(preloadPromises);
 
-      setPreloadedImages(loadedImages);
-    } catch (error) {
-      console.error("Error preloading images:", error);
-    }
+    // Update the state
+    const loadedImages = results.reduce((obj, item) => {
+      if (item.loaded) obj[item.url] = true;
+      return obj;
+    }, {} as { [key: string]: boolean });
+
+    setPreloadedImages(loadedImages);
   };
 
   // Update the loadQuestions function to preload images
@@ -220,6 +273,11 @@ export default function GamePlayScreen() {
 
       if (isLoggedIn) {
         try {
+          // Check if user has 3-life pass
+          const threeLifeStatus = await getThreeLifeDayPassStatus();
+          setHasThreeLifePass(threeLifeStatus.active);
+          setLivesRemaining(threeLifeStatus.active ? 3 : 1);
+
           // Fetch streak from server
           const userScores = await getUserStreak(modeStr);
           setAccumulatedScore(userScores.currentStreak);
@@ -280,11 +338,46 @@ export default function GamePlayScreen() {
         // Set the flag to prevent timer countdown
         setShowingCorrectAnswer(true);
 
-        // Add delay before game over to show the correct answer
-        setTimeout(() => {
-          setShowingCorrectAnswer(false); // Reset the flag
-          handleGameOver();
-        }, 2000); // 2 second delay to show the correct answer
+        // Check if user has lives remaining
+        if (hasThreeLifePass && livesRemaining > 1) {
+          // Decrement life and continue game
+          setLivesRemaining((prev) => prev - 1);
+
+          // Add delay before moving to next question to show the correct answer
+          setTimeout(() => {
+            setShowingCorrectAnswer(false); // Reset the flag
+            setSelectedAnswer(null);
+            const nextIndex = currentQuestionIndex + 1;
+
+            if (nextIndex < questions.length) {
+              setCurrentQuestionIndex(nextIndex);
+              setTimeLeft(15);
+
+              // Update media for next question based on mode
+              if (mode === "audio" && audioUrls[nextIndex]) {
+                setCurrentAudioUrl(audioUrls[nextIndex]);
+              } else if (mode === "visual" && carouselRef.current) {
+                try {
+                  carouselRef.current.scrollTo({
+                    index: nextIndex,
+                    animated: true,
+                  });
+                } catch (error) {
+                  console.log("Error scrolling carousel:", error);
+                }
+              }
+            } else {
+              // End of questions reached
+              handleGameOver(true, score, accumulatedScore);
+            }
+          }, 2000); // 2 second delay to show the correct answer
+        } else {
+          // No lives remaining, game over
+          setTimeout(() => {
+            setShowingCorrectAnswer(false); // Reset the flag
+            handleGameOver();
+          }, 2000); // 2 second delay to show the correct answer
+        }
       }
     }, 1000);
   };
@@ -445,17 +538,40 @@ export default function GamePlayScreen() {
     return (
       <ThemedView style={[styles.container, styles.centered]}>
         <Ionicons
-          name={score === questions.length ? "trophy" : "sad"}
+          name={
+            score === questions.length
+              ? "trophy"
+              : score >= questions.length / 2
+              ? "happy"
+              : "sad"
+          }
           size={80}
-          color="#F75270"
+          color={
+            score === questions.length
+              ? "#ED3F27"
+              : score >= questions.length / 2
+              ? "#FF3F7F"
+              : "#F75270"
+          }
         />
         <ThemedText
           style={[
             styles.gameOverTitle,
-            { color: score === questions.length ? "#ED3F27" : "#696FC7" },
+            {
+              color:
+                score === questions.length
+                  ? "#ED3F27"
+                  : score >= questions.length / 2
+                  ? "#FF3F7F"
+                  : "#696FC7",
+            },
           ]}
         >
-          {score === questions.length ? "All Perfect" : "You Lose..."}
+          {score === questions.length
+            ? "All Perfect"
+            : score >= questions.length / 2
+            ? "Great"
+            : "You Lose..."}
         </ThemedText>
         <ThemedText style={styles.scoreText}>
           Your Score: {score}/{questions.length}
@@ -508,7 +624,22 @@ export default function GamePlayScreen() {
   return (
     <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <View style={styles.timerPlaceholder}></View>
+        {/* <View style={styles.timerPlaceholder}></View> */}
+        <View style={styles.livesContainer}>
+          {hasThreeLifePass && (
+            <>
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Ionicons
+                  key={index}
+                  name="heart"
+                  size={20}
+                  color={index < livesRemaining ? "#F75270" : "#7D8597"}
+                  style={{ marginHorizontal: 2 }}
+                />
+              ))}
+            </>
+          )}
+        </View>
         <View style={styles.progressContainer}>
           <ThemedText style={styles.progressText}>
             Question {currentQuestionIndex + 1}/{questions.length}
@@ -581,9 +712,11 @@ export default function GamePlayScreen() {
                   enabled={false}
                   renderItem={({ item, index }) => (
                     <Image
-                      source={{ uri: item.thumbnailUrl }}
                       style={styles.thumbnail}
-                      resizeMode="cover"
+                      source={{ uri: item.thumbnailUrl }}
+                      contentFit="cover"
+                      transition={200} // Adds a smooth fade-in
+                      cachePolicy="memory-disk" // Strong caching policy
                     />
                   )}
                 />
@@ -599,8 +732,9 @@ export default function GamePlayScreen() {
             key={index}
             style={[
               styles.answerButton,
-              // Modified logic to show correct answer when any wrong answer is selected
-              selectedAnswer !== null &&
+              // Modified logic to show correct answer when time runs out or wrong answer is selected
+              (selectedAnswer !== null ||
+                (timeLeft === 0 && showingCorrectAnswer)) &&
               choice === currentQuestion.correctAnswer
                 ? styles.correctAnswer
                 : selectedAnswer === choice &&
@@ -615,6 +749,7 @@ export default function GamePlayScreen() {
             onPress={() => handleAnswer(choice)}
             disabled={
               selectedAnswer !== null ||
+              timeLeft === 0 ||
               (mode === "audio" && isAudioLoading) ||
               (mode === "visual" && isImageLoading)
             }
@@ -808,5 +943,10 @@ const styles = StyleSheet.create({
   },
   disabledButtonText: {
     opacity: 0.7,
+  },
+  livesContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: 40,
   },
 });

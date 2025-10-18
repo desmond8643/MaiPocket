@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
-  Image,
   ScrollView,
   Modal,
 } from "react-native";
@@ -26,7 +25,7 @@ import {
   useGameScores,
   useThreeLifeDayPassStatus,
 } from "@/context/GameQueryProvider";
-
+import { Image } from "expo-image";
 
 const formatTimeRemaining = (milliseconds: number) => {
   const totalSeconds = Math.floor(milliseconds / 1000);

@@ -5,7 +5,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
-  Image,
   View,
   ActivityIndicator,
   Alert,
@@ -29,6 +28,7 @@ import {
   submitCasualScore,
 } from "@/api/client";
 import { fetchDataImmediately } from "@/context/GameQueryProvider";
+import { Image } from "expo-image";
 
 export default function CasualGamePlayScreen() {
   const { mode } = useLocalSearchParams();
@@ -830,7 +830,7 @@ export default function CasualGamePlayScreen() {
                     <Image
                       source={{ uri: item.thumbnailUrl }}
                       style={styles.thumbnail}
-                      resizeMode="cover"
+                      contentFit="cover"
                     />
                   )}
                 />

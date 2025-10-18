@@ -13,7 +13,6 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -23,6 +22,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { showRewardedAd } from "@/components/RewardedAd";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { purchaseThreeLifeDayPass } from "@/api/client";
+import { Image } from "expo-image";
 
 // This would be moved to a separate context file in a real implementation
 interface ShopContext {
