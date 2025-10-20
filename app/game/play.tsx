@@ -506,6 +506,7 @@ export default function GamePlayScreen() {
     setScore(0);
     setGameOver(false);
     setSelectedAnswer(null);
+    setCrystalsEarned(0);
     loadQuestions();
   };
 
@@ -541,7 +542,7 @@ export default function GamePlayScreen() {
           name={
             score === questions.length
               ? "trophy"
-              : score >= questions.length / 2
+              : score >= questions.length / 2 && hasThreeLifePass
               ? "happy"
               : "sad"
           }
@@ -549,9 +550,9 @@ export default function GamePlayScreen() {
           color={
             score === questions.length
               ? "#ED3F27"
-              : score >= questions.length / 2
+              : score >= questions.length / 2 && hasThreeLifePass
               ? "#FF3F7F"
-              : "#F75270"
+              : "#696FC7"
           }
         />
         <ThemedText
@@ -561,7 +562,7 @@ export default function GamePlayScreen() {
               color:
                 score === questions.length
                   ? "#ED3F27"
-                  : score >= questions.length / 2
+                  : score >= questions.length / 2 && hasThreeLifePass
                   ? "#FF3F7F"
                   : "#696FC7",
             },
@@ -569,7 +570,7 @@ export default function GamePlayScreen() {
         >
           {score === questions.length
             ? "All Perfect"
-            : score >= questions.length / 2
+            : score >= questions.length / 2 && hasThreeLifePass
             ? "Great"
             : "You Lose..."}
         </ThemedText>

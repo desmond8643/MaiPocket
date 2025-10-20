@@ -8,16 +8,13 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-// API URL
-const BASE_URL = "https://maipocket-backend.vercel.app";
+import { Image } from "expo-image";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -37,11 +34,9 @@ export default function ProfileScreen() {
     try {
       const isLoggedIn = await AuthAPI.isLoggedIn();
       if (isLoggedIn) {
-        // Always fetch fresh user data
         const freshUserData = await AuthAPI.getCurrentUser();
         setUserData(freshUserData);
 
-        // Optionally update AsyncStorage with latest data
         await AsyncStorage.setItem("userData", JSON.stringify(freshUserData));
       }
     } catch (error) {
@@ -142,7 +137,6 @@ export default function ProfileScreen() {
                   <ThemedText style={styles.statValue}>
                     {userData.crystals || 0}
                   </ThemedText>
-                  {/* <ThemedText style={styles.statLabel}>Crystals</ThemedText> */}
                 </View>
                 {userData.isPro && (
                   <View style={[styles.statItem, styles.proBadge]}>
@@ -152,7 +146,6 @@ export default function ProfileScreen() {
               </View>
 
               <View style={styles.settingsSection}>
-                {/* <ThemedText style={styles.sectionTitle}>Profile</ThemedText> */}
                 <TouchableOpacity
                   style={styles.settingsItem}
                   onPress={() => router.push("/settings/edit-profile")}
@@ -185,16 +178,6 @@ export default function ProfileScreen() {
                   )}
                   <Ionicons name="chevron-forward" size={24} color="#999" />
                 </TouchableOpacity>
-
-                {/* <TouchableOpacity 
-                style={styles.settingsItem}
-                onPress={() => router.push('/settings/appearance')}
-              >
-                <Ionicons name="color-palette-outline" size={24} color="#AE75DA" />
-                <ThemedText style={styles.settingLabel}>Appearance</ThemedText>
-                <Ionicons name="chevron-forward" size={24} color="#999" />
-              </TouchableOpacity> */}
-
                 <TouchableOpacity
                   style={styles.settingsItem}
                   onPress={() => router.push("/settings/change-password")}
@@ -399,7 +382,6 @@ const styles = StyleSheet.create({
     top: 40,
     left: 0,
     right: 0,
-    // height: 60,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
@@ -410,7 +392,6 @@ const styles = StyleSheet.create({
   },
   featureContainer: {
     padding: 20,
-    // marginTop: 10,
     backgroundColor: "rgba(174, 117, 218, 0.05)",
     borderRadius: 12,
     borderWidth: 1,

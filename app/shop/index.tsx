@@ -376,7 +376,8 @@ export default function ShopScreen() {
                     removeAdsPermanently
                   )
                 }
-                disabled={loading}
+                // disabled={loading}
+                disabled
               >
                 {loading ? (
                   <ActivityIndicator color="#FFFFFF" />

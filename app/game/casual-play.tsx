@@ -57,7 +57,7 @@ export default function CasualGamePlayScreen() {
   const [showModeSelection, setShowModeSelection] = useState(true);
   const [gameMode, setGameMode] = useState<"visual" | "audio" | null>(null);
   const [categoryType, setCategoryType] = useState<
-    "all" | "level" | "genre" | "version" | null
+    "all" | "level" | "genre" | "version" | "chart_type" | null
   >(null);
   const [subCategory, setSubCategory] = useState<string | null>(null);
   const [showSubCategorySelection, setShowSubCategorySelection] =
@@ -346,7 +346,9 @@ export default function CasualGamePlayScreen() {
   };
 
   // Handle category selection
-  const selectCategory = (selected: "all" | "level" | "genre" | "version") => {
+  const selectCategory = (
+    selected: "all" | "level" | "genre" | "version" | "chart_type"
+  ) => {
     setCategoryType(selected);
 
     if (selected === "all") {
@@ -376,7 +378,7 @@ export default function CasualGamePlayScreen() {
 
   const loadQuestionsWithParams = async (
     modeParam: "visual" | "audio",
-    categoryTypeParam: "all" | "level" | "genre" | "version",
+    categoryTypeParam: "all" | "level" | "genre" | "version" | "chart_type",
     subCategoryParam: string | null
   ) => {
     // Existing function implementation
@@ -450,10 +452,9 @@ export default function CasualGamePlayScreen() {
             color={gameMode === "visual" ? "#fff" : "#696FC7"}
           />
           <ThemedText
-            style={[
-              styles.buttonText,
-              gameMode === "visual" && { color: "#fff" },
-            ]}
+            style={styles.buttonText}
+            lightColor={gameMode === "visual" ? "#fff" : "#696FC7"}
+            darkColor="white"
           >
             Visual Mode
           </ThemedText>
@@ -472,10 +473,9 @@ export default function CasualGamePlayScreen() {
             color={gameMode === "audio" ? "#fff" : "#696FC7"}
           />
           <ThemedText
-            style={[
-              styles.buttonText,
-              gameMode === "audio" && { color: "#fff" },
-            ]}
+            style={styles.buttonText}
+            lightColor={gameMode === "audio" ? "#fff" : "#696FC7"}
+            darkColor="white"
           >
             Audio Mode
           </ThemedText>
@@ -495,10 +495,9 @@ export default function CasualGamePlayScreen() {
               onPress={() => selectCategory("all")}
             >
               <ThemedText
-                style={[
-                  styles.buttonText,
-                  categoryType === "all" && { color: "#fff" },
-                ]}
+                style={[styles.buttonText]}
+                lightColor={categoryType === "all" ? "#fff" : "#696FC7"}
+                darkColor="white"
               >
                 All Songs
               </ThemedText>
@@ -512,10 +511,9 @@ export default function CasualGamePlayScreen() {
               onPress={() => selectCategory("level")}
             >
               <ThemedText
-                style={[
-                  styles.buttonText,
-                  categoryType === "level" && { color: "#fff" },
-                ]}
+                style={[styles.buttonText]}
+                lightColor={categoryType === "level" ? "#fff" : "#696FC7"}
+                darkColor="white"
               >
                 By Level
               </ThemedText>
@@ -529,10 +527,9 @@ export default function CasualGamePlayScreen() {
               onPress={() => selectCategory("genre")}
             >
               <ThemedText
-                style={[
-                  styles.buttonText,
-                  categoryType === "genre" && { color: "#fff" },
-                ]}
+                style={[styles.buttonText]}
+                lightColor={categoryType === "genre" ? "#fff" : "#696FC7"}
+                darkColor="white"
               >
                 By Genre
               </ThemedText>
@@ -546,12 +543,26 @@ export default function CasualGamePlayScreen() {
               onPress={() => selectCategory("version")}
             >
               <ThemedText
-                style={[
-                  styles.buttonText,
-                  categoryType === "version" && { color: "#fff" },
-                ]}
+                style={[styles.buttonText]}
+                lightColor={categoryType === "version" ? "#fff" : "#696FC7"}
+                darkColor="white"
               >
                 By Version
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.categoryButton,
+                categoryType === "chart_type" && styles.selectedButton,
+              ]}
+              onPress={() => selectCategory("chart_type")}
+            >
+              <ThemedText
+                style={[styles.buttonText]}
+                lightColor={categoryType === "chart_type" ? "#fff" : "#696FC7"}
+                darkColor="white"
+              >
+                By Chart Type
               </ThemedText>
             </TouchableOpacity>
           </View>
@@ -574,9 +585,14 @@ export default function CasualGamePlayScreen() {
     <Modal
       visible={showSubCategorySelection}
       transparent={true}
-      animationType="slide"
+      animationType="fade"
+      onRequestClose={() => setShowSubCategorySelection(false)}
     >
-      <View style={styles.modalOverlay}>
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={() => setShowSubCategorySelection(false)}
+      >
         <ThemedView style={styles.modalContainer}>
           <ThemedText style={styles.modalTitle}>
             Select{" "}
@@ -620,6 +636,59 @@ export default function CasualGamePlayScreen() {
                   <ThemedText>{version.display}</ThemedText>
                 </TouchableOpacity>
               ))}
+            {categoryType === "chart_type" && (
+              <>
+                <TouchableOpacity
+                  style={[styles.modalItem]}
+                  onPress={() => selectSubCategory("standard")}
+                >
+                  <View style={[styles.chartTypeOption]}>
+                    <View style={styles.standardLabel}>
+                      <ThemedText style={styles.standardLabelText}>
+                        スタンダード
+                      </ThemedText>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.modalItem}
+                  onPress={() => selectSubCategory("deluxe")}
+                >
+                  <View style={styles.chartTypeOption}>
+                    <View style={styles.deluxeLabel}>
+                      <ThemedText style={styles.deluxeLabelText}>
+                        <ThemedText
+                          style={[styles.deluxeLabelText, { color: "#FF0000" }]}
+                        >
+                          で
+                        </ThemedText>
+                        <ThemedText
+                          style={[styles.deluxeLabelText, { color: "#FF8C00" }]}
+                        >
+                          ら
+                        </ThemedText>
+                        <ThemedText
+                          style={[styles.deluxeLabelText, { color: "#FFD93D" }]}
+                        >
+                          っ
+                        </ThemedText>
+                        <ThemedText
+                          style={[styles.deluxeLabelText, { color: "#7ADAA5" }]}
+                        >
+                          く
+                        </ThemedText>
+                        <ThemedText
+                          style={[styles.deluxeLabelText, { color: "#3396D3" }]}
+                        >
+                          す
+                        </ThemedText>
+                      </ThemedText>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              </>
+            )}
           </ScrollView>
 
           <TouchableOpacity
@@ -629,7 +698,7 @@ export default function CasualGamePlayScreen() {
             <ThemedText style={{ color: "#fff" }}>Cancel</ThemedText>
           </TouchableOpacity>
         </ThemedView>
-      </View>
+      </TouchableOpacity>
     </Modal>
   );
 
@@ -959,7 +1028,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: {
-    color: "white",
+    // color: "white",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -1089,5 +1158,34 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 14,
     color: "#888",
+  },
+  chartTypeOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    justifyContent: "center",
+  },
+  standardLabel: {
+    backgroundColor: "#4BAEEA",
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  standardLabelText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  deluxeLabel: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "#DDD",
+  },
+  deluxeLabelText: {
+    fontWeight: "bold",
+    fontSize: 20,
   },
 });
