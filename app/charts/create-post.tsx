@@ -318,7 +318,7 @@ export default function CreatePostScreen() {
                 </View>
 
                 {/* Anonymous Toggle */}
-                <ThemedText style={styles.formLabel}>Post Settings</ThemedText>
+                {/* <ThemedText style={styles.formLabel}>Post Settings</ThemedText>
                 <View style={styles.settingRow}>
                   <ThemedText>Post Anonymously</ThemedText>
                   <Switch
@@ -329,7 +329,7 @@ export default function CreatePostScreen() {
                       true: "#AE75DA",
                     }}
                   />
-                </View>
+                </View> */}
 
                 {/* Error Message */}
                 {postError && (

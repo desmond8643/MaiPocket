@@ -496,7 +496,7 @@ export default function ShopScreen() {
 
             {[
               { id: "crystal_100", amount: 100, price: 8 },
-              { id: "crystal_200", amount: 200, price: 15 },
+              { id: "crystal_200", amount: 200, price: 18 },
               { id: "crystal_400", amount: 400, price: 28 },
               { id: "crystal_1000", amount: 1000, price: 58 },
             ].map((item) => (

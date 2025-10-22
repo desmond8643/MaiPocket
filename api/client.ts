@@ -336,6 +336,20 @@ export const AuthAPI = {
       throw error;
     }
   },
+  deleteAccount: async (password: string) => {
+    try {
+      const response = await apiClient.delete("/auth/account", {
+        data: { password }
+      });
+      // Clear stored user data
+      await AsyncStorage.removeItem("authToken");
+      await AsyncStorage.removeItem("userData");
+      return response.data;
+    } catch (error) {
+      console.error("Delete account error:", error);
+      throw error;
+    }
+  },
 };
 
 export const NotificationAPI = {

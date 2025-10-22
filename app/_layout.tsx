@@ -116,6 +116,10 @@ export default function RootLayout() {
               options={{ headerShown: false }}
             />
             <Stack.Screen name="shop/index" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="settings/delete-account"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </GestureHandlerRootView>
       </AdProvider>
