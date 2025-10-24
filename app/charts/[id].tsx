@@ -16,7 +16,7 @@ import {
   View,
 } from "react-native";
 
-import { AuthAPI, ChartAPI } from "@/api/client";
+import { AuthAPI, ChartAPI, UserAPI } from "@/api/client";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { YouTubePreview } from "@/components/YouTubePreview";
@@ -304,6 +304,148 @@ export default function ChartDetailScreen() {
   console.log(user);
   console.log(posts);
 
+  // Add to the ChartDetailScreen component
+  const handleHidePost = async (postId: string) => {
+    try {
+      const isLoggedIn = await AuthAPI.isLoggedIn();
+
+      if (isLoggedIn) {
+        await ChartAPI.hidePost(postId);
+        // Remove the post from the list immediately
+        setPosts(posts.filter((p) => p.id !== postId));
+      } else {
+        // Redirect to login
+        router.push({
+          pathname: "/auth/login",
+        });
+      }
+    } catch (err) {
+      console.error("Error hiding post:", err);
+    }
+  };
+
+  // Add this function to the ChartDetailScreen component
+  const handleFlagPost = async (postId: string) => {
+    try {
+      const isLoggedIn = await AuthAPI.isLoggedIn();
+
+      if (isLoggedIn) {
+        // Show flag reason selection modal
+        Alert.alert("Report Content", "Why are you reporting this content?", [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Inappropriate Content",
+            onPress: () => submitFlag(postId, "inappropriate_content"),
+          },
+          {
+            text: "Spam",
+            onPress: () => submitFlag(postId, "spam"),
+          },
+          {
+            text: "Harassment",
+            onPress: () => submitFlag(postId, "harassment"),
+          },
+          {
+            text: "Misinformation",
+            onPress: () => submitFlag(postId, "misinformation"),
+          },
+          // {
+          //   text: "Copyright Violation",
+          //   onPress: () => submitFlag(postId, "copyright_violation"),
+          // },
+          // {
+          //   text: "Other...",
+          //   onPress: () => promptForCustomReason(postId),
+          // },
+        ]);
+      } else {
+        // Redirect to login
+        router.push({
+          pathname: "/auth/login",
+        });
+      }
+    } catch (err) {
+      console.error("Error flagging post:", err);
+    }
+  };
+
+  const submitFlag = async (
+    postId: string,
+    reason: string,
+    description?: string
+  ) => {
+    try {
+      await ChartAPI.flagPost(postId, reason, description);
+      Alert.alert(
+        "Content Reported",
+        "Thank you for helping keep our community safe. Our team will review this content."
+      );
+    } catch (err) {
+      console.error("Error submitting flag:", err);
+      Alert.alert("Error", "Failed to report content. Please try again.");
+    }
+  };
+
+  const promptForCustomReason = (postId: string) => {
+    Alert.prompt(
+      "Custom Reason",
+      "Please provide details about why you're reporting this content:",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Submit",
+          onPress: (description?: string) => {
+            if (description && description.trim()) {
+              submitFlag(postId, "other", description);
+            } else {
+              Alert.alert("Error", "Please provide a description");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // Add this function to the ChartDetailScreen component near the other handler functions
+  const handleBlockUser = async (userId: string) => {
+    try {
+      const isLoggedIn = await AuthAPI.isLoggedIn();
+
+      if (isLoggedIn) {
+        // Show confirmation dialog
+        Alert.alert(
+          "Block User",
+          "Are you sure you want to block this user? You won't see their posts and they won't be able to interact with you.",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Block",
+              style: "destructive",
+              onPress: async () => {
+                await UserAPI.blockUser(userId);
+                // Remove all posts by this user from the current view
+                const blockedUserId = posts.find((p) => p.id === optionsPostId)
+                  ?.user?.id;
+                if (blockedUserId) {
+                  setPosts(posts.filter((p) => p.user?.id !== blockedUserId));
+                }
+                Alert.alert("Success", "User has been blocked");
+              },
+            },
+          ]
+        );
+      } else {
+        // Redirect to login
+        router.push({
+          pathname: "/auth/login",
+        });
+      }
+    } catch (err) {
+      console.error("Error blocking user:", err);
+      Alert.alert("Error", "Failed to block user");
+    }
+  };
+
   return (
     <>
       <Stack.Screen
@@ -392,7 +534,7 @@ export default function ChartDetailScreen() {
       </Modal>
 
       {/* Post Options Dropdown */}
-      <Modal
+      {/* <Modal
         visible={showPostOptionsDropdown}
         transparent={true}
         animationType="none"
@@ -431,6 +573,107 @@ export default function ChartDetailScreen() {
                 Delete Post
               </ThemedText>
             </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal> */}
+      <Modal
+        visible={showPostOptionsDropdown}
+        transparent={true}
+        animationType="none"
+        onRequestClose={() => setShowPostOptionsDropdown(false)}
+      >
+        <TouchableOpacity
+          style={[
+            styles.modalOverlay,
+            { backgroundColor: "rgba(0, 0, 0, 0.2)" },
+          ]}
+          activeOpacity={1}
+          onPress={() => setShowPostOptionsDropdown(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={[
+              styles.dropdownContainer,
+              {
+                backgroundColor: Colors[colorScheme ?? "light"].background,
+                borderColor: Colors[colorScheme ?? "light"].background,
+                position: "absolute",
+                top: postOptionsPosition.top,
+                right: postOptionsPosition.right,
+              },
+            ]}
+          >
+            {/* Show delete option only for owner */}
+            {user &&
+              posts.find((p) => p.id === optionsPostId)?.user?.id ===
+                user._id && (
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setShowPostOptionsDropdown(false);
+                    handleDeletePost(optionsPostId as string);
+                  }}
+                >
+                  <MaterialIcons name="delete" size={22} color="#E53935" />
+                  <ThemedText
+                    style={[styles.dropdownText, { color: "#E53935" }]}
+                  >
+                    Delete Post
+                  </ThemedText>
+                </TouchableOpacity>
+              )}
+
+            {/* Hide Post option for all users */}
+            {(!user ||
+              posts.find((p) => p.id === optionsPostId)?.user?.id !==
+                user._id) && (
+              <>
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setShowPostOptionsDropdown(false);
+                    handleHidePost(optionsPostId as string);
+                  }}
+                >
+                  <MaterialIcons
+                    name="visibility-off"
+                    size={22}
+                    color="#888888"
+                  />
+                  <ThemedText style={styles.dropdownText}>
+                    Hide this post
+                  </ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setShowPostOptionsDropdown(false);
+                    handleFlagPost(optionsPostId as string);
+                  }}
+                >
+                  <MaterialIcons name="flag" size={22} color="#E53935" />
+                  <ThemedText style={[styles.dropdownText]}>
+                    Report Content
+                  </ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setShowPostOptionsDropdown(false);
+                    const userId = posts.find((p) => p.id === optionsPostId)
+                      ?.user?.id;
+                    if (userId) {
+                      handleBlockUser(userId);
+                    }
+                  }}
+                >
+                  <MaterialIcons name="block" size={22} color="#E53935" />
+                  <ThemedText style={[styles.dropdownText]}>
+                    Block User
+                  </ThemedText>
+                </TouchableOpacity>
+              </>
+            )}
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -592,9 +835,9 @@ export default function ChartDetailScreen() {
                         difficulty: selectedDifficulty,
                       };
                       router.push({
-                        pathname: '/charts/create-post',
-                        params: postParams
-                      })
+                        pathname: "/charts/create-post",
+                        params: postParams,
+                      });
                     } else {
                       // For login, don't show ad
                       router.push({
@@ -684,7 +927,8 @@ export default function ChartDetailScreen() {
                             </View>
                           </View>
 
-                          {user && post.user.id === user._id && (
+                          {/* {user && post.user.id === user._id && ( */}
+                          {user && (
                             <TouchableOpacity
                               onPress={(event) =>
                                 handleShowPostOptions(post.id, event)

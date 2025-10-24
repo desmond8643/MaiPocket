@@ -120,6 +120,10 @@ export default function RootLayout() {
               name="settings/delete-account"
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="settings/blocked-user"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </GestureHandlerRootView>
       </AdProvider>

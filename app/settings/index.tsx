@@ -53,6 +53,16 @@ export default function SettingsScreen() {
             {isLoggedIn && (
               <>
                 <TouchableOpacity
+                  style={styles.optionItem}
+                  onPress={() => router.push("/settings/blocked-user")}
+                >
+                  <Ionicons name="person-remove" size={24} color="#AE75DA" />
+                  <ThemedText style={styles.optionText}>
+                    Blocked Users
+                  </ThemedText>
+                  <Ionicons name="chevron-forward" size={24} color="#999" />
+                </TouchableOpacity>
+                <TouchableOpacity
                   style={styles.dangerOptionItem}
                   onPress={() => router.push("/settings/delete-account")}
                 >

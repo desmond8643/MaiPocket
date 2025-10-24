@@ -4,6 +4,7 @@ import Constants from "expo-constants";
 const isExpoGo = Constants.appOwnership === "expo";
 
 export const SHOW_ADS = !isExpoGo; // Auto-disable for Expo Go
+// export const SHOW_ADS = true
 
 // Mock ad components and functions to use when in Expo Go
 export const mockAdComponents = {

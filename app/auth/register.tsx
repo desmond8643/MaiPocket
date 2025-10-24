@@ -16,6 +16,7 @@ import { AuthAPI } from "@/api/client";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { Checkbox } from "react-native-paper";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -31,74 +32,84 @@ export default function RegisterScreen() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
+  // Add state for terms agreement after line 32
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsError, setTermsError] = useState("");
+
   const textColor = useThemeColor({}, "text");
   const iconColor = useThemeColor({}, "icon");
+
+  const colorScheme = useColorScheme();
 
   const validateUsername = (value: string) => {
     // Clear previous errors
     setUsernameError("");
-    
+
     // Username length between 3 and 20 characters
     if (value.length < 3 || value.length > 20) {
       setUsernameError("Username must be between 3 and 20 characters");
       return false;
     }
-    
+
     // Only allow letters, numbers, underscores, and hyphens
     const usernameRegex = /^[a-zA-Z0-9_-]+$/;
     if (!usernameRegex.test(value)) {
-      setUsernameError("Username can only contain letters, numbers, underscores, and hyphens");
+      setUsernameError(
+        "Username can only contain letters, numbers, underscores, and hyphens"
+      );
       return false;
     }
-    
+
     return true;
   };
 
   const validateDisplayName = (value: string) => {
     // Clear previous errors
     setDisplayNameError("");
-    
+
     // Display name length between 1 and 30 characters
     if (value.length < 1 || value.length > 30) {
       setDisplayNameError("Display name must be between 1 and 30 characters");
       return false;
     }
-    
+
     // Filter out offensive words or patterns if needed
     const offensiveWords = ["admin", "moderator", "official"]; // Example list
-    if (offensiveWords.some(word => value.toLowerCase().includes(word))) {
-      setDisplayNameError("Display name contains reserved or inappropriate words");
+    if (offensiveWords.some((word) => value.toLowerCase().includes(word))) {
+      setDisplayNameError(
+        "Display name contains reserved or inappropriate words"
+      );
       return false;
     }
-    
+
     return true;
   };
 
   const validateEmail = (value: string) => {
     setEmailError("");
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
       setEmailError("Please enter a valid email address");
       return false;
     }
-    
+
     return true;
   };
 
   const validatePassword = (value: string, confirmValue: string) => {
     setPasswordError("");
-    
+
     if (value.length < 8) {
       setPasswordError("Password must be at least 8 characters long");
       return false;
     }
-    
+
     if (value !== confirmValue) {
       setPasswordError("Passwords do not match");
       return false;
     }
-    
+
     return true;
   };
 
@@ -108,8 +119,21 @@ export default function RegisterScreen() {
     const isDisplayNameValid = validateDisplayName(displayName);
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password, confirmPassword);
-    
-    if (!isUsernameValid || !isDisplayNameValid || !isEmailValid || !isPasswordValid) {
+
+    // Validate terms acceptance
+    if (!termsAccepted) {
+      setTermsError("You must agree to the Terms of Service");
+      return;
+    } else {
+      setTermsError("");
+    }
+
+    if (
+      !isUsernameValid ||
+      !isDisplayNameValid ||
+      !isEmailValid ||
+      !isPasswordValid
+    ) {
       return;
     }
 
@@ -138,18 +162,16 @@ export default function RegisterScreen() {
       );
     } catch (error: any) {
       console.error("Registration error:", error);
-      const errorMessage = error.response?.data?.message || "An error occurred. Please try again.";
-      
+      const errorMessage =
+        error.response?.data?.message || "An error occurred. Please try again.";
+
       // Check for specific errors
       if (errorMessage.includes("username already exists")) {
         setUsernameError("Username is already taken");
       } else if (errorMessage.includes("email already exists")) {
         setEmailError("Email address is already registered");
       } else {
-        Alert.alert(
-          "Registration Failed",
-          errorMessage
-        );
+        Alert.alert("Registration Failed", errorMessage);
       }
     } finally {
       setLoading(false);
@@ -198,7 +220,8 @@ export default function RegisterScreen() {
             <ThemedText style={styles.errorText}>{usernameError}</ThemedText>
           ) : (
             <ThemedText style={styles.helperText}>
-              Username can only contain letters, numbers, underscores, and hyphens
+              Username can only contain letters, numbers, underscores, and
+              hyphens
             </ThemedText>
           )}
 
@@ -322,13 +345,49 @@ export default function RegisterScreen() {
             <ThemedText style={styles.errorText}>{passwordError}</ThemedText>
           )}
 
+          <View style={styles.termsContainer}>
+            <TouchableOpacity
+              onPress={() => setTermsAccepted(!termsAccepted)}
+              style={styles.checkboxContainer}
+            >
+              <View
+                style={[
+                  styles.checkbox,
+                  termsAccepted ? styles.checkboxChecked : null,
+                ]}
+              >
+                {termsAccepted && (
+                  <Ionicons name="checkmark" size={16} color="#FFF" />
+                )}
+              </View>
+            </TouchableOpacity>
+            <ThemedText style={styles.termsText}>
+              I agree to the Terms of Service, which include a strict
+              no-tolerance policy for objectionable content and abusive
+              behavior. Violations may result in account termination.
+            </ThemedText>
+          </View>
+          {termsError ? (
+            <ThemedText style={styles.errorText}>{termsError}</ThemedText>
+          ) : null}
+
           <TouchableOpacity
             style={[
               styles.registerButton,
-              (usernameError || displayNameError || emailError || passwordError) && styles.disabledButton
+              (usernameError ||
+                displayNameError ||
+                emailError ||
+                passwordError) &&
+                styles.disabledButton,
             ]}
             onPress={handleRegister}
-            disabled={loading || !!usernameError || !!displayNameError || !!emailError || !!passwordError}
+            disabled={
+              loading ||
+              !!usernameError ||
+              !!displayNameError ||
+              !!emailError ||
+              !!passwordError
+            }
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
@@ -347,11 +406,6 @@ export default function RegisterScreen() {
               <ThemedText style={styles.loginLink}>Sign In</ThemedText>
             </TouchableOpacity>
           </View>
-
-          <ThemedText style={styles.termsText}>
-            By registering, you agree to our Terms of Service and Privacy
-            Policy.
-          </ThemedText>
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
@@ -434,11 +488,32 @@ const styles = StyleSheet.create({
     color: "#AE75DA",
     fontWeight: "bold",
   },
-  termsText: {
-    textAlign: "center",
+  // Add these styles at the end of your StyleSheet
+  termsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 20,
-    marginBottom: 30,
-    fontSize: 12,
+    marginBottom: 10,
+  },
+  termsText: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 14,
     color: "#999",
+  },
+  checkboxContainer: {
+    padding: 5, // Makes the touchable area bigger
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: "#AE75DA",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkboxChecked: {
+    backgroundColor: "#AE75DA",
   },
 });

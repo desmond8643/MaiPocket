@@ -5,7 +5,8 @@ import axios from "axios";
 
 // Change this to your actual backend URL
 const BASE_URL = "https://maipocket-backend.vercel.app";
-// const BASE_URL = "http://localhost:3001"
+// const BASE_URL = "http://192.168.128.98:3000"
+
 const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: {
@@ -146,20 +147,40 @@ export const ChartAPI = {
       throw error;
     }
   },
-
   getPostsByChart: async (
     chartId: string,
     chartType: string,
     difficulty: string
   ) => {
     try {
-      const response = await axios.get(`${BASE_URL}/posts/chart/${chartId}`, {
-        params: { chartType, difficulty },
-        withCredentials: true,
+      const response = await apiClient.get(`/posts/chart/${chartId}`, {
+        params: { chartType, difficulty }
       });
       return response.data;
     } catch (error) {
       console.error("Error getting posts by chart:", error);
+      throw error;
+    }
+  },
+  // Add to api/client.ts in the ChartAPI section
+  hidePost: async (postId: string) => {
+    try {
+      const response = await apiClient.post(`/posts/${postId}/hide`);
+      return response.data;
+    } catch (error) {
+      console.error("Error hiding post:", error);
+      throw error;
+    }
+  },
+  flagPost: async (postId: string, reason: string, description?: string) => {
+    try {
+      const response = await apiClient.post(`/posts/${postId}/flag`, {
+        reason,
+        description,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error flagging post:", error);
       throw error;
     }
   },
@@ -339,7 +360,7 @@ export const AuthAPI = {
   deleteAccount: async (password: string) => {
     try {
       const response = await apiClient.delete("/auth/account", {
-        data: { password }
+        data: { password },
       });
       // Clear stored user data
       await AsyncStorage.removeItem("authToken");
@@ -415,6 +436,41 @@ export const NotificationAPI = {
       throw error;
     }
   },
+};
+
+export const UserAPI = {
+  // Block a user
+  blockUser: async (userId: string) => {
+    try {
+      const response = await apiClient.post(`/auth/block/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error blocking user:", error);
+      throw error;
+    }
+  },
+
+  // Unblock a user
+  unblockUser: async (userId: string) => {
+    try {
+      const response = await apiClient.delete(`/auth/block/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error unblocking user:", error);
+      throw error;
+    }
+  },
+
+  // Get blocked users
+  getBlockedUsers: async () => {
+    try {
+      const response = await apiClient.get('/auth/blocked-users');
+      return response.data.blockedUsers;
+    } catch (error) {
+      console.error("Error fetching blocked users:", error);
+      throw error;
+    }
+  }
 };
 
 export const getQuizQuestions = async (
