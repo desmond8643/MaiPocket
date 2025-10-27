@@ -122,11 +122,11 @@ export default function ShopScreen() {
         if (initialized) {
           // Define your product IDs - must match App Store/Google Play
           const productIds = [
-            "com.anonymous.maipocket.removeadpermanent",
-            "com.anonymous.maipocket.crystal100",
-            "com.anonymous.maipocket.crystal250",
-            "com.anonymous.maipocket.crystal400",
-            "com.anonymous.maipocket.crystal1000",
+            "removeadpermanent",
+            "crystal100",
+            "crystal250",
+            "crystal400",
+            "crystal1000",
           ];
 
           const iapProducts = await getProducts(productIds);
