@@ -127,6 +127,7 @@ export default function ShopScreen() {
             "crystal250",
             "crystal400",
             "crystal1000",
+            "com.anonymous.maipocket.crystal100",
           ];
 
           const iapProducts = await getProducts(productIds);
