@@ -21,30 +21,42 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { showRewardedAd } from "@/components/RewardedAd";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { purchaseThreeLifeDayPass } from "@/api/client";
+import { addCrystalsToBalance, purchaseThreeLifeDayPass } from "@/api/client";
 import { Image } from "expo-image";
+// Add at the top with other imports
+import {
+  initializePurchases,
+  getProducts,
+  purchaseProduct,
+  restorePurchases as restoreIAPPurchases,
+} from "@/components/InAppPurchaseImpl";
 
 // This would be moved to a separate context file in a real implementation
 interface ShopContext {
   crystalBalance: number;
-  addCrystals: (amount: number) => Promise<void>;
+  addCrystals: (amount: number) => Promise<boolean>;
   purchaseItem: (itemId: string, price: number | null) => Promise<boolean>;
 }
+
+type Purchase = {
+  productId: string;
+  // Add other properties if needed
+};
 
 const useShop = (): ShopContext => {
   const { data: crystalData } = useCrystalStatus();
   const crystalBalance = crystalData?.crystals || 0;
 
-  // We need to add API calls to update crystals on the server
   const addCrystals = async (amount: number) => {
-    // Replace with actual API call
     try {
-      // Example API call (you'll need to implement this in your API client)
-      // await addCrystalsToBalance(amount);
+      // Call the actual API
+      const success = await addCrystalsToBalance(amount);
 
-      // After successful API call, invalidate the query to refetch
-      queryClient.invalidateQueries(["crystalStatus"]);
-      return true;
+      if (success) {
+        await fetchDataImmediately("crystalStatus");
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error("Failed to add crystals:", error);
       return false;
@@ -68,11 +80,7 @@ const useShop = (): ShopContext => {
     }
 
     try {
-      // Replace with actual API call
-      // await purchaseItemWithCrystals(itemId, price);
-
-      // After successful API call, invalidate the query to refetch
-      queryClient.invalidateQueries(["crystalStatus"]);
+      await fetchDataImmediately("crystalStatus");
       return true;
     } catch (error) {
       console.error("Purchase failed:", error);
@@ -96,13 +104,41 @@ export default function ShopScreen() {
     temporaryAdRemovalEndTime,
     adsRemoved,
   } = useAds();
-  const { crystalBalance, purchaseItem } = useShop();
+  const { crystalBalance, addCrystals, purchaseItem } = useShop();
 
   const [remainingTime, setRemainingTime] = useState("");
 
   const [threeLifedayPassRemainingTime, setThreeLifeDayPassRemainingTime] =
     useState("");
   const { data: threeLifeDayPassStatus } = useThreeLifeDayPassStatus();
+
+  const [products, setProducts] = useState<any[]>([]);
+
+  // Add a new useEffect for IAP initialization
+  useEffect(() => {
+    const setupIAP = async () => {
+      try {
+        const initialized = await initializePurchases();
+        if (initialized) {
+          // Define your product IDs - must match App Store/Google Play
+          const productIds = [
+            "com.anonymous.maipocket.removeadpermanent",
+            "com.anonymous.maipocket.crystal100",
+            "com.anonymous.maipocket.crystal250",
+            "com.anonymous.maipocket.crystal400",
+            "com.anonymous.maipocket.crystal1000",
+          ];
+
+          const iapProducts = await getProducts(productIds);
+          setProducts(iapProducts);
+        }
+      } catch (error) {
+        console.error("Failed to initialize IAP:", error);
+      }
+    };
+
+    setupIAP();
+  }, []);
 
   useEffect(() => {
     // Check if user is logged in
@@ -182,6 +218,24 @@ export default function ShopScreen() {
     return () => clearInterval(interval);
   }, [threeLifeDayPassStatus]);
 
+  // Add this helper function
+  const getProductIdFromItemId = (itemId: string): string | null => {
+    switch (itemId) {
+      case "removeadpermanent":
+        return "com.anonymous.maipocket.removeadpermanent";
+      case "crystal100":
+        return "com.anonymous.maipocket.crystal100";
+      case "crystal250":
+        return "com.anonymous.maipocket.crystal250";
+      case "crystal400":
+        return "com.anonymous.maipocket.crystal400";
+      case "crystal1000":
+        return "com.anonymous.maipocket.crystal1000";
+      default:
+        return null;
+    }
+  };
+
   const handlePurchase = async (
     itemId: string,
     itemName: string,
@@ -193,22 +247,41 @@ export default function ShopScreen() {
 
     try {
       if (currencyType === "USD") {
-        // In a real app, this would trigger platform-specific IAP
+        // Real money purchase via IAP
+        const productId = getProductIdFromItemId(itemId);
+        if (!productId) {
+          throw new Error("Invalid product ID");
+        }
+
         Alert.alert(
           "In-App Purchase",
-          `Would you like to purchase ${itemName} for ${
-            price ? "$" + price : "free"
-          }?`,
+          `Would you like to purchase ${itemName}?`,
           [
             {
               text: "Yes",
               onPress: async () => {
-                await onSuccess();
+                try {
+                  const success = await purchaseProduct(productId);
+                  if (success) {
+                    await onSuccess();
+                    Alert.alert(
+                      "Purchase Successful",
+                      `Thank you for your purchase!`
+                    );
+                  } else {
+                    Alert.alert(
+                      "Purchase Failed",
+                      "The purchase could not be completed."
+                    );
+                  }
+                } catch (error) {
+                  console.error("Purchase error:", error);
+                  Alert.alert(
+                    "Purchase Failed",
+                    "An error occurred during your purchase."
+                  );
+                }
                 setLoading(false);
-                Alert.alert(
-                  "Purchase Successful",
-                  `Thank you for your purchase!`
-                );
               },
             },
             {
@@ -221,7 +294,7 @@ export default function ShopScreen() {
           ]
         );
       } else {
-        // Crystal purchase - Add confirmation alert
+        // Crystal purchase - same as your existing implementation
         Alert.alert(
           "Confirm Purchase",
           `Are you sure you want to purchase ${itemName} for ${price} crystals?`,
@@ -257,6 +330,67 @@ export default function ShopScreen() {
     }
   };
 
+  const handleRestorePurchases = async () => {
+    setLoading(true);
+    try {
+      // Call both restore functions
+      await restorePurchases(); // Your existing function from useAds
+      const purchasedItems = await restoreIAPPurchases();
+
+      // Create a mapping of productId to handler functions
+      const productHandlers = {
+        "com.anonymous.maipocket.removeadpermanent": async () => {
+          await removeAdsPermanently();
+          return "ad removal";
+        },
+        "com.anonymous.maipocket.crystal100": async () => {
+          await addCrystals(100);
+          return "100 crystals";
+        },
+        "com.anonymous.maipocket.crystal250": async () => {
+          await addCrystals(250);
+          return "250 crystals";
+        },
+        "com.anonymous.maipocket.crystal400": async () => {
+          await addCrystals(400);
+          return "400 crystals";
+        },
+        "com.anonymous.maipocket.crystal1000": async () => {
+          await addCrystals(1000);
+          return "1000 crystals";
+        },
+      };
+
+      // Process all restored purchases
+      let restoredItemsList = []; // Changed variable name here
+      for (const purchase of purchasedItems as Purchase[]) {
+        const handler =
+          productHandlers[purchase.productId as keyof typeof productHandlers];
+        if (handler) {
+          const itemName = await handler();
+          restoredItemsList.push(itemName);
+        }
+      }
+
+      // Show appropriate message based on what was restored
+      if (restoredItemsList.length > 0) {
+        Alert.alert(
+          "Purchases Restored",
+          `The following items were restored: ${restoredItemsList.join(", ")}`
+        );
+      } else {
+        Alert.alert("No Purchases", "No purchases found to restore.");
+      }
+    } catch (error) {
+      console.error("Restore purchase error:", error);
+      Alert.alert(
+        "Restore Failed",
+        "An error occurred while restoring purchases."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -369,31 +503,32 @@ export default function ShopScreen() {
                 style={[styles.button, styles.premiumButton]}
                 onPress={() =>
                   handlePurchase(
-                    "remove_ads_perm",
+                    "removeadpermanent",
                     "Remove Ads Permanently",
-                    28,
+                    null, // Price comes from App Store
                     "USD",
                     removeAdsPermanently
                   )
                 }
-                // disabled={loading}
-                disabled
+                disabled={loading} // Remove the standalone 'disabled' attribute
               >
                 {loading ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
-                  <ThemedText style={styles.buttonText}>$28</ThemedText>
+                  <ThemedText style={styles.buttonText}>
+                    {products.find(
+                      (p) =>
+                        p.productId ===
+                        "com.anonymous.maipocket.removeadpermanent"
+                    )?.price || "$28"}
+                  </ThemedText>
                 )}
               </TouchableOpacity>
             </ThemedView>
 
             <TouchableOpacity
               style={styles.restoreButton}
-              onPress={async () => {
-                setLoading(true);
-                await restorePurchases();
-                setLoading(false);
-              }}
+              onPress={handleRestorePurchases}
               disabled={loading}
             >
               {loading ? (
@@ -495,10 +630,10 @@ export default function ShopScreen() {
             <ThemedText type="subtitle">Crystals</ThemedText>
 
             {[
-              { id: "crystal_100", amount: 100, price: 8 },
-              { id: "crystal_200", amount: 200, price: 18 },
-              { id: "crystal_400", amount: 400, price: 28 },
-              { id: "crystal_1000", amount: 1000, price: 58 },
+              { id: "crystal100", amount: 100, price: 8 },
+              { id: "crystal250", amount: 250, price: 18 },
+              { id: "crystal400", amount: 400, price: 28 },
+              { id: "crystal1000", amount: 1000, price: 58 },
             ].map((item) => (
               <ThemedView key={item.id} style={styles.itemCard}>
                 <View style={styles.itemInfo}>
@@ -521,21 +656,25 @@ export default function ShopScreen() {
                     handlePurchase(
                       item.id,
                       `${item.amount} Crystals`,
-                      item.price,
+                      null, // Price from store, not local
                       "USD",
                       async () => {
-                        /* Add crystals to balance */
+                        // Add crystals to balance after successful purchase
+                        await addCrystals(item.amount);
+                        await fetchDataImmediately("crystalStatus");
                       }
                     )
                   }
-                  // disabled={loading}
-                  disabled
+                  disabled={loading} // Only disable when loading, not permanently
                 >
                   {loading ? (
                     <ActivityIndicator color="#FFFFFF" />
                   ) : (
                     <ThemedText style={styles.buttonText}>
-                      ${item.price}
+                      {products.find(
+                        (p) =>
+                          p.productId === `com.anonymous.maipocket.${item.id}`
+                      )?.price || `$${item.price}`}
                     </ThemedText>
                   )}
                 </TouchableOpacity>

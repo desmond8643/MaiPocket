@@ -154,7 +154,7 @@ export const ChartAPI = {
   ) => {
     try {
       const response = await apiClient.get(`/posts/chart/${chartId}`, {
-        params: { chartType, difficulty }
+        params: { chartType, difficulty },
       });
       return response.data;
     } catch (error) {
@@ -464,13 +464,13 @@ export const UserAPI = {
   // Get blocked users
   getBlockedUsers: async () => {
     try {
-      const response = await apiClient.get('/auth/blocked-users');
+      const response = await apiClient.get("/auth/blocked-users");
       return response.data.blockedUsers;
     } catch (error) {
       console.error("Error fetching blocked users:", error);
       throw error;
     }
-  }
+  },
 };
 
 export const getQuizQuestions = async (
@@ -574,5 +574,18 @@ export const getThreeLifeDayPassStatus = async () => {
   } catch (error) {
     console.error("Error fetching day pass status:", error);
     throw error;
+  }
+};
+
+export const addCrystalsToBalance = async (
+  amount: number
+): Promise<boolean> => {
+  try {
+    // No need to manually get token as apiClient interceptor handles it
+    const response = await apiClient.post("/shop/add-crystals", { amount });
+    return true;
+  } catch (error) {
+    console.error("Failed to add crystals:", error);
+    return false;
   }
 };
