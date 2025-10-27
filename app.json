@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.maipocket"
     },
     "android": {
       "adaptiveIcon": {
@@ -41,7 +42,8 @@
           "androidAppId": "ca-app-pub-7106153117550777~7275018345",
           "iosAppId": "ca-app-pub-7106153117550777~1856306179"
         }
-      ]
+      ],
+      "expo-in-app-purchases"
     ],
     "experiments": {
       "typedRoutes": true

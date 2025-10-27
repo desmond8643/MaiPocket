@@ -130,6 +130,7 @@ export default function ShopScreen() {
           ];
 
           const iapProducts = await getProducts(productIds);
+          console.log("Products fetched:", JSON.stringify(iapProducts));
           setProducts(iapProducts);
         }
       } catch (error) {
@@ -222,15 +223,15 @@ export default function ShopScreen() {
   const getProductIdFromItemId = (itemId: string): string | null => {
     switch (itemId) {
       case "removeadpermanent":
-        return "com.anonymous.maipocket.removeadpermanent";
+        return "removeadpermanent";
       case "crystal100":
-        return "com.anonymous.maipocket.crystal100";
+        return "crystal100";
       case "crystal250":
-        return "com.anonymous.maipocket.crystal250";
+        return "crystal250";
       case "crystal400":
-        return "com.anonymous.maipocket.crystal400";
+        return "crystal400";
       case "crystal1000":
-        return "com.anonymous.maipocket.crystal1000";
+        return "crystal1000";
       default:
         return null;
     }
@@ -270,6 +271,7 @@ export default function ShopScreen() {
                   if (!product) {
                     // Re-query if product not found
                     const refreshedProducts = await getProducts([productId]);
+                    console.log("Refreshed products:", refreshedProducts);
                     if (!refreshedProducts || refreshedProducts.length === 0) {
                       throw new Error("Product not available for purchase");
                     }
