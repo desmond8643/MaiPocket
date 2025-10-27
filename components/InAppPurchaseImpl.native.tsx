@@ -43,8 +43,13 @@ export const getProducts = async (productIds: string[]) => {
 // InAppPurchaseImpl.native.tsx - Updated purchaseProduct function
 export const purchaseProduct = async (productId: string) => {
   try {
+    console.log("Starting purchase for product:", productId);
+
+    // Set up purchase listener to handle purchases
+    console.log("Setting up purchase listener");
     // Set up purchase listener to handle purchases
     InAppPurchases.setPurchaseListener(({ responseCode, results }) => {
+      console.log("Purchase listener triggered, code:", responseCode);
       if (responseCode === InAppPurchases.IAPResponseCode.OK) {
         // Process successful purchases
         results.forEach(async (purchase) => {
@@ -62,7 +67,9 @@ export const purchaseProduct = async (productId: string) => {
     });
 
     // Initiate the purchase
+    console.log("Calling purchaseItemAsync");
     const { responseCode } = await InAppPurchases.purchaseItemAsync(productId);
+    console.log("Purchase response code:", responseCode);
     return responseCode === InAppPurchases.IAPResponseCode.OK;
   } catch (e) {
     console.error("Purchase failed:", e);

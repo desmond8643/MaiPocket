@@ -264,8 +264,13 @@ export default function ShopScreen() {
               onPress: async () => {
                 try {
                   // First, check if the product exists in the fetched products
+                  console.log("Available products:", JSON.stringify(products));
                   const product = products.find(
                     (p) => p.productId === productId
+                  );
+                  console.log(
+                    "Found product for purchase:",
+                    product ? JSON.stringify(product) : "NOT FOUND"
                   );
 
                   if (!product) {
@@ -277,7 +282,10 @@ export default function ShopScreen() {
                     }
                   }
 
+                  console.log("Starting direct purchase for:", productId);
                   const success = await purchaseProduct(productId);
+                  console.log("Purchase result:", success);
+
                   if (success) {
                     await onSuccess();
                     Alert.alert(
@@ -532,11 +540,8 @@ export default function ShopScreen() {
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <ThemedText style={styles.buttonText}>
-                    {products.find(
-                      (p) =>
-                        p.productId ===
-                        "removeadpermanent"
-                    )?.price || "$28"}
+                    {products.find((p) => p.productId === "removeadpermanent")
+                      ?.price || "$28"}
                   </ThemedText>
                 )}
               </TouchableOpacity>
