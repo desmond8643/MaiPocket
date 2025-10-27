@@ -535,7 +535,7 @@ export default function ShopScreen() {
                     {products.find(
                       (p) =>
                         p.productId ===
-                        "com.anonymous.maipocket.removeadpermanent"
+                        "removeadpermanent"
                     )?.price || "$28"}
                   </ThemedText>
                 )}
