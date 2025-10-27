@@ -259,8 +259,22 @@ export default function ShopScreen() {
           [
             {
               text: "Yes",
+              // Update the purchaseProduct function in handlePurchase:
               onPress: async () => {
                 try {
+                  // First, check if the product exists in the fetched products
+                  const product = products.find(
+                    (p) => p.productId === productId
+                  );
+
+                  if (!product) {
+                    // Re-query if product not found
+                    const refreshedProducts = await getProducts([productId]);
+                    if (!refreshedProducts || refreshedProducts.length === 0) {
+                      throw new Error("Product not available for purchase");
+                    }
+                  }
+
                   const success = await purchaseProduct(productId);
                   if (success) {
                     await onSuccess();
