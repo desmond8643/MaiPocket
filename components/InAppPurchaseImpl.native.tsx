@@ -22,11 +22,15 @@ export const initializePurchases = async () => {
   }
 };
 
+// In InAppPurchaseImpl.native.tsx, modify getProducts:
 export const getProducts = async (productIds: string[]) => {
   try {
+    console.log("Requesting products with IDs:", productIds);
     const { responseCode, results } = await InAppPurchases.getProductsAsync(
       productIds
     );
+    console.log("Products response code:", responseCode);
+    console.log("Returned products:", JSON.stringify(results, null, 2));
     if (responseCode === InAppPurchases.IAPResponseCode.OK) {
       return results;
     }
@@ -36,7 +40,6 @@ export const getProducts = async (productIds: string[]) => {
     return [];
   }
 };
-
 // InAppPurchaseImpl.native.tsx - Updated purchaseProduct function
 export const purchaseProduct = async (productId: string) => {
   try {

@@ -687,10 +687,8 @@ export default function ShopScreen() {
                     <ActivityIndicator color="#FFFFFF" />
                   ) : (
                     <ThemedText style={styles.buttonText}>
-                      {products.find(
-                        (p) =>
-                          p.productId === `com.anonymous.maipocket.${item.id}`
-                      )?.price || `$${item.price}`}
+                      {products.find((p) => p.productId === item.id)?.price ||
+                        `$${item.price}`}
                     </ThemedText>
                   )}
                 </TouchableOpacity>
