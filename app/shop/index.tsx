@@ -121,7 +121,7 @@
 //         if (initialized) {
 //           // Define your product IDs - must match App Store/Google Play
 //           const productIds = [
-//             "removeadpermanent",
+//             "removeadspermanent",
 //             "crystal100",
 //             "crystal250",
 //             "crystal400",
@@ -222,8 +222,8 @@
 //   // Add this helper function
 //   const getProductIdFromItemId = (itemId: string): string | null => {
 //     switch (itemId) {
-//       case "removeadpermanent":
-//         return "removeadpermanent";
+//       case "removeadspermanent":
+//         return "removeadspermanent";
 //       case "crystal100":
 //         return "crystal100";
 //       case "crystal250":
@@ -363,7 +363,7 @@
 
 //       // Create a mapping of productId to handler functions
 //       const productHandlers = {
-//         "com.anonymous.maipocket.removeadpermanent": async () => {
+//         "com.anonymous.maipocket.removeadspermanent": async () => {
 //           await removeAdsPermanently();
 //           return "ad removal";
 //         },
@@ -527,7 +527,7 @@
 //                 style={[styles.button, styles.premiumButton]}
 //                 onPress={() =>
 //                   handlePurchase(
-//                     "removeadpermanent",
+//                     "removeadspermanent",
 //                     "Remove Ads Permanently",
 //                     null, // Price comes from App Store
 //                     "USD",
@@ -540,7 +540,7 @@
 //                   <ActivityIndicator color="#FFFFFF" />
 //                 ) : (
 //                   <ThemedText style={styles.buttonText}>
-//                     {products.find((p) => p.productId === "removeadpermanent")
+//                     {products.find((p) => p.productId === "removeadspermanent")
 //                       ?.price || "$28"}
 //                   </ThemedText>
 //                 )}
@@ -929,7 +929,7 @@ export default function ShopScreen() {
       if (!initialized || !isMounted) return;
 
       const productIds = [
-        "removeadpermanent",
+        "removeadspermanent",
         "crystal100",
         "crystal250",
         "crystal400",
@@ -1023,7 +1023,7 @@ export default function ShopScreen() {
 
   const getProductIdFromItemId = (itemId: string): string | null => {
     const map: Record<string, string> = {
-      removeadpermanent: "removeadpermanent",
+      removeadspermanent: "removeadspermanent",
       crystal100: "crystal100",
       crystal250: "crystal250",
       crystal400: "crystal400",
@@ -1110,7 +1110,7 @@ export default function ShopScreen() {
       const restored = await restoreIAPPurchases();
 
       const handlers: Record<string, () => Promise<string>> = {
-        removeadpermanent: async () => {
+        removeadspermanent: async () => {
           await removeAdsPermanently();
           return "permanent ad removal";
         },
@@ -1251,7 +1251,7 @@ export default function ShopScreen() {
                 style={[styles.button, styles.premiumButton]}
                 onPress={() =>
                   handlePurchase(
-                    "removeadpermanent",
+                    "removeadspermanent",
                     "Remove Ads Permanently",
                     null,
                     "USD",
@@ -1264,7 +1264,7 @@ export default function ShopScreen() {
                   <ActivityIndicator color="#FFF" />
                 ) : (
                   <ThemedText style={styles.buttonText}>
-                    {products.find((p) => p.productId === "removeadpermanent")
+                    {products.find((p) => p.productId === "removeadspermanent")
                       ?.price || "$28"}
                   </ThemedText>
                 )}
