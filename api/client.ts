@@ -582,7 +582,7 @@ export const addCrystalsToBalance = async (
 ): Promise<boolean> => {
   try {
     // No need to manually get token as apiClient interceptor handles it
-    const response = await apiClient.post("/shop/add-crystals", { amount });
+    const response = await apiClient.post("/shop/purchase/add-crystals", { amount });
     return true;
   } catch (error) {
     console.error("Failed to add crystals:", error);
