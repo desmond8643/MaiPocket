@@ -20,7 +20,7 @@ const AD_COOLDOWN = 60000; // 1 minute cooldown
 
 const adUnitId = Platform.select({
   ios: "ca-app-pub-7106153117550777/6330997877", // Replace with your iOS interstitial ad unit ID
-  default: TestIds.INTERSTITIAL, // Fallback to test ID
+  default: "", // Fallback to test ID
 });
 
 // Actual implementation of preload
