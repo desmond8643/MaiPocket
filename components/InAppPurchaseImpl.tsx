@@ -420,9 +420,16 @@ export const purchaseProduct = isExpoGo
 
         // Trigger purchase
         requestPurchase({
-          sku,
-          andDangerouslyFinishTransactionAutomaticallyIOS: false,
-          type: Platform.OS === "ios" ? "consumable" : "in-app",
+          type: "in-app",
+          request: {
+            ios: {
+              sku: sku,
+              andDangerouslyFinishTransactionAutomatically: false,
+            },
+            android: {
+              skus: [sku],
+            },
+          },
         }).catch((e) => {
           console.error("[IAP] requestPurchase failed:", e);
           purchaseUpdateSub?.remove();
