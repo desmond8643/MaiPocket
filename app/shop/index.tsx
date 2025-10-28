@@ -1205,9 +1205,11 @@ export default function ShopScreen() {
                   alignItems: "center",
                 }}
               >
-                <ThemedText style={styles.itemTitle}>
-                  Remove Ads (1 Day)
-                </ThemedText>
+                <View style={styles.itemInfo}>
+                  <ThemedText style={styles.itemTitle}>
+                    Remove Ads (1 Day)
+                  </ThemedText>
+                </View>
                 <TouchableOpacity
                   style={[
                     styles.button,
@@ -1237,7 +1239,7 @@ export default function ShopScreen() {
                 </TouchableOpacity>
               </View>
               {temporaryAdRemoval && (
-                <ThemedText style={{ marginTop: 10 }}>
+                <ThemedText style={{ marginTop: 10, alignSelf: "flex-start" }}>
                   Time Remaining: {remainingTime}
                 </ThemedText>
               )}
@@ -1343,7 +1345,7 @@ export default function ShopScreen() {
                 </TouchableOpacity>
               </View>
               {threeLifeDayPassStatus?.active && (
-                <ThemedText style={{ marginTop: 10 }}>
+                <ThemedText style={{ marginTop: 10, alignSelf: 'flex-start' }}>
                   Time Remaining: {threeLifedayPassRemainingTime}
                 </ThemedText>
               )}
