@@ -7,20 +7,34 @@ import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthAPI } from "@/api/client";
+import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
 
 export default function SettingsScreen() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     // Check if user is logged in
     const checkLoginStatus = async () => {
       const userData = await AsyncStorage.getItem("userData");
+      const parseUserData = JSON.parse(userData || "");
+
       setIsLoggedIn(!!userData);
+      setUserId(parseUserData._id);
     };
 
     checkLoginStatus();
   }, []);
+
+  const handleShowRewardAd = () => {
+    const unsubscribe = showRewardedAdImpl(
+      (reward) => {},
+      () => {
+        console.log("Ad closed");
+      }
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -62,6 +76,18 @@ export default function SettingsScreen() {
                   </ThemedText>
                   <Ionicons name="chevron-forward" size={24} color="#999" />
                 </TouchableOpacity>
+                {userId === "68c9565dad96c1064ad9f2f0" && (
+                  <TouchableOpacity
+                    style={styles.optionItem}
+                    onPress={handleShowRewardAd}
+                  >
+                    <Ionicons name="gift-outline" size={24} color="#AE75DA" />
+                    <ThemedText style={styles.optionText}>
+                      Watch Reward Ad
+                    </ThemedText>
+                    <Ionicons name="chevron-forward" size={24} color="#999" />
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   style={styles.dangerOptionItem}
                   onPress={() => router.push("/settings/delete-account")}
