@@ -8,32 +8,33 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
-import { getLeaderboard } from "@/api/client"; // We'll implement this
-import { LeaderboardEntry } from "@/types/game"; // Import if available, or define inline
+import { getLeaderboard } from "@/api/client";
+import { LeaderboardEntry } from "@/types/game";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { useAds } from "@/context/AdContext";
-
-// If you need to define it inline:
-// type LeaderboardEntry = {
-//   id: string;
-//   username: string;
-//   highScore: number;
-// };
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LeaderboardScreen() {
   const [loading, setLoading] = useState(true);
   const [activeMode, setActiveMode] = useState("visual");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();
   const showActualAds = !adsRemoved && !temporaryAdRemoval;
 
   useEffect(() => {
     loadLeaderboard();
+    checkLoginStatus();
   }, [activeMode]);
+
+  const checkLoginStatus = async () => {
+    const userData = await AsyncStorage.getItem("userData");
+    setIsLoggedIn(!!userData);
+  };
 
   const loadLeaderboard = async () => {
     setLoading(true);
@@ -47,6 +48,10 @@ export default function LeaderboardScreen() {
     }
   };
 
+  const navigateToLogin = () => {
+    router.push("/auth/login");
+  };
+
   const renderItem = ({
     item,
     index,
@@ -54,7 +59,6 @@ export default function LeaderboardScreen() {
     item: LeaderboardEntry;
     index: number;
   }) => {
-    // Special styling for top 3 positions
     let rankStyle = styles.rankText;
 
     if (index === 0) {
@@ -79,7 +83,7 @@ export default function LeaderboardScreen() {
   const dynamicStyles = {
     bottomAdContainer: {
       ...styles.bottomAdContainer,
-      bottom: insets.bottom, // Adjust for bottom inset
+      bottom: insets.bottom,
     },
   };
 
@@ -90,13 +94,13 @@ export default function LeaderboardScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          {/* <IconSymbol name="chevron.left" size={24} /> */}
           <Ionicons name="arrow-back" size={24} color="#AE75DA" />
         </TouchableOpacity>
         <ThemedText style={{ fontSize: 24, fontWeight: "bold" }}>
           Leaderboards
         </ThemedText>
       </View>
+
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[
@@ -131,13 +135,19 @@ export default function LeaderboardScreen() {
           </ThemedText>
         </TouchableOpacity>
       </View>
-
+      {!isLoggedIn && (
+        <TouchableOpacity style={styles.loginPrompt} onPress={navigateToLogin}>
+          <ThemedText style={styles.loginPromptText}>
+            Login to compete in the leaderboard
+          </ThemedText>
+          <Ionicons name="arrow-forward" size={18} color="#696FC7" />
+        </TouchableOpacity>
+      )}
       <View style={styles.leaderboardHeader}>
         <ThemedText style={styles.headerRankText}></ThemedText>
         <ThemedText style={styles.headerUsernameText}>Player</ThemedText>
         <ThemedText style={styles.headerScoreText}>Score</ThemedText>
       </View>
-
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#696FC7" />
@@ -273,5 +283,18 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 999,
     alignItems: "center",
+  },
+  loginPrompt: {
+    flexDirection: "row",
+    backgroundColor: "rgba(174, 117, 218, 0.1)",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  loginPromptText: {
+    color: "#696FC7",
+    fontWeight: "600",
   },
 });

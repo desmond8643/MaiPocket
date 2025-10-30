@@ -6,7 +6,6 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  // SafeAreaView,
   View,
 } from "react-native";
 
@@ -17,9 +16,13 @@ import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useShowAds } from '@/hooks/useShowAds';
+import { useShowAds } from "@/hooks/useShowAds";
 import { Chart } from "@/types/chart";
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  preloadInterstitialAd,
+  showInterstitialAd,
+} from "@/components/InterstitialAdComponent";
 
 export default function ChartSearchScreen() {
   const { query } = useLocalSearchParams();
@@ -28,14 +31,7 @@ export default function ChartSearchScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const insets = useSafeAreaInsets(); // Add this line
-  
-  // Add dynamic styles
-  // const dynamicStyles = {
-  //   bottomAdContainer: {
-  //     ...styles.bottomAdContainer,
-  //     bottom: insets.bottom,
-  //   }
-  // };
+  const { showAds, dynamicStyles } = useShowAds(false); // false because it's not in a tab bar
 
   // Search for charts
   useEffect(() => {
@@ -58,6 +54,12 @@ export default function ChartSearchScreen() {
 
     searchCharts();
   }, [query]);
+
+  useEffect(() => {
+    if (showAds) {
+      preloadInterstitialAd();
+    }
+  }, [showAds]);
 
   // Helper function to format level display
   const formatLevelDisplay = (levelObj: {
@@ -101,6 +103,22 @@ export default function ChartSearchScreen() {
     return result;
   };
 
+  const navigateToChart = (chartId: string) => {
+    if (showAds) {
+      showInterstitialAd(() => {
+        router.push({
+          pathname: "/charts/[id]",
+          params: { id: chartId },
+        });
+      });
+    } else {
+      router.push({
+        pathname: "/charts/[id]",
+        params: { id: chartId },
+      });
+    }
+  };
+
   const renderChartItem = ({ item }: { item: Chart }) => {
     const difficulties = getDifficulties(item);
 
@@ -110,12 +128,7 @@ export default function ChartSearchScreen() {
           styles.chartCard,
           { backgroundColor: colorScheme === "dark" ? "#333333" : "#FFFFFF" },
         ]}
-        onPress={() =>
-          router.push({
-            pathname: "/charts/[id]",
-            params: { id: item._id },
-          })
-        }
+        onPress={() => navigateToChart(item._id)}
       >
         <View style={styles.topSection}>
           <Image
@@ -216,8 +229,6 @@ export default function ChartSearchScreen() {
     );
   };
 
-  const { showAds, dynamicStyles } = useShowAds(false); // false because it's not in a tab bar
-
   return (
     <ThemedView style={{ flex: 1 }}>
       {/* <SafeAreaView style={styles.container}> */}
@@ -287,7 +298,7 @@ export default function ChartSearchScreen() {
           }
         />
       )}
-      
+
       {/* Add the banner ad component */}
       {showAds && (
         <View style={dynamicStyles.bottomAdContainer}>
@@ -363,8 +374,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
     fontSize: 14,
     color: "#888888",
-    paddingHorizontal: 8
-
+    paddingHorizontal: 8,
   },
   chartsList: {
     paddingBottom: 20,

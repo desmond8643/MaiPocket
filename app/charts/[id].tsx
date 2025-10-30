@@ -27,6 +27,7 @@ import { User } from "@/types/user";
 import { extractYouTubeVideoId } from "@/utils/youtubeUtils";
 import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
+import { FormattedText } from "@/components/FormattedText";
 
 export default function ChartDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -944,9 +945,19 @@ export default function ChartDetailScreen() {
                           )}
                         </View>
 
-                        <ThemedText style={styles.postContent}>
+                        {/* <ThemedText
+                          style={styles.postContent}
+                          selectable={true}
+                        >
                           {post.content}
-                        </ThemedText>
+                        </ThemedText> */}
+                        <FormattedText
+                          text={post.content}
+                          style={[
+                            styles.postContent,
+                            { color: Colors[colorScheme ?? "light"].text },
+                          ]}
+                        />
 
                         {/* YouTube Preview */}
                         {extractYouTubeVideoId(post.content) && (

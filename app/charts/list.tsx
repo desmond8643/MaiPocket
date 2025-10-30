@@ -103,9 +103,6 @@ export default function ChartListScreen() {
       // setGroupedData([]); // This line is removed as per the edit hint
       return;
     }
-
-    // const grouped = groupCharts(charts, groupMode); // This line is removed as per the edit hint
-    // setGroupedData(grouped); // This line is removed as per the edit hint
   }, [charts, groupMode]);
 
   // Helper function to get max level from a chart
@@ -430,7 +427,6 @@ export default function ChartListScreen() {
     return viewMode === "icon" ? 3 : 1;
   };
 
-  // In the renderContent function, we should always use the FlatList since groupMode will always be "none"
   const renderContent = () => {
     if (loading) {
       return (

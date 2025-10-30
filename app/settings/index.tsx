@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthAPI } from "@/api/client";
 import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
+import * as Haptics from "expo-haptics";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -29,7 +30,9 @@ export default function SettingsScreen() {
 
   const handleShowRewardAd = () => {
     const unsubscribe = showRewardedAdImpl(
-      (reward) => {},
+      (reward) => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      },
       () => {
         console.log("Ad closed");
       }

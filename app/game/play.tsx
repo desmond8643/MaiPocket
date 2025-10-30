@@ -111,17 +111,7 @@ export default function GamePlayScreen() {
     if (mode === "visual" && isImageLoading && timeLeft === 15) {
       return; // Don't start timer yet
     }
-
-    // const timer = setInterval(() => {
-    //   setTimeLeft((prev) => {
-    //     if (prev <= 0) {
-    //       clearInterval(timer);
-    //       handleGameOver();
-    //       return 0;
-    //     }
-    //     return prev - 1;
-    //   });
-    // }, 1000);
+    
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 0) {

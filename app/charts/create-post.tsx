@@ -277,7 +277,7 @@ export default function CreatePostScreen() {
                     Colors[colorScheme ?? "light"].text + "80"
                   }
                   multiline
-                  maxLength={1000}
+                  maxLength={5000}
                   value={postContent}
                   onChangeText={handlePostContentChange}
                 />
@@ -285,7 +285,7 @@ export default function CreatePostScreen() {
                 {youtubeVideoId && <YouTubePreview videoId={youtubeVideoId} />}
 
                 <ThemedText style={styles.charCounter}>
-                  {characterCount}/1000
+                  {characterCount}/5000
                 </ThemedText>
 
                 {/* Tags Selection */}
