@@ -3,40 +3,158 @@ import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, Vibration, View, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AuthAPI } from "@/api/client";
 import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
-import * as Haptics from "expo-haptics";
+
+// Key for storing the ad watch count data
+const AD_WATCH_COUNT_KEY = 'ad_watch_count';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState("");
+  const [adWatchCount, setAdWatchCount] = useState(0);
+  const [resetTime, setResetTime] = useState<number | null>(null);
+
+  // Calculate the next 4 AM GMT+8 time
+  const getNextResetTime = () => {
+    const now = new Date();
+    
+    // Convert to GMT+8
+    const gmt8Now = new Date(now.getTime() + (now.getTimezoneOffset() + 480) * 60000);
+    
+    // Set target time to 4 AM GMT+8
+    let targetDate = new Date(gmt8Now);
+    targetDate.setHours(4, 0, 0, 0);
+    
+    // If it's already past 4 AM GMT+8, set target to next day 4 AM
+    if (gmt8Now.getHours() >= 4) {
+      targetDate.setDate(targetDate.getDate() + 1);
+    }
+    
+    // Convert back to local time for storage
+    return targetDate.getTime() - (now.getTimezoneOffset() + 480) * 60000;
+  };
+
+  // Load the ad watch count data from AsyncStorage
+  const loadAdWatchData = async () => {
+    try {
+      const data = await AsyncStorage.getItem(AD_WATCH_COUNT_KEY);
+      if (data) {
+        const parsedData = JSON.parse(data);
+        const currentTime = Date.now();
+        
+        if (parsedData.resetTime && parsedData.resetTime > currentTime) {
+          // Reset time hasn't passed yet, use the stored count
+          setAdWatchCount(parsedData.count);
+          setResetTime(parsedData.resetTime);
+        } else {
+          // Reset time has passed, reset the count and set new reset time
+          const nextResetTime = getNextResetTime();
+          setAdWatchCount(0);
+          setResetTime(nextResetTime);
+          
+          // Save the updated values
+          await AsyncStorage.setItem(
+            AD_WATCH_COUNT_KEY,
+            JSON.stringify({
+              count: 0,
+              resetTime: nextResetTime
+            })
+          );
+        }
+      } else {
+        // First time, initialize count and reset time
+        const nextResetTime = getNextResetTime();
+        setAdWatchCount(0);
+        setResetTime(nextResetTime);
+        
+        await AsyncStorage.setItem(
+          AD_WATCH_COUNT_KEY,
+          JSON.stringify({
+            count: 0,
+            resetTime: nextResetTime
+          })
+        );
+      }
+    } catch (error) {
+      console.error('Failed to load ad watch count data:', error);
+    }
+  };
+
+  // Increment the ad watch count
+  const incrementAdWatchCount = async () => {
+    try {
+      const newCount = adWatchCount + 1;
+      setAdWatchCount(newCount);
+      
+      await AsyncStorage.setItem(
+        AD_WATCH_COUNT_KEY,
+        JSON.stringify({
+          count: newCount,
+          resetTime
+        })
+      );
+      
+      return newCount;
+    } catch (error) {
+      console.error('Failed to increment ad watch count:', error);
+      return adWatchCount;
+    }
+  };
 
   useEffect(() => {
     // Check if user is logged in
     const checkLoginStatus = async () => {
-      const userData = await AsyncStorage.getItem("userData");
-      const parseUserData = JSON.parse(userData || "");
-
-      setIsLoggedIn(!!userData);
-      setUserId(parseUserData._id);
+      try {
+        const userData = await AsyncStorage.getItem("userData");
+        if (userData) {
+          const parseUserData = JSON.parse(userData);
+          setIsLoggedIn(true);
+          setUserId(parseUserData._id);
+        } else {
+          setIsLoggedIn(false);
+          setUserId("");
+        }
+      } catch (error) {
+        console.error("Error checking login status:", error);
+      }
     };
 
     checkLoginStatus();
+    loadAdWatchData();  // Load the ad watch count data
   }, []);
 
   const handleShowRewardAd = () => {
     const unsubscribe = showRewardedAdImpl(
-      (reward) => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      async (reward) => {
+        // Increment ad watch count when reward is earned
+        await incrementAdWatchCount();
+        // Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Vibration.vibrate(300);
+        Alert.alert("Success", `Rewarded ad watched! Count: ${adWatchCount + 1}`);
       },
       () => {
         console.log("Ad closed");
       }
     );
+  };
+
+  // Format remaining time until reset
+  const formatRemainingTime = () => {
+    if (!resetTime) return "N/A";
+    
+    const now = Date.now();
+    const diff = resetTime - now;
+    
+    if (diff <= 0) return "Resetting soon";
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${hours}h ${minutes}m until reset`;
   };
 
   return (
@@ -56,6 +174,20 @@ export default function SettingsScreen() {
 
         <View style={styles.content}>
           <View style={styles.optionsContainer}>
+            {/* Ad Watch Count Display */}
+            <ThemedView style={styles.statsCard}>
+              <View style={styles.statsRow}>
+                <Ionicons name="eye-outline" size={24} color="#AE75DA" />
+                <ThemedText style={styles.statsLabel}>
+                  Rewarded Ads Watched:
+                </ThemedText>
+                <ThemedText style={styles.statsValue}>{adWatchCount}</ThemedText>
+              </View>
+              <ThemedText style={styles.statsSubtext}>
+                Resets at 4:00 AM (GMT+8) • {formatRemainingTime()}
+              </ThemedText>
+            </ThemedView>
+            
             <TouchableOpacity
               style={styles.optionItem}
               onPress={() => router.push("/settings/social-preferences")}
@@ -157,5 +289,33 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
     color: "#FF6B6B",
+  },
+  // New styles for stats display
+  statsCard: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(174, 117, 218, 0.3)",
+    backgroundColor: "rgba(174, 117, 218, 0.05)",
+  },
+  statsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  statsLabel: {
+    fontSize: 16,
+    marginLeft: 12,
+    flex: 1,
+  },
+  statsValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#AE75DA",
+  },
+  statsSubtext: {
+    fontSize: 12,
+    marginLeft: 36, // Aligns with text after icon
+    opacity: 0.7,
   },
 });
