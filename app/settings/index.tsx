@@ -3,13 +3,19 @@ import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
-import { StyleSheet, TouchableOpacity, Vibration, View, Alert } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  Vibration,
+  View,
+  Alert,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
 
 // Key for storing the ad watch count data
-const AD_WATCH_COUNT_KEY = 'ad_watch_count';
+const AD_WATCH_COUNT_KEY = "ad_watch_count";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -21,19 +27,21 @@ export default function SettingsScreen() {
   // Calculate the next 4 AM GMT+8 time
   const getNextResetTime = () => {
     const now = new Date();
-    
+
     // Convert to GMT+8
-    const gmt8Now = new Date(now.getTime() + (now.getTimezoneOffset() + 480) * 60000);
-    
+    const gmt8Now = new Date(
+      now.getTime() + (now.getTimezoneOffset() + 480) * 60000
+    );
+
     // Set target time to 4 AM GMT+8
     let targetDate = new Date(gmt8Now);
     targetDate.setHours(4, 0, 0, 0);
-    
+
     // If it's already past 4 AM GMT+8, set target to next day 4 AM
     if (gmt8Now.getHours() >= 4) {
       targetDate.setDate(targetDate.getDate() + 1);
     }
-    
+
     // Convert back to local time for storage
     return targetDate.getTime() - (now.getTimezoneOffset() + 480) * 60000;
   };
@@ -45,7 +53,7 @@ export default function SettingsScreen() {
       if (data) {
         const parsedData = JSON.parse(data);
         const currentTime = Date.now();
-        
+
         if (parsedData.resetTime && parsedData.resetTime > currentTime) {
           // Reset time hasn't passed yet, use the stored count
           setAdWatchCount(parsedData.count);
@@ -55,13 +63,13 @@ export default function SettingsScreen() {
           const nextResetTime = getNextResetTime();
           setAdWatchCount(0);
           setResetTime(nextResetTime);
-          
+
           // Save the updated values
           await AsyncStorage.setItem(
             AD_WATCH_COUNT_KEY,
             JSON.stringify({
               count: 0,
-              resetTime: nextResetTime
+              resetTime: nextResetTime,
             })
           );
         }
@@ -70,17 +78,17 @@ export default function SettingsScreen() {
         const nextResetTime = getNextResetTime();
         setAdWatchCount(0);
         setResetTime(nextResetTime);
-        
+
         await AsyncStorage.setItem(
           AD_WATCH_COUNT_KEY,
           JSON.stringify({
             count: 0,
-            resetTime: nextResetTime
+            resetTime: nextResetTime,
           })
         );
       }
     } catch (error) {
-      console.error('Failed to load ad watch count data:', error);
+      console.error("Failed to load ad watch count data:", error);
     }
   };
 
@@ -89,18 +97,18 @@ export default function SettingsScreen() {
     try {
       const newCount = adWatchCount + 1;
       setAdWatchCount(newCount);
-      
+
       await AsyncStorage.setItem(
         AD_WATCH_COUNT_KEY,
         JSON.stringify({
           count: newCount,
-          resetTime
+          resetTime,
         })
       );
-      
+
       return newCount;
     } catch (error) {
-      console.error('Failed to increment ad watch count:', error);
+      console.error("Failed to increment ad watch count:", error);
       return adWatchCount;
     }
   };
@@ -124,7 +132,7 @@ export default function SettingsScreen() {
     };
 
     checkLoginStatus();
-    loadAdWatchData();  // Load the ad watch count data
+    loadAdWatchData(); // Load the ad watch count data
   }, []);
 
   const handleShowRewardAd = () => {
@@ -134,7 +142,10 @@ export default function SettingsScreen() {
         await incrementAdWatchCount();
         // Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         Vibration.vibrate(300);
-        Alert.alert("Success", `Rewarded ad watched! Count: ${adWatchCount + 1}`);
+        Alert.alert(
+          "Success",
+          `Rewarded ad watched! Count: ${adWatchCount + 1}`
+        );
       },
       () => {
         console.log("Ad closed");
@@ -145,15 +156,15 @@ export default function SettingsScreen() {
   // Format remaining time until reset
   const formatRemainingTime = () => {
     if (!resetTime) return "N/A";
-    
+
     const now = Date.now();
     const diff = resetTime - now;
-    
+
     if (diff <= 0) return "Resetting soon";
-    
+
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     return `${hours}h ${minutes}m until reset`;
   };
 
@@ -175,19 +186,23 @@ export default function SettingsScreen() {
         <View style={styles.content}>
           <View style={styles.optionsContainer}>
             {/* Ad Watch Count Display */}
-            <ThemedView style={styles.statsCard}>
-              <View style={styles.statsRow}>
-                <Ionicons name="eye-outline" size={24} color="#AE75DA" />
-                <ThemedText style={styles.statsLabel}>
-                  Rewarded Ads Watched:
+            {isLoggedIn && userId === "68c9565dad96c1064ad9f2f0" && (
+              <ThemedView style={styles.statsCard}>
+                <View style={styles.statsRow}>
+                  <Ionicons name="eye-outline" size={24} color="#AE75DA" />
+                  <ThemedText style={styles.statsLabel}>
+                    Rewarded Ads Watched:
+                  </ThemedText>
+                  <ThemedText style={styles.statsValue}>
+                    {adWatchCount}
+                  </ThemedText>
+                </View>
+                <ThemedText style={styles.statsSubtext}>
+                  Resets at 4:00 AM (GMT+8) • {formatRemainingTime()}
                 </ThemedText>
-                <ThemedText style={styles.statsValue}>{adWatchCount}</ThemedText>
-              </View>
-              <ThemedText style={styles.statsSubtext}>
-                Resets at 4:00 AM (GMT+8) • {formatRemainingTime()}
-              </ThemedText>
-            </ThemedView>
-            
+              </ThemedView>
+            )}
+
             <TouchableOpacity
               style={styles.optionItem}
               onPress={() => router.push("/settings/social-preferences")}

@@ -9,6 +9,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import * as Updates from "expo-updates";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -44,6 +45,38 @@ export default function RootLayout() {
       );
     }
   }, [loaded]);
+
+  useEffect(() => {
+    let lastActiveTime = Date.now();
+
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === "active") {
+        const currentTime = Date.now();
+        const timeInBackground = currentTime - lastActiveTime;
+
+        // If app was in background for more than 4 hours (14400000 ms)
+        if (timeInBackground > 14400000) {
+          // Reload the app
+          try {
+            Updates.reloadAsync();
+          } catch (error) {
+            console.log("Error reloading app:", error);
+          }
+        }
+      } else if (nextAppState === "background") {
+        lastActiveTime = Date.now();
+      }
+    };
+
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   return (
     <GameQueryProvider>
