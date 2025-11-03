@@ -25,6 +25,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { useShowAds } from "@/hooks/useShowAds";
 import { Chart } from "@/types/chart";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useLocalization } from "@/context/LocalizationContext";
 
 type ViewMode = "list" | "icon";
 type GroupMode = "none" | "level" | "version";
@@ -46,6 +47,7 @@ export default function ChartListScreen() {
   const [groupMode, setGroupMode] = useState<GroupMode>("none"); // Keep this but we won't change it
   const insets = useSafeAreaInsets();
   const { showAds, dynamicStyles } = useShowAds(false);
+  const { t } = useLocalization();
 
   // Preload an interstitial ad when the component mounts
   useEffect(() => {
@@ -435,7 +437,9 @@ export default function ChartListScreen() {
             size="large"
             color={Colors[colorScheme ?? "light"].tint}
           />
-          <ThemedText style={styles.loadingText}>Loading charts...</ThemedText>
+          <ThemedText style={styles.loadingText}>
+            {t("loadingCharts")}
+          </ThemedText>
         </ThemedView>
       );
     }
@@ -467,7 +471,7 @@ export default function ChartListScreen() {
                 });
             }}
           >
-            <ThemedText style={styles.retryButtonText}>Retry</ThemedText>
+            <ThemedText style={styles.retryButtonText}>{t("retry")}</ThemedText>
           </TouchableOpacity>
         </ThemedView>
       );
@@ -477,7 +481,7 @@ export default function ChartListScreen() {
       return (
         <ThemedView style={styles.emptyContainer}>
           <IconSymbol name="music.note" size={60} color="#CCCCCC" />
-          <ThemedText style={styles.emptyText}>No charts found</ThemedText>
+          <ThemedText style={styles.emptyText}>{t("noChartsFound")}</ThemedText>
         </ThemedView>
       );
     }
@@ -501,8 +505,8 @@ export default function ChartListScreen() {
         options={{
           title: value
             ? `${value.toString()}${!loading ? ` (${charts.length})` : ""}`
-            : "Charts",
-          headerBackTitle: "Categories",
+            : t("charts"),
+          headerBackButtonDisplayMode: "minimal",
         }}
       />
 
@@ -527,7 +531,7 @@ export default function ChartListScreen() {
               styles.searchInput,
               { color: colorScheme === "dark" ? "#FFFFFF" : "#000000" },
             ]}
-            placeholder="Search charts..."
+            placeholder={t("searchCharts")}
             placeholderTextColor={
               colorScheme === "dark" ? "#AAAAAA" : "#888888"
             }

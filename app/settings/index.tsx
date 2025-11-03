@@ -1,18 +1,19 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useLocalization } from "@/context/LocalizationContext";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   StyleSheet,
   TouchableOpacity,
   Vibration,
   View,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
+// import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
 
 // Key for storing the ad watch count data
 const AD_WATCH_COUNT_KEY = "ad_watch_count";
@@ -23,6 +24,7 @@ export default function SettingsScreen() {
   const [userId, setUserId] = useState("");
   const [adWatchCount, setAdWatchCount] = useState(0);
   const [resetTime, setResetTime] = useState<number | null>(null);
+  const { t } = useLocalization();
 
   // Calculate the next 4 AM GMT+8 time
   const getNextResetTime = () => {
@@ -180,7 +182,7 @@ export default function SettingsScreen() {
               style={{ marginRight: 15 }}
             />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>Settings</ThemedText>
+          <ThemedText style={styles.headerTitle}>{t("settings")}</ThemedText>
         </View>
 
         <View style={styles.content}>
@@ -191,14 +193,14 @@ export default function SettingsScreen() {
                 <View style={styles.statsRow}>
                   <Ionicons name="eye-outline" size={24} color="#AE75DA" />
                   <ThemedText style={styles.statsLabel}>
-                    Rewarded Ads Watched:
+                    {t("rewardedAdsWatched")}
                   </ThemedText>
                   <ThemedText style={styles.statsValue}>
                     {adWatchCount}
                   </ThemedText>
                 </View>
                 <ThemedText style={styles.statsSubtext}>
-                  Resets at 4:00 AM (GMT+8) • {formatRemainingTime()}
+                {t('resetsAtTime', {time: '4:00 AM (GMT+8)'})} • {formatRemainingTime()}
                 </ThemedText>
               </ThemedView>
             )}
@@ -209,11 +211,20 @@ export default function SettingsScreen() {
             >
               <Ionicons name="share-social-outline" size={24} color="#AE75DA" />
               <ThemedText style={styles.optionText}>
-                Social Preferences
+                {t("socialPreferences")}
               </ThemedText>
               <Ionicons name="chevron-forward" size={24} color="#999" />
             </TouchableOpacity>
-
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={() => router.push("/settings/language")}
+            >
+              <Ionicons name="language" size={24} color="#AE75DA" />
+              <ThemedText style={styles.optionText}>
+                {t("appLanguage")}
+              </ThemedText>
+              <Ionicons name="chevron-forward" size={24} color="#999" />
+            </TouchableOpacity>
             {isLoggedIn && (
               <>
                 <TouchableOpacity
@@ -222,7 +233,7 @@ export default function SettingsScreen() {
                 >
                   <Ionicons name="person-remove" size={24} color="#AE75DA" />
                   <ThemedText style={styles.optionText}>
-                    Blocked Users
+                    {t("blockedUsers")}
                   </ThemedText>
                   <Ionicons name="chevron-forward" size={24} color="#999" />
                 </TouchableOpacity>
@@ -233,7 +244,7 @@ export default function SettingsScreen() {
                   >
                     <Ionicons name="gift-outline" size={24} color="#AE75DA" />
                     <ThemedText style={styles.optionText}>
-                      Watch Reward Ad
+                      {t("watchRewardAd")}
                     </ThemedText>
                     <Ionicons name="chevron-forward" size={24} color="#999" />
                   </TouchableOpacity>
@@ -244,7 +255,7 @@ export default function SettingsScreen() {
                 >
                   <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
                   <ThemedText style={styles.dangerOptionText}>
-                    Delete Account
+                    {t("deleteAccount")}
                   </ThemedText>
                   <Ionicons name="chevron-forward" size={24} color="#999" />
                 </TouchableOpacity>

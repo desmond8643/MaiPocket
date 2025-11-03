@@ -1,23 +1,25 @@
-import React, { useState, useRef, useEffect } from "react";
+import { AuthAPI } from "@/api/client";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useLocalization } from "@/context/LocalizationContext";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator,
   View,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { ThemedView } from "@/components/ThemedView";
-import { ThemedText } from "@/components/ThemedText";
-import { Ionicons } from "@expo/vector-icons";
-import { AuthAPI } from "@/api/client";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
   const { email } = useLocalSearchParams();
+  const { t } = useLocalization();
   const [verificationCode, setVerificationCode] = useState([
     "",
     "",
@@ -74,7 +76,7 @@ export default function ResetPasswordScreen() {
   const handleVerifyCode = async () => {
     const code = verificationCode.join("");
     if (code.length !== 6) {
-      Alert.alert("Error", "Please enter a valid 6-digit verification code");
+      Alert.alert(t("error"), t("enterValidVerificationCode"));
       return;
     }
 
@@ -88,9 +90,8 @@ export default function ResetPasswordScreen() {
     } catch (error: any) {
       console.error("Verification error:", error);
       Alert.alert(
-        "Verification Failed",
-        error.response?.data?.message ||
-          "Invalid verification code. Please try again."
+        t("verificationFailed"),
+        error.response?.data?.message || t("invalidVerificationCode")
       );
     } finally {
       setLoading(false);
@@ -104,31 +105,31 @@ export default function ResetPasswordScreen() {
       await AuthAPI.forgotPassword(email as string);
       setResendCountdown(60); // 1 minute cooldown
       Alert.alert(
-        "Success",
-        "A new verification code has been sent to your email"
+        t("success"),
+        t("verificationCodeSent")
       );
     } catch (error: any) {
       console.error("Resend error:", error);
       Alert.alert(
-        "Failed to Resend Code",
-        error.response?.data?.message || "Please try again later"
+        t("resendCodeFailed"),
+        error.response?.data?.message || t("tryAgainLater")
       );
     }
   };
 
   const handleResetPassword = async () => {
     if (!newPassword || !confirmPassword) {
-      Alert.alert("Error", "Please enter all fields");
+      Alert.alert(t("error"), t("enterAllFields"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      Alert.alert(t("error"), t("passwordsDoNotMatch"));
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters");
+      Alert.alert(t("error"), t("passwordMinLength"));
       return;
     }
 
@@ -141,15 +142,14 @@ export default function ResetPasswordScreen() {
         newPassword,
       });
 
-      Alert.alert("Success", "Your password has been reset successfully", [
-        { text: "OK", onPress: () => router.replace("/auth/login") },
+      Alert.alert(t("success"), t("passwordResetSuccess"), [
+        { text: t("ok"), onPress: () => router.replace("/auth/login") },
       ]);
     } catch (error: any) {
       console.error("Password reset error:", error);
       Alert.alert(
-        "Error",
-        error.response?.data?.message ||
-          "Failed to reset password. Please try again."
+        t("error"),
+        error.response?.data?.message || t("passwordResetFailed")
       );
     } finally {
       setLoading(false);
@@ -166,14 +166,14 @@ export default function ResetPasswordScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#AE75DA" />
           </TouchableOpacity>
-          <ThemedText style={styles.title}>Reset Password</ThemedText>
+          <ThemedText style={styles.title}>{t("resetPassword")}</ThemedText>
         </View>
 
         {step === 1 ? (
           // Verification Code Step
           <>
             <ThemedText style={styles.subtitle}>
-              Enter the 6-digit verification code sent to{" "}
+              {t("enterVerificationCode")}{" "}
               <ThemedText style={styles.emailText}>{email}</ThemedText>
             </ThemedText>
 
@@ -202,13 +202,13 @@ export default function ResetPasswordScreen() {
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <ThemedText style={styles.buttonText}>Verify Code</ThemedText>
+                <ThemedText style={styles.buttonText}>{t("verifyCode")}</ThemedText>
               )}
             </TouchableOpacity>
 
             <View style={styles.resendContainer}>
               <ThemedText style={styles.resendText}>
-                Didn't receive the code?{" "}
+                {t("didntReceiveCode")}{" "}
               </ThemedText>
               <TouchableOpacity
                 onPress={handleResendCode}
@@ -221,8 +221,8 @@ export default function ResetPasswordScreen() {
                   ]}
                 >
                   {resendCountdown > 0
-                    ? `Resend in ${resendCountdown}s`
-                    : "Resend Code"}
+                    ? t("resendInSeconds", { seconds: resendCountdown })
+                    : t("resendCode")}
                 </ThemedText>
               </TouchableOpacity>
             </View>
@@ -231,7 +231,7 @@ export default function ResetPasswordScreen() {
           // New Password Step
           <>
             <ThemedText style={styles.subtitle}>
-              Please enter your new password
+              {t("enterNewPassword")}
             </ThemedText>
 
             <View style={styles.inputContainer}>
@@ -243,7 +243,7 @@ export default function ResetPasswordScreen() {
               />
               <TextInput
                 style={[styles.input, { color: textColor }]}
-                placeholder="New Password"
+                placeholder={t("newPassword")}
                 placeholderTextColor={iconColor}
                 secureTextEntry={!showPassword}
                 value={newPassword}
@@ -270,7 +270,7 @@ export default function ResetPasswordScreen() {
               />
               <TextInput
                 style={[styles.input, { color: textColor }]}
-                placeholder="Confirm Password"
+                placeholder={t("confirmPassword")}
                 placeholderTextColor={iconColor}
                 secureTextEntry={!showPassword}
                 value={confirmPassword}
@@ -287,7 +287,7 @@ export default function ResetPasswordScreen() {
                 <ActivityIndicator color="#fff" />
               ) : (
                 <ThemedText style={styles.buttonText}>
-                  Reset Password
+                  {t("resetPassword")}
                 </ThemedText>
               )}
             </TouchableOpacity>

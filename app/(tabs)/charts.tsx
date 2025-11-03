@@ -7,7 +7,7 @@ import {
   // SafeAreaView,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -18,20 +18,10 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useAds } from "@/context/AdContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useShowAds } from '@/hooks/useShowAds';
+import { useShowAds } from "@/hooks/useShowAds";
 import { SymbolViewProps } from "expo-symbols";
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-// Category types
-const FILTER_TYPES = [
-  { id: "genre", name: "Genre", icon: "music.note" as SymbolViewProps["name"] },
-  { id: "level", name: "Level", icon: "chart.bar" as SymbolViewProps["name"] },
-  {
-    id: "version",
-    name: "Version",
-    icon: "calendar" as SymbolViewProps["name"],
-  },
-];
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useLocalization } from "@/context/LocalizationContext";
 
 // Categories for each type (these will be populated from the backend later)
 const CATEGORIES = {
@@ -106,8 +96,26 @@ export default function ChartsScreen() {
   const insets = useSafeAreaInsets(); // Add this line
   const { adsRemoved, temporaryAdRemoval } = useAds();
   const { showAds, dynamicStyles } = useShowAds(true); // true because it's in a tab bar
+  const { t } = useLocalization();
 
-  
+  // Category types
+  const FILTER_TYPES = [
+    {
+      id: "genre",
+      name: t("genre"),
+      icon: "music.note" as SymbolViewProps["name"],
+    },
+    {
+      id: "level",
+      name: t("level"),
+      icon: "chart.bar" as SymbolViewProps["name"],
+    },
+    {
+      id: "version",
+      name: t("version"),
+      icon: "calendar" as SymbolViewProps["name"],
+    },
+  ];
 
   // Add these dynamic styles
   // const dynamicStyles = {
@@ -270,7 +278,7 @@ export default function ChartsScreen() {
                         : Colors.light.text,
                   },
                 ]}
-                placeholder="Search charts..."
+                placeholder={t("searchCharts")}
                 placeholderTextColor={colorScheme === "dark" ? "#999" : "#888"}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -306,10 +314,9 @@ export default function ChartsScreen() {
             scrollEnabled={false}
             contentContainerStyle={styles.categoryList}
           />
-          
         </ScrollView>
       </SafeAreaView>
-      
+
       {/* Add the bottom ad component */}
       {showAds && (
         <View style={dynamicStyles.bottomAdContainer}>

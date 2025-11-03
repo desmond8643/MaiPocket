@@ -1,34 +1,35 @@
-import { ThemedView } from "@/components/ThemedView";
-import { ThemedText } from "@/components/ThemedText";
-import { useLocalSearchParams, router } from "expo-router";
-import React, { useState, useEffect, useRef } from "react";
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  ActivityIndicator,
-  Alert,
-  Vibration,
-  Modal,
-  ScrollView,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { QuizQuestion } from "@/types/game";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  preloadInterstitialAd,
-  showInterstitialAd,
-} from "@/components/InterstitialAdComponent";
-import { useShowAds } from "@/hooks/useShowAds";
-import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
-import Carousel from "react-native-reanimated-carousel";
 import {
   AuthAPI,
   getCasualQuizQuestions,
   submitCasualScore,
 } from "@/api/client";
+import {
+  preloadInterstitialAd,
+  showInterstitialAd,
+} from "@/components/InterstitialAdComponent";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
 import { fetchDataImmediately } from "@/context/GameQueryProvider";
+import { useLocalization } from "@/context/LocalizationContext";
+import { useShowAds } from "@/hooks/useShowAds";
+import { QuizQuestion } from "@/types/game";
+import { Ionicons } from "@expo/vector-icons";
+import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { Image } from "expo-image";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Vibration,
+  View,
+} from "react-native";
+import Carousel from "react-native-reanimated-carousel";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CasualGamePlayScreen() {
   const { mode } = useLocalSearchParams();
@@ -48,6 +49,7 @@ export default function CasualGamePlayScreen() {
   }>({});
   const insets = useSafeAreaInsets();
   const { showAds } = useShowAds(false);
+  const { t } = useLocalization();
 
   // Audio status states
   const [isAudioLoading, setIsAudioLoading] = useState(true);
@@ -436,7 +438,7 @@ export default function CasualGamePlayScreen() {
   // Render mode selection screen
   const renderModeSelection = () => (
     <ThemedView style={[styles.container, styles.centered]}>
-      <ThemedText style={styles.title}>Choose Game Mode</ThemedText>
+      <ThemedText style={styles.title}>{t("chooseGameMode")}</ThemedText>
 
       <View style={styles.selectionContainer}>
         <TouchableOpacity
@@ -456,7 +458,7 @@ export default function CasualGamePlayScreen() {
             lightColor={gameMode === "visual" ? "#fff" : "#696FC7"}
             darkColor="white"
           >
-            Visual Mode
+            {t("visualMode")}
           </ThemedText>
         </TouchableOpacity>
 
@@ -477,14 +479,14 @@ export default function CasualGamePlayScreen() {
             lightColor={gameMode === "audio" ? "#fff" : "#696FC7"}
             darkColor="white"
           >
-            Audio Mode
+            {t("audioMode")}
           </ThemedText>
         </TouchableOpacity>
       </View>
 
       {gameMode && (
         <>
-          <ThemedText style={styles.title}>Choose Category</ThemedText>
+          <ThemedText style={styles.title}>{t("chooseCategory")}</ThemedText>
 
           <View style={styles.categoryContainer}>
             <TouchableOpacity
@@ -499,7 +501,7 @@ export default function CasualGamePlayScreen() {
                 lightColor={categoryType === "all" ? "#fff" : "#696FC7"}
                 darkColor="white"
               >
-                All Songs
+                {t("allSongs")}
               </ThemedText>
             </TouchableOpacity>
 
@@ -515,7 +517,7 @@ export default function CasualGamePlayScreen() {
                 lightColor={categoryType === "level" ? "#fff" : "#696FC7"}
                 darkColor="white"
               >
-                By Level
+                {t("byLevel")}
               </ThemedText>
             </TouchableOpacity>
 
@@ -531,7 +533,7 @@ export default function CasualGamePlayScreen() {
                 lightColor={categoryType === "genre" ? "#fff" : "#696FC7"}
                 darkColor="white"
               >
-                By Genre
+                {t("byGenre")}
               </ThemedText>
             </TouchableOpacity>
 
@@ -547,7 +549,7 @@ export default function CasualGamePlayScreen() {
                 lightColor={categoryType === "version" ? "#fff" : "#696FC7"}
                 darkColor="white"
               >
-                By Version
+                {t("byVersion")}
               </ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
@@ -562,7 +564,7 @@ export default function CasualGamePlayScreen() {
                 lightColor={categoryType === "chart_type" ? "#fff" : "#696FC7"}
                 darkColor="white"
               >
-                By Chart Type
+                {t("byChartType")}
               </ThemedText>
             </TouchableOpacity>
           </View>
@@ -574,7 +576,7 @@ export default function CasualGamePlayScreen() {
         onPress={() => router.back()}
       >
         <ThemedText style={{ color: "#696FC7", fontWeight: "bold" }}>
-          Back to Menu
+          {t("backToMenu")}
         </ThemedText>
       </TouchableOpacity>
     </ThemedView>
@@ -595,12 +597,12 @@ export default function CasualGamePlayScreen() {
       >
         <ThemedView style={styles.modalContainer}>
           <ThemedText style={styles.modalTitle}>
-            Select{" "}
+            {t("select")}{" "}
             {categoryType === "level"
-              ? "Level"
+              ? t("level")
               : categoryType === "genre"
-              ? "Genre"
-              : "Version"}
+              ? t("genre")
+              : t("version")}
           </ThemedText>
 
           <ScrollView style={styles.modalScroll}>
@@ -695,7 +697,7 @@ export default function CasualGamePlayScreen() {
             style={styles.modalCloseButton}
             onPress={() => setShowSubCategorySelection(false)}
           >
-            <ThemedText style={{ color: "#fff" }}>Cancel</ThemedText>
+            <ThemedText style={{ color: "#fff" }}>{t("cancel")}</ThemedText>
           </TouchableOpacity>
         </ThemedView>
       </TouchableOpacity>
@@ -707,7 +709,7 @@ export default function CasualGamePlayScreen() {
     return (
       <ThemedView style={[styles.container, styles.centered]}>
         <ActivityIndicator size="large" color="#696FC7" />
-        <ThemedText style={{ marginTop: 16 }}>Loading questions...</ThemedText>
+        <ThemedText style={{ marginTop: 16 }}>{t("loadingQuestions")}</ThemedText>
       </ThemedView>
     );
   }
@@ -730,14 +732,14 @@ export default function CasualGamePlayScreen() {
         <ThemedText
           style={{ fontSize: 18, marginVertical: 16, textAlign: "center" }}
         >
-          Not enough questions available for this selection.
+          {t("notEnoughQuestionsAvailable")}
         </ThemedText>
         <TouchableOpacity
           style={[styles.button, { backgroundColor: "#696FC7" }]}
           onPress={playAgain}
         >
           <ThemedText style={styles.buttonText}>
-            Try Another Category
+            {t("tryAnotherCategory")}
           </ThemedText>
         </TouchableOpacity>
       </ThemedView>
@@ -747,20 +749,20 @@ export default function CasualGamePlayScreen() {
   // Game over screen
   if (gameOver) {
     // Determine performance level
-    let performanceText = "Miss";
+    let performanceText = t("miss");
     let performanceColor = "#F44336";
 
     if (score === 10) {
-      performanceText = "All Perfect";
+      performanceText = t("allPerfect");
       performanceColor = "#ED3F27";
     } else if (score >= 7) {
-      performanceText = "Great";
+      performanceText = t("great");
       performanceColor = "#FEB21A";
     } else if (score >= 5) {
-      performanceText = "Good";
+      performanceText = t("good");
       performanceColor = "#4CAF50";
     } else if (score >= 1) {
-      performanceText = "Bad";
+      performanceText = t("bad");
       performanceColor = "#696FC7";
     }
 
@@ -785,7 +787,7 @@ export default function CasualGamePlayScreen() {
           {performanceText}
         </ThemedText>
         <ThemedText style={styles.scoreText}>
-          Your Score: {score}/{questions.length}
+          {t("yourScore")}: {score}/{questions.length}
         </ThemedText>
 
         {crystalsEarned > 0 && (
@@ -795,13 +797,13 @@ export default function CasualGamePlayScreen() {
               style={{ height: 40, width: 20 }}
             />
             <ThemedText style={styles.crystalText}>
-              +{crystalsEarned} Crystals Earned!
+              +{crystalsEarned} {t("crystalsEarned")}
             </ThemedText>
           </View>
         )}
         {dailyCrystalsEarned > 0 && (
           <ThemedText style={styles.dailyCrystalText}>
-            {dailyCrystalsEarned}/{dailyLimit} daily crystals earned
+            {dailyCrystalsEarned}/{dailyLimit} {t("dailyCrystalsEarned")}
           </ThemedText>
         )}
 
@@ -810,13 +812,13 @@ export default function CasualGamePlayScreen() {
             style={[styles.button, { backgroundColor: "#696FC7" }]}
             onPress={playAgain}
           >
-            <ThemedText style={styles.buttonText}>Play Again</ThemedText>
+            <ThemedText style={styles.buttonText}>{t("playAgain")}</ThemedText>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: "#AA60C8" }]}
             onPress={() => router.back()}
           >
-            <ThemedText style={styles.buttonText}>Back to Menu</ThemedText>
+            <ThemedText style={styles.buttonText}>{t("backToMenu")}</ThemedText>
           </TouchableOpacity>
         </View>
       </ThemedView>
@@ -834,9 +836,9 @@ export default function CasualGamePlayScreen() {
         </TouchableOpacity>
         <View style={styles.progressContainer}>
           <ThemedText style={styles.progressText}>
-            Question {currentQuestionIndex + 1}/{questions.length}
+            {t("question")} {currentQuestionIndex + 1}/{questions.length}
           </ThemedText>
-          <ThemedText style={styles.scoreText}>Score: {score}</ThemedText>
+          <ThemedText style={styles.scoreText}>{t("score")}: {score}</ThemedText>
         </View>
         {/* Add width to match the back button */}
         <View style={{ width: 40 }}></View>
@@ -855,19 +857,19 @@ export default function CasualGamePlayScreen() {
                   <>
                     <ActivityIndicator size="large" color="#696FC7" />
                     <ThemedText style={styles.playButtonText}>
-                      Loading Audio...
+                      {t("loadingAudio")}
                     </ThemedText>
                   </>
                 ) : isAudioPlaying ? (
                   <>
                     <Ionicons name="pause-circle" size={80} color="#696FC7" />
-                    <ThemedText style={styles.playButtonText}>Pause</ThemedText>
+                    <ThemedText style={styles.playButtonText}>{t("pause")}</ThemedText>
                   </>
                 ) : (
                   <>
                     <Ionicons name="play-circle" size={80} color="#696FC7" />
                     <ThemedText style={styles.playButtonText}>
-                      Play Audio
+                      {t("playAudio")}
                     </ThemedText>
                   </>
                 )}
@@ -880,7 +882,7 @@ export default function CasualGamePlayScreen() {
               <View style={styles.audioContainer}>
                 <ActivityIndicator size="large" color="#696FC7" />
                 <ThemedText style={styles.playButtonText}>
-                  Loading Images... {loadedImageCount}/{imageUrls.length}
+                  {t("loadingImages")}... {loadedImageCount}/{imageUrls.length}
                 </ThemedText>
               </View>
             ) : (

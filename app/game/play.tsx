@@ -1,16 +1,3 @@
-import { ThemedView } from "@/components/ThemedView";
-import { ThemedText } from "@/components/ThemedText";
-import { useLocalSearchParams, router } from "expo-router";
-import React, { useState, useEffect, useRef } from "react";
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  ActivityIndicator,
-  Alert,
-  Vibration,
-} from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   AuthAPI,
   getQuizQuestions,
@@ -18,21 +5,36 @@ import {
   getUserStreak,
   submitScore,
 } from "@/api/client";
-import { Ionicons } from "@expo/vector-icons";
-import { QuizQuestion } from "@/types/game";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
 } from "@/components/InterstitialAdComponent";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { fetchDataImmediately } from "@/context/GameQueryProvider";
+import { useLocalization } from "@/context/LocalizationContext";
 import { useShowAds } from "@/hooks/useShowAds";
+import { QuizQuestion } from "@/types/game";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
-import Carousel from "react-native-reanimated-carousel";
-import { fetchDataImmediately, queryClient } from "@/context/GameQueryProvider";
 import { Image } from "expo-image";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+  Vibration,
+  View,
+} from "react-native";
+import Carousel from "react-native-reanimated-carousel";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GamePlayScreen() {
   const { mode } = useLocalSearchParams();
+  const { t } = useLocalization();
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -286,7 +288,7 @@ export default function GamePlayScreen() {
       setTimeLeft(15);
     } catch (error) {
       console.error("Error loading questions:", error);
-      Alert.alert("Error", "Failed to load quiz questions. Please try again.");
+      Alert.alert(t("error"), t("failedToLoadQuestions"));
       router.back();
     }
   };
@@ -518,7 +520,7 @@ export default function GamePlayScreen() {
     return (
       <ThemedView style={[styles.container, styles.centered]}>
         <ActivityIndicator size="large" color="#696FC7" />
-        <ThemedText style={{ marginTop: 16 }}>Loading questions...</ThemedText>
+        <ThemedText style={{ marginTop: 16 }}>{t("loadingQuestions")}</ThemedText>
       </ThemedView>
     );
   }
@@ -559,21 +561,21 @@ export default function GamePlayScreen() {
           ]}
         >
           {score === questions.length
-            ? "All Perfect"
+            ? t("allPerfect")
             : score >= questions.length / 2 && hasThreeLifePass
-            ? "Great"
-            : "You Lose..."}
+            ? t("great")
+            : t("youLose")}
         </ThemedText>
         <ThemedText style={styles.scoreText}>
-          Your Score: {score}/{questions.length}
+          {t("yourScore")}: {score}/{questions.length}
         </ThemedText>
         <ThemedText style={styles.scoreText}>
-          Current Streak🔥: {accumulatedScore}
+          {t("currentStreak")} {accumulatedScore}
         </ThemedText>
         <ThemedText style={[styles.scoreText, styles.bestScoreText]}>
-          Best Score: {bestScore}{" "}
+          {t("bestScore")}: {bestScore}{" "}
           {isNewRecord && (
-            <ThemedText style={{ color: "#4CAF50" }}>(New Record!)</ThemedText>
+            <ThemedText style={{ color: "#4CAF50" }}>{t("newRecord")}</ThemedText>
           )}
         </ThemedText>
         {/* Add this section to display crystal rewards */}
@@ -584,13 +586,13 @@ export default function GamePlayScreen() {
               style={{ height: 40, width: 20, marginRight: 8 }}
             />
             <ThemedText style={styles.crystalRewardText}>
-              +{crystalsEarned} Crystals!
+              +{crystalsEarned} {t("crystals")}
             </ThemedText>
           </View>
         )}
         {dailyCrystalsEarned > 0 && (
           <ThemedText style={styles.crystalDailyText}>
-            {dailyCrystalsEarned}/{dailyLimit} daily crystals earned
+            {dailyCrystalsEarned}/{dailyLimit} {t("dailyCrystalsEarned")}
           </ThemedText>
         )}
 
@@ -599,13 +601,13 @@ export default function GamePlayScreen() {
             style={[styles.button, { backgroundColor: "#696FC7" }]}
             onPress={playAgain}
           >
-            <ThemedText style={styles.buttonText}>Play Again</ThemedText>
+            <ThemedText style={styles.buttonText}>{t("playAgain")}</ThemedText>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: "#AA60C8" }]}
             onPress={() => router.back()}
           >
-            <ThemedText style={styles.buttonText}>Back to Menu</ThemedText>
+            <ThemedText style={styles.buttonText}>{t("backToMenu")}</ThemedText>
           </TouchableOpacity>
         </View>
       </ThemedView>
@@ -633,10 +635,10 @@ export default function GamePlayScreen() {
         </View>
         <View style={styles.progressContainer}>
           <ThemedText style={styles.progressText}>
-            Question {currentQuestionIndex + 1}/{questions.length}
+            {t("question")} {currentQuestionIndex + 1}/{questions.length}
           </ThemedText>
           <ThemedText style={styles.scoreText}>
-            Score: {score} (Total: {accumulatedScore})
+            {t("score")}: {score} ({t("total")}: {accumulatedScore})
           </ThemedText>
         </View>
         <View style={styles.timerContainer}>
@@ -661,19 +663,19 @@ export default function GamePlayScreen() {
                   <>
                     <ActivityIndicator size="large" color="#696FC7" />
                     <ThemedText style={styles.playButtonText}>
-                      Loading Audio...
+                      {t("loadingAudio")}
                     </ThemedText>
                   </>
                 ) : isAudioPlaying ? (
                   <>
                     <Ionicons name="pause-circle" size={80} color="#696FC7" />
-                    <ThemedText style={styles.playButtonText}>Pause</ThemedText>
+                    <ThemedText style={styles.playButtonText}>{t("pause")}</ThemedText>
                   </>
                 ) : (
                   <>
                     <Ionicons name="play-circle" size={80} color="#696FC7" />
                     <ThemedText style={styles.playButtonText}>
-                      Play Audio
+                      {t("playAudio")}
                     </ThemedText>
                   </>
                 )}
@@ -686,7 +688,7 @@ export default function GamePlayScreen() {
               <View style={styles.audioContainer}>
                 <ActivityIndicator size="large" color="#696FC7" />
                 <ThemedText style={styles.playButtonText}>
-                  Loading Images... {loadedImageCount}/{imageUrls.length}
+                  {t("loadingImages")}: {loadedImageCount}/{imageUrls.length}
                 </ThemedText>
               </View>
             ) : (

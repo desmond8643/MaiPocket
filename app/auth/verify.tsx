@@ -1,22 +1,24 @@
-import React, { useState, useRef, useEffect } from "react";
+import { AuthAPI } from "@/api/client";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useLocalization } from "@/context/LocalizationContext";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator,
   View,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { ThemedView } from "@/components/ThemedView";
-import { ThemedText } from "@/components/ThemedText";
-import { Ionicons } from "@expo/vector-icons";
-import { AuthAPI } from "@/api/client";
-import { useThemeColor } from "@/hooks/useThemeColor";
 
 export default function VerifyScreen() {
   const router = useRouter();
   const { email } = useLocalSearchParams();
+  const { t } = useLocalization();
   const [verificationCode, setVerificationCode] = useState([
     "",
     "",
@@ -69,7 +71,7 @@ export default function VerifyScreen() {
   const handleVerify = async () => {
     const code = verificationCode.join("");
     if (code.length !== 6) {
-      Alert.alert("Error", "Please enter a valid 6-digit verification code");
+      Alert.alert(t("error"), t("enterValidVerificationCode"));
       return;
     }
 
@@ -81,16 +83,15 @@ export default function VerifyScreen() {
       });
 
       Alert.alert(
-        "Success",
-        "Email verified successfully! You can now log in.",
-        [{ text: "OK", onPress: () => router.push("/auth/login") }]
+        t("success"),
+        t("emailVerifiedSuccess"),
+        [{ text: t("ok"), onPress: () => router.push("/auth/login") }]
       );
     } catch (error: any) {
       console.error("Verification error:", error);
       Alert.alert(
-        "Verification Failed",
-        error.response?.data?.message ||
-          "Invalid verification code. Please try again."
+        t("verificationFailed"),
+        error.response?.data?.message || t("invalidVerificationCode")
       );
     } finally {
       setLoading(false);
@@ -104,14 +105,14 @@ export default function VerifyScreen() {
       await AuthAPI.resendVerification(email as string);
       setResendCountdown(60); // 1 minute cooldown
       Alert.alert(
-        "Success",
-        "A new verification code has been sent to your email"
+        t("success"),
+        t("verificationCodeSent")
       );
     } catch (error: any) {
       console.error("Resend error:", error);
       Alert.alert(
-        "Failed to Resend Code",
-        error.response?.data?.message || "Please try again later"
+        t("resendCodeFailed"),
+        error.response?.data?.message || t("tryAgainLater")
       );
     }
   };
@@ -125,13 +126,13 @@ export default function VerifyScreen() {
         >
           <Ionicons name="arrow-back" size={24} color="#AE75DA" />
         </TouchableOpacity>
-        <ThemedText style={styles.title}>Email Verification</ThemedText>
+        <ThemedText style={styles.title}>{t("emailVerification")}</ThemedText>
       </View>
 
       <ThemedText style={styles.subtitle}>
-        We've sent a 6-digit code to{"\n"}
+        {t("verificationCodeSent6Digit")}{"\n"}
         <ThemedText style={styles.emailText}>{email}</ThemedText>
-        {"\n"}Please check your spam/junk folder if you don't see it.
+        {"\n"}{t("checkSpamFolder")}
       </ThemedText>
 
       <View style={styles.codeContainer}>
@@ -160,13 +161,13 @@ export default function VerifyScreen() {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <ThemedText style={styles.verifyButtonText}>Verify</ThemedText>
+          <ThemedText style={styles.verifyButtonText}>{t("verify")}</ThemedText>
         )}
       </TouchableOpacity>
 
       <View style={styles.resendContainer}>
         <ThemedText style={styles.resendText}>
-          Didn't receive the code?{" "}
+          {t("didntReceiveCode")}{" "}
         </ThemedText>
         <TouchableOpacity
           onPress={handleResendCode}
@@ -179,8 +180,8 @@ export default function VerifyScreen() {
             ]}
           >
             {resendCountdown > 0
-              ? `Resend in ${resendCountdown}s`
-              : "Resend Code"}
+              ? t("resendInSeconds", { seconds: resendCountdown })
+              : t("resendCode")}
           </ThemedText>
         </TouchableOpacity>
       </View>

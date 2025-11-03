@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  Alert,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
-import { UserAPI } from "../../api/client";
-import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useLocalization } from "@/context/LocalizationContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { UserAPI } from "../../api/client";
 
 interface BlockedUser {
   _id: string;
@@ -27,6 +28,7 @@ export default function BlockedUsersScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const primaryColor = useThemeColor({}, "tint");
   const router = useRouter();
+  const { t } = useLocalization();
 
   useEffect(() => {
     loadBlockedUsers();
@@ -49,10 +51,10 @@ export default function BlockedUsersScreen() {
     try {
       await UserAPI.unblockUser(userId);
       setBlockedUsers(blockedUsers.filter((user) => user._id !== userId));
-      Alert.alert("Success", "User has been unblocked");
+      Alert.alert(t("success"), t("userUnblocked"));
     } catch (error) {
       console.error("Error unblocking user:", error);
-      Alert.alert("Error", "Failed to unblock user");
+      Alert.alert(t("error"), t("failedToUnblock"));
     }
   };
 
@@ -70,7 +72,7 @@ export default function BlockedUsersScreen() {
         style={[styles.unblockButton, { backgroundColor: "#AE75DA" }]}
         onPress={() => handleUnblock(item._id)}
       >
-        <Text style={styles.unblockText}>Unblock</Text>
+        <Text style={styles.unblockText}>{t("unblock")}</Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -87,18 +89,18 @@ export default function BlockedUsersScreen() {
               style={{ marginRight: 15 }}
             />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>Blocked Users</ThemedText>
+          <ThemedText style={styles.headerTitle}>{t("blockedUsers")}</ThemedText>
         </View>
 
         <View style={styles.content}>
-          <ThemedText style={styles.title}>Manage Blocked Users</ThemedText>
+          <ThemedText style={styles.title}>{t("manageBlockedUsers")}</ThemedText>
           <ThemedText style={styles.description}>
-            Users you've blocked will not be able to interact with your posts or send you messages.
+            {t("blockedUsersDescription")}
           </ThemedText>
 
           {blockedUsers.length === 0 && !isLoading ? (
             <ThemedText style={styles.emptyState}>
-              You haven't blocked any users
+              {t("noBlockedUsers")}
             </ThemedText>
           ) : (
             <FlatList

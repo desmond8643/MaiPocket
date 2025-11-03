@@ -1,6 +1,7 @@
 import { AuthAPI } from "@/api/client";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,14 +13,13 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
-import { AdEventType, InterstitialAd, TestIds } from 'react-native-google-mobile-ads';
 import { SafeAreaView } from "react-native-safe-area-context";
-
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { t } = useLocalization();
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +30,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!usernameOrEmail || !password) {
-      Alert.alert("Error", "Please enter all fields");
+      Alert.alert(t("error"), t("enterAllFields"));
       return;
     }
 
@@ -49,9 +49,9 @@ export default function LoginScreen() {
         });
       } else {
         Alert.alert(
-          "Login Failed",
+          t("loginFailed"),
           error.response?.data?.message ||
-            "An error occurred. Please try again."
+            t("loginError")
         );
       }
     } finally {
@@ -69,84 +69,81 @@ export default function LoginScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#AE75DA" />
           </TouchableOpacity>
-          <ThemedText style={styles.title}>Sign In</ThemedText>
+          <ThemedText style={styles.title}>{t("signIn")}</ThemedText>
+        </View>
+        <View style={styles.inputContainer}>
+          <Ionicons
+            name="person-outline"
+            size={20}
+            color={iconColor}
+            style={styles.inputIcon}
+          />
+          <TextInput
+            style={[styles.input, { color: textColor }]}
+            placeholder={t("usernameOrEmail")}
+            placeholderTextColor={iconColor}
+            value={usernameOrEmail}
+            onChangeText={setUsernameOrEmail}
+            autoCapitalize="none"
+          />
         </View>
 
-        {/* <ScrollView style={styles.form} contentContainerStyle={{ paddingBottom: 20 }}> */}
-          <View style={styles.inputContainer}>
+        <View style={styles.inputContainer}>
+          <Ionicons
+            name="lock-closed-outline"
+            size={20}
+            color={iconColor}
+            style={styles.inputIcon}
+          />
+          <TextInput
+            style={[styles.input, { color: textColor }]}
+            placeholder={t("password")}
+            placeholderTextColor={iconColor}
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.eyeIcon}
+          >
             <Ionicons
-              name="person-outline"
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
               size={20}
               color={iconColor}
-              style={styles.inputIcon}
             />
-            <TextInput
-              style={[styles.input, { color: textColor }]}
-              placeholder="Username or Email"
-              placeholderTextColor={iconColor}
-              value={usernameOrEmail}
-              onChangeText={setUsernameOrEmail}
-              autoCapitalize="none"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="lock-closed-outline"
-              size={20}
-              color={iconColor}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[styles.input, { color: textColor }]}
-              placeholder="Password"
-              placeholderTextColor={iconColor}
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}
-            >
-              <Ionicons
-                name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={20}
-                color={iconColor}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity
-            style={styles.forgotPassword}
-            onPress={() => router.push("/auth/forgot-password")}
-          >
-            <ThemedText style={styles.forgotPasswordText}>
-              Forgot Password?
-            </ThemedText>
           </TouchableOpacity>
+        </View>
 
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <ThemedText style={styles.loginButtonText}>Sign In</ThemedText>
-            )}
+        <TouchableOpacity
+          style={styles.forgotPassword}
+          onPress={() => router.push("/auth/forgot-password")}
+        >
+          <ThemedText style={styles.forgotPasswordText}>
+            {t("forgotPassword")}
+          </ThemedText>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.loginButton}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <ThemedText style={styles.loginButtonText}>{t("signIn")}</ThemedText>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.registerContainer}>
+          <ThemedText style={styles.registerText}>
+            {t("dontHaveAccount")}{" "}
+          </ThemedText>
+          <TouchableOpacity onPress={() => router.push("/auth/register")}>
+            <ThemedText style={styles.registerLink}>{t("signUp")}</ThemedText>
           </TouchableOpacity>
-
-          <View style={styles.registerContainer}>
-            <ThemedText style={styles.registerText}>
-              Don't have an account?{" "}
-            </ThemedText>
-            <TouchableOpacity onPress={() => router.push("/auth/register")}>
-              <ThemedText style={styles.registerLink}>Sign Up</ThemedText>
-            </TouchableOpacity>
-          </View>
-        {/* </ScrollView> */}
+        </View>
       </SafeAreaView>
     </ThemedView>
   );

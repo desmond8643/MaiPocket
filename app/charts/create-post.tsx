@@ -6,10 +6,9 @@ import {
   Alert,
   ScrollView,
   StyleSheet,
-  Switch,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
@@ -17,6 +16,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { YouTubePreview } from "@/components/YouTubePreview";
 import { Colors } from "@/constants/Colors";
+import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
 import { extractYouTubeVideoId } from "@/utils/youtubeUtils";
@@ -25,6 +25,7 @@ export default function CreatePostScreen() {
   const { chartId, chartType, difficulty } = useLocalSearchParams();
   const router = useRouter();
   const colorScheme = useColorScheme();
+  const { t } = useLocalization();
 
   const [chart, setChart] = useState<Chart | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,8 +39,13 @@ export default function CreatePostScreen() {
   const [postError, setPostError] = useState<string | null>(null);
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
 
-  // Available tags for posts
+  // Define the available tags with their English values (for database storage)
   const AVAILABLE_TAGS = ["chart video", "gameplay", "insight", "analysis"];
+
+  // Create a function to get translated tag display name
+  const getTagDisplay = (tag: string) => {
+    return t(`tag_${tag.replace(/\s+/g, '_')}`);
+  };
 
   // Fetch chart data
   useEffect(() => {
@@ -75,7 +81,7 @@ export default function CreatePostScreen() {
   // Handle post submission
   const handlePostSubmit = async () => {
     if (!postContent.trim()) {
-      setPostError("Post content cannot be empty");
+      setPostError(t("postContentEmpty"));
       return;
     }
 
@@ -94,12 +100,12 @@ export default function CreatePostScreen() {
       });
 
       // Return to chart detail page
-      Alert.alert("Success", "Your post has been submitted for review", [
-        { text: "OK", onPress: () => router.back() },
+      Alert.alert(t("success"), t("postSubmittedReview"), [
+        { text: t("ok"), onPress: () => router.back() },
       ]);
     } catch (err) {
       console.error("Error creating post:", err);
-      setPostError("Failed to create post. Please try again.");
+      setPostError(t("failedToCreatePost"));
     } finally {
       setIsSubmitting(false);
     }
@@ -136,8 +142,8 @@ export default function CreatePostScreen() {
     <>
       <Stack.Screen
         options={{
-          title: "Create New Post",
-          headerBackTitle: "Chart",
+          title: t("createNewPost"),
+          headerBackTitle: t("chart"),
         }}
       />
 
@@ -154,7 +160,7 @@ export default function CreatePostScreen() {
                 color={Colors[colorScheme ?? "light"].tint}
               />
               <ThemedText style={styles.loadingText}>
-                Loading chart details...
+                {t("loadingChartDetails")}
               </ThemedText>
             </View>
           ) : error ? (
@@ -163,7 +169,7 @@ export default function CreatePostScreen() {
             </View>
           ) : !chart ? (
             <View style={styles.errorContainer}>
-              <ThemedText style={styles.errorText}>Chart not found</ThemedText>
+              <ThemedText style={styles.errorText}>{t("chartNotFound")}</ThemedText>
             </View>
           ) : (
             <>
@@ -261,7 +267,7 @@ export default function CreatePostScreen() {
               <View style={styles.formSection}>
                 {/* Post Content */}
                 <ThemedText style={styles.formLabel}>
-                  Share your thoughts
+                  {t("shareYourThoughts")}
                 </ThemedText>
                 <TextInput
                   style={[
@@ -272,7 +278,7 @@ export default function CreatePostScreen() {
                         Colors[colorScheme ?? "light"].tabIconSelected,
                     },
                   ]}
-                  placeholder="What do you think about this chart?"
+                  placeholder={t("whatDoYouThinkAboutChart")}
                   placeholderTextColor={
                     Colors[colorScheme ?? "light"].text + "80"
                   }
@@ -290,7 +296,7 @@ export default function CreatePostScreen() {
 
                 {/* Tags Selection */}
                 <ThemedText style={styles.formLabel}>
-                  Add Tags (Optional)
+                  {t("addTagsOptional")}
                 </ThemedText>
                 <View style={styles.tagsContainer}>
                   {AVAILABLE_TAGS.map((tag) => (
@@ -311,7 +317,7 @@ export default function CreatePostScreen() {
                             : { color: Colors[colorScheme ?? "light"].text },
                         ]}
                       >
-                        {tag}
+                        {getTagDisplay(tag)}
                       </ThemedText>
                     </TouchableOpacity>
                   ))}
@@ -353,7 +359,7 @@ export default function CreatePostScreen() {
             style={styles.cancelButton}
             onPress={() => router.back()}
           >
-            <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
+            <ThemedText style={styles.cancelButtonText}>{t("cancel")}</ThemedText>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -370,7 +376,7 @@ export default function CreatePostScreen() {
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <ThemedText style={styles.submitButtonText}>
-                Submit for Review
+                {t("submitForReview")}
               </ThemedText>
             )}
           </TouchableOpacity>

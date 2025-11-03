@@ -1,23 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
-  Alert, 
-  ActivityIndicator,
-  ScrollView,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
-import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useThemeColor } from '@/hooks/useThemeColor';
 import { AuthAPI } from '@/api/client';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { useLocalization } from '@/context/LocalizationContext';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
+  const { t } = useLocalization();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,7 +40,7 @@ export default function ChangePasswordScreen() {
     
     // Password length at least 8 characters
     if (value.length < 8) {
-      setNewPasswordError('Password must be at least 8 characters long');
+      setNewPasswordError(t('passwordLengthError'));
       return false;
     }
     
@@ -51,7 +53,7 @@ export default function ChangePasswordScreen() {
     
     // Check if passwords match
     if (value !== newPassword) {
-      setConfirmPasswordError('Passwords do not match');
+      setConfirmPasswordError(t('passwordsDoNotMatch'));
       return false;
     }
     
@@ -61,7 +63,7 @@ export default function ChangePasswordScreen() {
   const handleChangePassword = async () => {
     // Validate inputs
     if (!currentPassword) {
-      setCurrentPasswordError('Current password is required');
+      setCurrentPasswordError(t('currentPasswordRequired'));
       return;
     }
     
@@ -81,24 +83,24 @@ export default function ChangePasswordScreen() {
       });
       
       Alert.alert(
-        'Success',
-        'Password changed successfully',
+        t('success'),
+        t('passwordChangedSuccess'),
         [
           {
-            text: 'OK',
+            text: t('ok'),
             onPress: () => router.back(),
           },
         ]
       );
     } catch (error: any) {
       console.error('Password change error:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to change password';
+      const errorMessage = error.response?.data?.message || t('failedToChangePassword');
       
       // Check for incorrect current password error
       if (errorMessage.includes('current password is incorrect')) {
-        setCurrentPasswordError('Current password is incorrect');
+        setCurrentPasswordError(t('currentPasswordIncorrect'));
       } else {
-        Alert.alert('Error', errorMessage);
+        Alert.alert(t('error'), errorMessage);
       }
     } finally {
       setLoading(false);
@@ -115,11 +117,11 @@ export default function ChangePasswordScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#AE75DA" />
           </TouchableOpacity>
-          <ThemedText style={styles.title}>Change Password</ThemedText>
+          <ThemedText style={styles.title}>{t('changePassword')}</ThemedText>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
-          <ThemedText style={styles.sectionTitle}>Update Your Password</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{t('updateYourPassword')}</ThemedText>
           
           {/* Current Password */}
           <View style={styles.inputContainer}>
@@ -136,7 +138,7 @@ export default function ChangePasswordScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="Current Password"
+              placeholder={t('currentPassword')}
               placeholderTextColor={iconColor}
               value={currentPassword}
               onChangeText={(text) => {
@@ -160,7 +162,7 @@ export default function ChangePasswordScreen() {
             <ThemedText style={styles.errorText}>{currentPasswordError}</ThemedText>
           ) : (
             <ThemedText style={styles.helperText}>
-              Enter your current password for verification
+              {t('currentPasswordHelperText')}
             </ThemedText>
           )}
 
@@ -179,7 +181,7 @@ export default function ChangePasswordScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="New Password"
+              placeholder={t('newPassword')}
               placeholderTextColor={iconColor}
               value={newPassword}
               onChangeText={(text) => {
@@ -203,7 +205,7 @@ export default function ChangePasswordScreen() {
             <ThemedText style={styles.errorText}>{newPasswordError}</ThemedText>
           ) : (
             <ThemedText style={styles.helperText}>
-              Password must be at least 8 characters long
+              {t('passwordLengthHelperText')}
             </ThemedText>
           )}
 
@@ -222,7 +224,7 @@ export default function ChangePasswordScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="Confirm New Password"
+              placeholder={t('confirmNewPassword')}
               placeholderTextColor={iconColor}
               value={confirmPassword}
               onChangeText={(text) => {
@@ -246,7 +248,7 @@ export default function ChangePasswordScreen() {
             <ThemedText style={styles.errorText}>{confirmPasswordError}</ThemedText>
           ) : (
             <ThemedText style={styles.helperText}>
-              Re-enter your new password to confirm
+              {t('confirmPasswordHelperText')}
             </ThemedText>
           )}
 
@@ -265,7 +267,7 @@ export default function ChangePasswordScreen() {
               <ActivityIndicator color="#fff" />
             ) : (
               <ThemedText style={styles.saveButtonText}>
-                Change Password
+                {t('changePassword')}
               </ThemedText>
             )}
           </TouchableOpacity>

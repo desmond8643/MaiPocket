@@ -11,22 +11,24 @@ import {
 
 import { ChartAPI } from "@/api/client";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { useShowAds } from "@/hooks/useShowAds";
-import { Chart } from "@/types/chart";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
 } from "@/components/InterstitialAdComponent";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Colors } from "@/constants/Colors";
+import { useLocalization } from "@/context/LocalizationContext";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { useShowAds } from "@/hooks/useShowAds";
+import { Chart } from "@/types/chart";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ChartSearchScreen() {
   const { query } = useLocalSearchParams();
   const colorScheme = useColorScheme();
+  const { t } = useLocalization();
   const [charts, setCharts] = useState<Chart[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export default function ChartSearchScreen() {
         setCharts(data);
       } catch (err) {
         console.error(`Error searching charts for "${query}":`, err);
-        setError("Failed to search charts. Please try again.");
+        setError(t("failedToSearchCharts"));
       } finally {
         setLoading(false);
       }
@@ -145,7 +147,7 @@ export default function ChartSearchScreen() {
               {item.title}
             </ThemedText>
             <ThemedText numberOfLines={1} style={styles.artistText}>
-              {item.artist || "Unknown Artist"}
+              {item.artist || t("unknownArtist")}
             </ThemedText>
           </View>
         </View>
@@ -170,7 +172,7 @@ export default function ChartSearchScreen() {
               </View>
               <View style={styles.standardLabel}>
                 <ThemedText style={styles.standardLabelText}>
-                  スタンダード
+                  {t("standard")}
                 </ThemedText>
               </View>
             </View>
@@ -234,8 +236,8 @@ export default function ChartSearchScreen() {
       {/* <SafeAreaView style={styles.container}> */}
       <Stack.Screen
         options={{
-          title: `Search: ${query}`,
-          headerBackTitle: "Categories",
+          title: t("searchWithQuery", { query: query }),
+          headerBackButtonDisplayMode: "minimal",
         }}
       />
 
@@ -246,7 +248,7 @@ export default function ChartSearchScreen() {
             color={Colors[colorScheme ?? "light"].tint}
           />
           <ThemedText style={styles.loadingText}>
-            Searching charts...
+            {t("searchingCharts")}
           </ThemedText>
         </ThemedView>
       ) : error ? (
@@ -269,19 +271,19 @@ export default function ChartSearchScreen() {
                 })
                 .catch((err) => {
                   console.error(`Error searching charts for "${query}":`, err);
-                  setError("Failed to search charts. Please try again.");
+                  setError(t("failedToSearchCharts"));
                   setLoading(false);
                 });
             }}
           >
-            <ThemedText style={styles.retryButtonText}>Retry</ThemedText>
+            <ThemedText style={styles.retryButtonText}>{t("retry")}</ThemedText>
           </TouchableOpacity>
         </ThemedView>
       ) : charts.length === 0 ? (
         <ThemedView style={styles.emptyContainer}>
           <IconSymbol name="magnifyingglass" size={60} color="#CCCCCC" />
           <ThemedText style={styles.emptyText}>
-            No results found for "{query}"
+            {t("noResultsFound", { query: query })}
           </ThemedText>
         </ThemedView>
       ) : (
@@ -293,7 +295,7 @@ export default function ChartSearchScreen() {
           contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]} // Add extra padding for ad
           ListHeaderComponent={
             <ThemedText style={styles.resultsCount}>
-              {charts.length} {charts.length === 1 ? "result" : "results"} found
+              {t("resultsCount", { count: charts.length })}
             </ThemedText>
           }
         />

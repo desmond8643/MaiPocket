@@ -1,23 +1,25 @@
 import { AuthAPI } from '@/api/client';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useLocalization } from '@/context/LocalizationContext';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function DeleteAccountScreen() {
   const router = useRouter();
+  const { t } = useLocalization();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,7 +37,7 @@ export default function DeleteAccountScreen() {
     
     // Check if passwords match
     if (value !== password) {
-      setConfirmPasswordError('Passwords do not match');
+      setConfirmPasswordError(t('passwordsDoNotMatch'));
       return false;
     }
     
@@ -45,7 +47,7 @@ export default function DeleteAccountScreen() {
   const handleDeleteAccount = async () => {
     // Validate inputs
     if (!password) {
-      setPasswordError('Password is required');
+      setPasswordError(t('passwordRequired'));
       return;
     }
     
@@ -57,15 +59,15 @@ export default function DeleteAccountScreen() {
     
     // Show a final confirmation alert
     Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account? This action cannot be undone.',
+      t('deleteAccount'),
+      t('deleteAccountConfirmation'),
       [
         {
-          text: 'Cancel',
+          text: t('cancel'),
           style: 'cancel',
         },
         {
-          text: 'Delete',
+          text: t('delete'),
           style: 'destructive',
           onPress: performDelete,
         },
@@ -80,24 +82,24 @@ export default function DeleteAccountScreen() {
       await AuthAPI.deleteAccount(password);
       
       Alert.alert(
-        'Account Deleted',
-        'Your account has been successfully deleted.',
+        t('accountDeleted'),
+        t('accountDeletedMessage'),
         [
           {
-            text: 'OK',
+            text: t('ok'),
             onPress: () => router.replace('/'),
           },
         ]
       );
     } catch (error: any) {
       console.error('Delete account error:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to delete account';
+      const errorMessage = error.response?.data?.message || t('failedToDeleteAccount');
       
       // Check for incorrect password error
       if (errorMessage.includes('Password is incorrect')) {
-        setPasswordError('Password is incorrect');
+        setPasswordError(t('passwordIncorrect'));
       } else {
-        Alert.alert('Error', errorMessage);
+        Alert.alert(t('error'), errorMessage);
       }
     } finally {
       setLoading(false);
@@ -114,12 +116,12 @@ export default function DeleteAccountScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#AE75DA" />
           </TouchableOpacity>
-          <ThemedText style={styles.title}>Delete Account</ThemedText>
+          <ThemedText style={styles.title}>{t('deleteAccount')}</ThemedText>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
           <ThemedText style={styles.warningText}>
-            Warning: This action is permanent and cannot be undone. All your data will be permanently deleted.
+            {t('deleteAccountWarning')}
           </ThemedText>
           
           {/* Password */}
@@ -137,7 +139,7 @@ export default function DeleteAccountScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="Enter your password"
+              placeholder={t('enterPassword')}
               placeholderTextColor={iconColor}
               value={password}
               onChangeText={(text) => {
@@ -161,7 +163,7 @@ export default function DeleteAccountScreen() {
             <ThemedText style={styles.errorText}>{passwordError}</ThemedText>
           ) : (
             <ThemedText style={styles.helperText}>
-              Enter your current password for verification
+              {t('enterPasswordVerification')}
             </ThemedText>
           )}
 
@@ -180,7 +182,7 @@ export default function DeleteAccountScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="Confirm your password"
+              placeholder={t('confirmPassword')}
               placeholderTextColor={iconColor}
               value={confirmPassword}
               onChangeText={(text) => {
@@ -204,7 +206,7 @@ export default function DeleteAccountScreen() {
             <ThemedText style={styles.errorText}>{confirmPasswordError}</ThemedText>
           ) : (
             <ThemedText style={styles.helperText}>
-              Re-enter your password to confirm
+              {t('reenterPassword')}
             </ThemedText>
           )}
 
@@ -223,7 +225,7 @@ export default function DeleteAccountScreen() {
               <ActivityIndicator color="#fff" />
             ) : (
               <ThemedText style={styles.deleteButtonText}>
-                Delete My Account
+                {t('deleteMyAccount')}
               </ThemedText>
             )}
           </TouchableOpacity>

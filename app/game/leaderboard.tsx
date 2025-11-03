@@ -1,21 +1,22 @@
-import { ThemedView } from "@/components/ThemedView";
+import { getLeaderboard } from "@/api/client";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { ThemedText } from "@/components/ThemedText";
-import React, { useState, useEffect } from "react";
+import { ThemedView } from "@/components/ThemedView";
+import { useAds } from "@/context/AdContext";
+import { useLocalization } from "@/context/LocalizationContext";
+import { LeaderboardEntry } from "@/types/game";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  FlatList,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
   View,
-  ActivityIndicator,
 } from "react-native";
-import { getLeaderboard } from "@/api/client";
-import { LeaderboardEntry } from "@/types/game";
-import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
-import { useAds } from "@/context/AdContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LeaderboardScreen() {
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ export default function LeaderboardScreen() {
   const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();
   const showActualAds = !adsRemoved && !temporaryAdRemoval;
+  const { t } = useLocalization();
 
   useEffect(() => {
     loadLeaderboard();
@@ -97,7 +99,7 @@ export default function LeaderboardScreen() {
           <Ionicons name="arrow-back" size={24} color="#AE75DA" />
         </TouchableOpacity>
         <ThemedText style={{ fontSize: 24, fontWeight: "bold" }}>
-          Leaderboards
+          {t("leaderboards")}
         </ThemedText>
       </View>
 
@@ -115,7 +117,7 @@ export default function LeaderboardScreen() {
               activeMode === "visual" && styles.activeTabButtonText,
             ]}
           >
-            Visual Mode
+            {t("visualMode")}
           </ThemedText>
         </TouchableOpacity>
         <TouchableOpacity
@@ -131,22 +133,22 @@ export default function LeaderboardScreen() {
               activeMode === "audio" && styles.activeTabButtonText,
             ]}
           >
-            Audio Mode
+            {t("audioMode")}
           </ThemedText>
         </TouchableOpacity>
       </View>
       {!isLoggedIn && (
         <TouchableOpacity style={styles.loginPrompt} onPress={navigateToLogin}>
           <ThemedText style={styles.loginPromptText}>
-            Login to compete in the leaderboard
+            {t("loginToCompete")}
           </ThemedText>
           <Ionicons name="arrow-forward" size={18} color="#696FC7" />
         </TouchableOpacity>
       )}
       <View style={styles.leaderboardHeader}>
         <ThemedText style={styles.headerRankText}></ThemedText>
-        <ThemedText style={styles.headerUsernameText}>Player</ThemedText>
-        <ThemedText style={styles.headerScoreText}>Score</ThemedText>
+        <ThemedText style={styles.headerUsernameText}>{t("player")}</ThemedText>
+        <ThemedText style={styles.headerScoreText}>{t("score")}</ThemedText>
       </View>
       {loading ? (
         <View style={styles.loadingContainer}>
@@ -159,7 +161,7 @@ export default function LeaderboardScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
-            <ThemedText style={styles.emptyText}>No scores yet</ThemedText>
+            <ThemedText style={styles.emptyText}>{t("noScoresYet")}</ThemedText>
           }
         />
       )}

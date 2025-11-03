@@ -1,25 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
-  Alert, 
-  ActivityIndicator,
-  ScrollView,
-} from 'react-native';
-import { useRouter } from 'expo-router';
+import { AuthAPI } from '@/api/client';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { useLocalization } from '@/context/LocalizationContext';
+import { useThemeColor } from '@/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
-import { View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { AuthAPI } from '@/api/client';
-import { useFocusEffect } from 'expo-router';
 
 export default function EditProfileScreen() {
   const router = useRouter();
+  const { t } = useLocalization();
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [originalUsername, setOriginalUsername] = useState('');
@@ -42,7 +43,7 @@ export default function EditProfileScreen() {
     try {
       const isLoggedIn = await AuthAPI.isLoggedIn();
       if (!isLoggedIn) {
-        Alert.alert('Error', 'You must be logged in to edit your profile');
+        Alert.alert(t('error'), t('mustBeLoggedIn'));
         router.replace('/auth/login');
         return;
       }
@@ -54,7 +55,7 @@ export default function EditProfileScreen() {
       setOriginalDisplayName(userData.displayName);
     } catch (error) {
       console.error('Error loading user data:', error);
-      Alert.alert('Error', 'Failed to load profile information');
+      Alert.alert(t('error'), t('failedToLoadProfile'));
     } finally {
       setLoading(false);
     }
@@ -66,14 +67,14 @@ export default function EditProfileScreen() {
     
     // Username length between 3 and 20 characters
     if (value.length < 3 || value.length > 20) {
-      setUsernameError('Username must be between 3 and 20 characters');
+      setUsernameError(t('usernameLengthError'));
       return false;
     }
     
     // Only allow letters, numbers, underscores, and hyphens
     const usernameRegex = /^[a-zA-Z0-9_-]+$/;
     if (!usernameRegex.test(value)) {
-      setUsernameError('Username can only contain letters, numbers, underscores, and hyphens');
+      setUsernameError(t('usernameCharactersError'));
       return false;
     }
     
@@ -86,15 +87,14 @@ export default function EditProfileScreen() {
     
     // Display name length between 1 and 30 characters
     if (value.length < 1 || value.length > 30) {
-      setDisplayNameError('Display name must be between 1 and 30 characters');
+      setDisplayNameError(t('displayNameLengthError'));
       return false;
     }
     
     // Filter out offensive words or patterns if needed
-    // This could be enhanced with a more comprehensive profanity filter
     const offensiveWords = ['admin', 'moderator', 'official']; // Example list
     if (offensiveWords.some(word => value.toLowerCase().includes(word))) {
-      setDisplayNameError('Display name contains reserved or inappropriate words');
+      setDisplayNameError(t('displayNameReservedError'));
       return false;
     }
     
@@ -115,7 +115,7 @@ export default function EditProfileScreen() {
     try {
       // Only update if values have changed
       if (username === originalUsername && displayName === originalDisplayName) {
-        Alert.alert('Info', 'No changes were made to your profile');
+        Alert.alert(t('info'), t('noProfileChanges'));
         router.back();
         return;
       }
@@ -129,24 +129,24 @@ export default function EditProfileScreen() {
       await AsyncStorage.setItem('userData', JSON.stringify(updatedData));
       
       Alert.alert(
-        'Success',
-        'Profile updated successfully',
+        t('success'),
+        t('profileUpdatedSuccess'),
         [
           {
-            text: 'OK',
+            text: t('ok'),
             onPress: () => router.back(),
           },
         ]
       );
     } catch (error: any) {
       console.error('Profile update error:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to update profile';
+      const errorMessage = error.response?.data?.message || t('failedToUpdateProfile');
       
       // Check for duplicate username error
       if (errorMessage.includes('username already exists')) {
-        setUsernameError('Username is already taken');
+        setUsernameError(t('usernameAlreadyTaken'));
       } else {
-        Alert.alert('Error', errorMessage);
+        Alert.alert(t('error'), errorMessage);
       }
     } finally {
       setUpdating(false);
@@ -171,11 +171,11 @@ export default function EditProfileScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#AE75DA" />
           </TouchableOpacity>
-          <ThemedText style={styles.title}>Edit Profile</ThemedText>
+          <ThemedText style={styles.title}>{t('editProfile')}</ThemedText>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
-          <ThemedText style={styles.sectionTitle}>Account Information</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{t('accountInformation')}</ThemedText>
           
           <View style={styles.inputContainer}>
             <Ionicons
@@ -191,7 +191,7 @@ export default function EditProfileScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="Username"
+              placeholder={t('username')}
               placeholderTextColor={iconColor}
               value={username}
               onChangeText={(text) => {
@@ -205,7 +205,7 @@ export default function EditProfileScreen() {
             <ThemedText style={styles.errorText}>{usernameError}</ThemedText>
           ) : (
             <ThemedText style={styles.helperText}>
-              Username can only contain letters, numbers, underscores, and hyphens
+              {t('usernameHelperText')}
             </ThemedText>
           )}
 
@@ -223,7 +223,7 @@ export default function EditProfileScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="Display Name"
+              placeholder={t('displayName')}
               placeholderTextColor={iconColor}
               value={displayName}
               onChangeText={(text) => {
@@ -236,7 +236,7 @@ export default function EditProfileScreen() {
             <ThemedText style={styles.errorText}>{displayNameError}</ThemedText>
           ) : (
             <ThemedText style={styles.helperText}>
-              Display name is visible to other users
+              {t('displayNameHelperText')}
             </ThemedText>
           )}
 
@@ -249,7 +249,7 @@ export default function EditProfileScreen() {
               <ActivityIndicator color="#fff" />
             ) : (
               <ThemedText style={styles.saveButtonText}>
-                Save Changes
+                {t('saveChanges')}
               </ThemedText>
             )}
           </TouchableOpacity>

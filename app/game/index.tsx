@@ -1,23 +1,7 @@
-import { ThemedView } from "@/components/ThemedView";
-import { ThemedText } from "@/components/ThemedText";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  ActivityIndicator,
-  ScrollView,
-  Modal,
-} from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
-import { UserScore } from "@/types/game";
-import { Ionicons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useAds } from "@/context/AdContext";
 import {
   fetchDataImmediately,
@@ -25,7 +9,23 @@ import {
   useGameScores,
   useThreeLifeDayPassStatus,
 } from "@/context/GameQueryProvider";
+import { useLocalization } from "@/context/LocalizationContext";
+import { UserScore } from "@/types/game";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
+import { router } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const formatTimeRemaining = (milliseconds: number) => {
   const totalSeconds = Math.floor(milliseconds / 1000);
@@ -41,6 +41,7 @@ const formatTimeRemaining = (milliseconds: number) => {
 
 export default function GameHomeScreen() {
   const [user, setUser] = useState(null);
+  const { t } = useLocalization();
   const [localScores, setLocalScores] = useState({
     visual: { highScore: 0, currentStreak: 0 },
     audio: { highScore: 0, currentStreak: 0 },
@@ -151,7 +152,7 @@ export default function GameHomeScreen() {
             textAlign: "center",
           }}
         >
-          Song Quiz Game
+          {t("songQuizGame")}
         </ThemedText>
         <TouchableOpacity
           style={styles.trophyContainer}
@@ -161,7 +162,7 @@ export default function GameHomeScreen() {
         </TouchableOpacity>
       </View>
       <ThemedText style={styles.description}>
-        Test your maimai knowledge! Guess songs from thumbnails and audio.
+        {t("quizGameDescription")}
       </ThemedText>
       <ScrollView>
         <View style={styles.modeContainer}>
@@ -172,7 +173,7 @@ export default function GameHomeScreen() {
             <View
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <ThemedText style={styles.modeButtonText}>Visual Mode</ThemedText>
+              <ThemedText style={styles.modeButtonText}>{t("visualMode")}</ThemedText>
               {threeLifeDayPassStatus?.active && (
                 <View style={{ flexDirection: "row", gap: 1 }}>
                   <Ionicons name="heart" size={24} style={{ color: "red" }} />
@@ -182,11 +183,11 @@ export default function GameHomeScreen() {
               )}
             </View>
             <ThemedText style={styles.modeDescription}>
-              Guess songs from thumbnails and screenshots
+              {t("visualModeDescription")}
             </ThemedText>
             <View style={styles.scoreContainer}>
               <ThemedText style={styles.scoreText}>
-                High Score:{" "}
+                {t("highScore")}{" "}
                 {isLoading ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : user ? (
@@ -196,7 +197,7 @@ export default function GameHomeScreen() {
                 )}
               </ThemedText>
               <ThemedText style={styles.scoreText}>
-                Current Streak:{" "}
+                {t("currentStreak")}{" "}
                 {isLoading ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : user ? (
@@ -215,7 +216,7 @@ export default function GameHomeScreen() {
             <View
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <ThemedText style={styles.modeButtonText}>Audio Mode</ThemedText>
+              <ThemedText style={styles.modeButtonText}>{t("audioMode")}</ThemedText>
               {threeLifeDayPassStatus?.active && (
                 <View style={{ flexDirection: "row", gap: 1 }}>
                   <Ionicons name="heart" size={24} style={{ color: "red" }} />
@@ -225,11 +226,11 @@ export default function GameHomeScreen() {
               )}
             </View>
             <ThemedText style={styles.modeDescription}>
-              Guess songs from audio clips
+              {t("audioModeDescription")}
             </ThemedText>
             <View style={styles.scoreContainer}>
               <ThemedText style={styles.scoreText}>
-                High Score:{" "}
+                {t("highScore")}{" "}
                 {isLoading ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : user ? (
@@ -239,7 +240,7 @@ export default function GameHomeScreen() {
                 )}
               </ThemedText>
               <ThemedText style={styles.scoreText}>
-                Current Streak:{" "}
+                {t("currentStreak")}{" "}
                 {isLoading ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : user ? (
@@ -254,9 +255,9 @@ export default function GameHomeScreen() {
             style={[styles.modeButton, { backgroundColor: "#4CAF50" }]}
             onPress={() => router.push("/game/casual-play")}
           >
-            <ThemedText style={styles.modeButtonText}>Casual Mode</ThemedText>
+            <ThemedText style={styles.modeButtonText}>{t("casualMode")}</ThemedText>
             <ThemedText style={styles.modeDescription}>
-              Customize your play experience
+              {t("casualModeDescription")}
             </ThemedText>
           </TouchableOpacity>
           <TouchableOpacity
@@ -291,7 +292,7 @@ export default function GameHomeScreen() {
                 }}
               >
                 <ThemedText style={{ fontSize: 16, fontWeight: "bold" }}>
-                  Get 50 Crystals daily!
+                  {t("get50CrystalsDaily")}
                 </ThemedText>
               </View>
               <View
@@ -339,7 +340,7 @@ export default function GameHomeScreen() {
                   >
                     {user
                       ? `${crystalStatus.dailyCrystalsEarned} / ${crystalStatus.dailyLimit}`
-                      : "Login to earn crystals!"}
+                      : t("loginToEarnCrystals")}
                   </ThemedText>
                 </View>
               </View>
@@ -347,7 +348,7 @@ export default function GameHomeScreen() {
                 <ThemedText
                   style={{ fontSize: 12, color: "gray", marginTop: 10 }}
                 >
-                  Resets in: {formatTimeRemaining(crystalStatus.timeUntilReset)}
+                  {t("resetsIn")} {formatTimeRemaining(crystalStatus.timeUntilReset)}
                 </ThemedText>
               )}
             </View>
@@ -378,39 +379,39 @@ export default function GameHomeScreen() {
                 style={{ height: 50, width: 25, marginRight: 10 }}
               />
               <ThemedText style={styles.modalTitle}>
-                Daily Crystal Rewards
+                {t("dailyCrystalRewards")}
               </ThemedText>
               <View></View>
             </View>
 
             <View style={styles.modalContent}>
               <ThemedText style={styles.modalSubtitle}>
-                How to earn crystals:
+                {t("howToEarnCrystals")}
               </ThemedText>
 
               <View style={styles.rewardItem}>
                 <ThemedText style={styles.rewardLabel}>
-                  Visual Mode & Audio Mode:
+                  {t("visualAudioModes")}
                 </ThemedText>
                 <ThemedText style={styles.rewardDescription}>
-                  Get All Perfect (10/10) → 25 crystals
+                  {t("perfectReward")}
                 </ThemedText>
               </View>
 
               <View style={styles.rewardItem}>
-                <ThemedText style={styles.rewardLabel}>Casual Mode:</ThemedText>
+                <ThemedText style={styles.rewardLabel}>{t("casualMode")}:</ThemedText>
                 <ThemedText style={styles.rewardDescription}>
-                  Get at least 5/10 → 10 crystals
+                  {t("casualReward")}
                 </ThemedText>
               </View>
 
               <View style={styles.divider} />
 
               <ThemedText style={styles.limitText}>
-                Maximum 50 crystals can be earned daily
+                {t("maximumCrystalsDaily")}
               </ThemedText>
               <ThemedText style={styles.resetText}>
-                Resets daily at 4:00 AM (GMT+8)
+                {t("resetTimeGMT8")}
               </ThemedText>
             </View>
 
@@ -418,7 +419,7 @@ export default function GameHomeScreen() {
               style={styles.closeButton}
               onPress={() => setShowCrystalInfo(false)}
             >
-              <ThemedText style={styles.closeButtonText}>Got it</ThemedText>
+              <ThemedText style={styles.closeButtonText}>{t("gotIt")}</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </TouchableOpacity>

@@ -1,8 +1,10 @@
 import { AuthAPI, NotificationAPI } from "@/api/client";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useLocalization } from "@/context/LocalizationContext";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -14,13 +16,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Image } from "expo-image";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
+  const { t } = useLocalization();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -152,7 +154,7 @@ export default function ProfileScreen() {
                 >
                   <Ionicons name="person-outline" size={24} color="#AE75DA" />
                   <ThemedText style={styles.settingLabel}>
-                    Edit Profile
+                  {t("editProfile")}
                   </ThemedText>
                   <Ionicons name="chevron-forward" size={24} color="#999" />
                 </TouchableOpacity>
@@ -167,7 +169,7 @@ export default function ProfileScreen() {
                     color="#AE75DA"
                   />
                   <ThemedText style={styles.settingLabel}>
-                    Notifications
+                  {t("notifications")}
                   </ThemedText>
                   {notificationCount > 0 && (
                     <View style={styles.notificationBadge}>
@@ -184,7 +186,7 @@ export default function ProfileScreen() {
                 >
                   <Ionicons name="key-outline" size={24} color="#AE75DA" />
                   <ThemedText style={styles.settingLabel}>
-                    Change Password
+                  {t("changePassword")}
                   </ThemedText>
                   <Ionicons name="chevron-forward" size={24} color="#999" />
                 </TouchableOpacity>
@@ -195,7 +197,7 @@ export default function ProfileScreen() {
                 >
                   <Ionicons name="log-out-outline" size={24} color="#FF6B6B" />
                   <ThemedText style={[styles.settingLabel, styles.logoutText]}>
-                    Log Out
+                  {t("logout")}
                   </ThemedText>
                 </TouchableOpacity>
               </View>
@@ -207,19 +209,18 @@ export default function ProfileScreen() {
                 <Ionicons name="person" size={60} color="#AE75DA" />
               </View>
               <ThemedText style={styles.notLoggedInText}>
-                You're not logged in
+              {t("notLoggedIn")}
               </ThemedText>
               <TouchableOpacity
                 style={styles.loginButton}
                 onPress={navigateToLogin}
               >
                 <ThemedText style={styles.loginButtonText}>
-                  Log In / Register
+                {t("loginRegister")}
                 </ThemedText>
               </TouchableOpacity>
               <ThemedText style={styles.benefitsText}>
-                Create an account to track your progress, save favorites, and
-                more!
+              {t("accountBenefits")}
               </ThemedText>
               <View style={{ marginTop: 8 }}></View>
             </View>

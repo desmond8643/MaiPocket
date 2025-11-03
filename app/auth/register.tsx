@@ -1,25 +1,26 @@
+import { AuthAPI } from "@/api/client";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useLocalization } from "@/context/LocalizationContext";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  ScrollView,
   useColorScheme,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { ThemedView } from "@/components/ThemedView";
-import { ThemedText } from "@/components/ThemedText";
-import { Ionicons } from "@expo/vector-icons";
-import { AuthAPI } from "@/api/client";
-import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useThemeColor } from "@/hooks/useThemeColor";
-import { Checkbox } from "react-native-paper";
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { t } = useLocalization(); // Add this line
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -31,14 +32,11 @@ export default function RegisterScreen() {
   const [displayNameError, setDisplayNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-
-  // Add state for terms agreement after line 32
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsError, setTermsError] = useState("");
 
   const textColor = useThemeColor({}, "text");
   const iconColor = useThemeColor({}, "icon");
-
   const colorScheme = useColorScheme();
 
   const validateUsername = (value: string) => {
@@ -47,16 +45,14 @@ export default function RegisterScreen() {
 
     // Username length between 3 and 20 characters
     if (value.length < 3 || value.length > 20) {
-      setUsernameError("Username must be between 3 and 20 characters");
+      setUsernameError(t("usernameLengthError"));
       return false;
     }
 
     // Only allow letters, numbers, underscores, and hyphens
     const usernameRegex = /^[a-zA-Z0-9_-]+$/;
     if (!usernameRegex.test(value)) {
-      setUsernameError(
-        "Username can only contain letters, numbers, underscores, and hyphens"
-      );
+      setUsernameError(t("usernameCharactersError"));
       return false;
     }
 
@@ -69,16 +65,14 @@ export default function RegisterScreen() {
 
     // Display name length between 1 and 30 characters
     if (value.length < 1 || value.length > 30) {
-      setDisplayNameError("Display name must be between 1 and 30 characters");
+      setDisplayNameError(t("displayNameLengthError"));
       return false;
     }
 
     // Filter out offensive words or patterns if needed
     const offensiveWords = ["admin", "moderator", "official"]; // Example list
     if (offensiveWords.some((word) => value.toLowerCase().includes(word))) {
-      setDisplayNameError(
-        "Display name contains reserved or inappropriate words"
-      );
+      setDisplayNameError(t("displayNameOffensiveError"));
       return false;
     }
 
@@ -90,7 +84,7 @@ export default function RegisterScreen() {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
-      setEmailError("Please enter a valid email address");
+      setEmailError(t("invalidEmailError"));
       return false;
     }
 
@@ -101,12 +95,12 @@ export default function RegisterScreen() {
     setPasswordError("");
 
     if (value.length < 8) {
-      setPasswordError("Password must be at least 8 characters long");
+      setPasswordError(t("passwordLengthError"));
       return false;
     }
 
     if (value !== confirmValue) {
-      setPasswordError("Passwords do not match");
+      setPasswordError(t("passwordMatchError"));
       return false;
     }
 
@@ -122,7 +116,7 @@ export default function RegisterScreen() {
 
     // Validate terms acceptance
     if (!termsAccepted) {
-      setTermsError("You must agree to the Terms of Service");
+      setTermsError(t("termsRequiredError"));
       return;
     } else {
       setTermsError("");
@@ -147,11 +141,11 @@ export default function RegisterScreen() {
       });
 
       Alert.alert(
-        "Registration Successful",
-        "Please check your email for a verification code",
+        t("registrationSuccessful"),
+        t("checkEmailForVerification"),
         [
           {
-            text: "OK",
+            text: t("ok"),
             onPress: () =>
               router.push({
                 pathname: "/auth/verify",
@@ -163,15 +157,15 @@ export default function RegisterScreen() {
     } catch (error: any) {
       console.error("Registration error:", error);
       const errorMessage =
-        error.response?.data?.message || "An error occurred. Please try again.";
+        error.response?.data?.message || t("genericError");
 
       // Check for specific errors
       if (errorMessage.includes("username already exists")) {
-        setUsernameError("Username is already taken");
+        setUsernameError(t("usernameExistsError"));
       } else if (errorMessage.includes("email already exists")) {
-        setEmailError("Email address is already registered");
+        setEmailError(t("emailExistsError"));
       } else {
-        Alert.alert("Registration Failed", errorMessage);
+        Alert.alert(t("registrationFailed"), errorMessage);
       }
     } finally {
       setLoading(false);
@@ -188,7 +182,7 @@ export default function RegisterScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#AE75DA" />
           </TouchableOpacity>
-          <ThemedText style={styles.title}>Create Account</ThemedText>
+          <ThemedText style={styles.title}>{t("createAccount")}</ThemedText>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
@@ -206,7 +200,7 @@ export default function RegisterScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="Username (for login)"
+              placeholder={t("usernameForLogin")}
               placeholderTextColor={iconColor}
               value={username}
               onChangeText={(text) => {
@@ -220,8 +214,7 @@ export default function RegisterScreen() {
             <ThemedText style={styles.errorText}>{usernameError}</ThemedText>
           ) : (
             <ThemedText style={styles.helperText}>
-              Username can only contain letters, numbers, underscores, and
-              hyphens
+              {t("usernameHelperText")}
             </ThemedText>
           )}
 
@@ -239,7 +232,7 @@ export default function RegisterScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="Email Address"
+              placeholder={t("emailAddress")}
               placeholderTextColor={iconColor}
               value={email}
               onChangeText={(text) => {
@@ -268,7 +261,7 @@ export default function RegisterScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="Display Name (visible to others)"
+              placeholder={t("displayNameVisible")}
               placeholderTextColor={iconColor}
               value={displayName}
               onChangeText={(text) => {
@@ -281,7 +274,7 @@ export default function RegisterScreen() {
             <ThemedText style={styles.errorText}>{displayNameError}</ThemedText>
           ) : (
             <ThemedText style={styles.helperText}>
-              Display name is visible to other users
+              {t("displayNameHelperText")}
             </ThemedText>
           )}
 
@@ -299,7 +292,7 @@ export default function RegisterScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="Password"
+              placeholder={t("password")}
               placeholderTextColor={iconColor}
               secureTextEntry={!showPassword}
               value={password}
@@ -331,7 +324,7 @@ export default function RegisterScreen() {
                 color: textColor,
                 fontSize: 16,
               }}
-              placeholder="Confirm Password"
+              placeholder={t("confirmPassword")}
               placeholderTextColor={iconColor}
               secureTextEntry={!showPassword}
               value={confirmPassword}
@@ -362,9 +355,7 @@ export default function RegisterScreen() {
               </View>
             </TouchableOpacity>
             <ThemedText style={styles.termsText}>
-              I agree to the Terms of Service, which include a strict
-              no-tolerance policy for objectionable content and abusive
-              behavior. Violations may result in account termination.
+              {t("termsAgreement")}
             </ThemedText>
           </View>
           {termsError ? (
@@ -393,17 +384,17 @@ export default function RegisterScreen() {
               <ActivityIndicator color="#fff" />
             ) : (
               <ThemedText style={styles.registerButtonText}>
-                Create Account
+                {t("createAccount")}
               </ThemedText>
             )}
           </TouchableOpacity>
 
           <View style={styles.loginContainer}>
             <ThemedText style={styles.loginText}>
-              Already have an account?{" "}
+              {t("alreadyHaveAccount")}{" "}
             </ThemedText>
             <TouchableOpacity onPress={() => router.push("/auth/login")}>
-              <ThemedText style={styles.loginLink}>Sign In</ThemedText>
+              <ThemedText style={styles.loginLink}>{t("signIn")}</ThemedText>
             </TouchableOpacity>
           </View>
         </ScrollView>

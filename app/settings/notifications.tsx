@@ -1,16 +1,17 @@
 import { AuthAPI, NotificationAPI } from "@/api/client";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useLocalization } from "@/context/LocalizationContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    RefreshControl,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 interface Notification {
@@ -35,6 +36,7 @@ const BASE_URL = "https://maipocket-backend.vercel.app";
 
 export default function NotificationsScreen() {
   const router = useRouter();
+  const { t } = useLocalization();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -138,6 +140,32 @@ export default function NotificationsScreen() {
     const formattedDate =
       date.toLocaleDateString() + " " + date.toLocaleTimeString();
 
+    // Get translated title and message based on notification type
+    let translatedTitle = item.title;
+    let translatedMessage = item.message;
+
+    if (item.type === "post_approval") {
+      translatedTitle = t("postApprovedTitle");
+      translatedMessage = t("postApprovedMessage");
+    } else if (item.type === "post_rejection") {
+      translatedTitle = t("postRejectedTitle");
+      // Check if there's an admin comment in the message
+      const adminCommentMatch = item.message.match(/Reason: (.+)$/);
+      if (adminCommentMatch && adminCommentMatch[1]) {
+        translatedMessage = t("postRejectedWithReasonMessage", {
+          reason: adminCommentMatch[1],
+        });
+      } else {
+        translatedMessage = t("postRejectedMessage");
+      }
+    } else if (item.type === "system") {
+      translatedTitle = t("systemNotificationTitle");
+      translatedMessage = item.message; // Keep original message for system notifications
+    } else if (item.type === "user") {
+      translatedTitle = t("userNotificationTitle");
+      translatedMessage = item.message; // Keep original message for user notifications
+    }
+
     return (
       <TouchableOpacity
         style={[
@@ -157,9 +185,11 @@ export default function NotificationsScreen() {
         </View>
 
         <View style={styles.notificationContent}>
-          <ThemedText style={styles.notificationTitle}>{item.title}</ThemedText>
+          <ThemedText style={styles.notificationTitle}>
+            {translatedTitle}
+          </ThemedText>
           <ThemedText style={styles.notificationMessage}>
-            {item.message}
+            {translatedMessage}
           </ThemedText>
           <ThemedText style={styles.notificationDate}>
             {formattedDate}
@@ -175,13 +205,8 @@ export default function NotificationsScreen() {
     <ThemedView style={styles.container}>
       <Stack.Screen
         options={{
-          title: "Notifications",
-          headerBackTitle: "Profile",
-          //   headerRight: () => (
-          //     <TouchableOpacity onPress={markAllAsRead} style={styles.markAllButton}>
-          //       <ThemedText style={styles.markAllText}>Mark all as read</ThemedText>
-          //     </TouchableOpacity>
-          //   ),
+          title: t("notifications"),
+          headerBackButtonDisplayMode: "minimal",
         }}
       />
 
@@ -196,7 +221,9 @@ export default function NotificationsScreen() {
             size={64}
             color="#CCCCCC"
           />
-          <ThemedText style={styles.emptyText}>No notifications</ThemedText>
+          <ThemedText style={styles.emptyText}>
+            {t("noNotifications")}
+          </ThemedText>
         </View>
       ) : (
         <FlatList

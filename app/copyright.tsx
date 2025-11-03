@@ -1,24 +1,24 @@
 import { Stack } from "expo-router";
 import { ScrollView, StyleSheet } from "react-native";
-
+import { useLocalization } from "@/context/LocalizationContext";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
 export default function CopyrightScreen() {
+  const { t } = useLocalization();
+  
   return (
     <>
       <Stack.Screen
-        options={{ title: "Copyright Notice", headerBackTitle: "Home" }}
+        options={{ title: t("copyrightNotice"), headerBackTitle: t("home") }}
       />
       <ScrollView style={styles.container}>
         <ThemedView style={styles.contentContainer}>
           <ThemedText style={styles.paragraph}>
-            maimai でらっくす and maimai DX are trademarks of SEGA Interactive
-            Co., Ltd.
+            {t("copyrightText1")}
           </ThemedText>
           <ThemedText style={styles.paragraph}>
-            This app is not associated or officially connected with maimai
-            でらっくす or SEGA Interactive Co., Ltd.
+            {t("copyrightText2")}
           </ThemedText>
         </ThemedView>
       </ScrollView>

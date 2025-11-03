@@ -17,17 +17,18 @@ import {
 } from "react-native";
 
 import { AuthAPI, ChartAPI, UserAPI } from "@/api/client";
+import { FormattedText } from "@/components/FormattedText";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { YouTubePreview } from "@/components/YouTubePreview";
 import { Colors } from "@/constants/Colors";
+import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart, Post } from "@/types/chart";
 import { User } from "@/types/user";
 import { extractYouTubeVideoId } from "@/utils/youtubeUtils";
 import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
-import { FormattedText } from "@/components/FormattedText";
 
 export default function ChartDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -57,6 +58,7 @@ export default function ChartDetailScreen() {
     right: 0,
   });
   const [postsLoading, setPostsLoading] = useState(false);
+  const { t } = useLocalization();
 
   // Function to open YouTube search
   const openYouTubeSearch = () => {
@@ -152,9 +154,6 @@ export default function ChartDetailScreen() {
             masterDiff ? masterDiff.type : data.deluxe.difficulties[0].type
           );
         }
-
-        // You'd need to implement this API method
-        // fetchPosts(data._id, selectedType, selectedDifficulty);
       } catch (err) {
         console.error("Error fetching chart:", err);
         setError("Failed to load chart details");
@@ -209,10 +208,10 @@ export default function ChartDetailScreen() {
 
     // Show feedback based on platform
     if (Platform.OS === "android") {
-      ToastAndroid.show("Title copied to clipboard", ToastAndroid.SHORT);
+      ToastAndroid.show(t("titleCopied"), ToastAndroid.SHORT);
     } else {
       // For iOS, show an alert instead of visual feedback
-      Alert.alert("Copied", "Title copied to clipboard");
+      Alert.alert(t("copied"), t("titleCopied"));
     }
   };
 
@@ -278,10 +277,6 @@ export default function ChartDetailScreen() {
         // Redirect to login
         router.push({
           pathname: "/auth/login",
-          // params: {
-          //   returnTo: "charts",
-          //   chartId: chart._id,
-          // },
         });
       }
     } catch (err) {
@@ -332,32 +327,24 @@ export default function ChartDetailScreen() {
 
       if (isLoggedIn) {
         // Show flag reason selection modal
-        Alert.alert("Report Content", "Why are you reporting this content?", [
-          { text: "Cancel", style: "cancel" },
+        Alert.alert(t("reportContent"), t("reportContentQuestion"), [
+          { text: t("cancel"), style: "cancel" },
           {
-            text: "Inappropriate Content",
+            text: t("inappropriateContent"),
             onPress: () => submitFlag(postId, "inappropriate_content"),
           },
           {
-            text: "Spam",
+            text: t("spam"),
             onPress: () => submitFlag(postId, "spam"),
           },
           {
-            text: "Harassment",
+            text: t("harassment"),
             onPress: () => submitFlag(postId, "harassment"),
           },
           {
-            text: "Misinformation",
+            text: t("misinformation"),
             onPress: () => submitFlag(postId, "misinformation"),
           },
-          // {
-          //   text: "Copyright Violation",
-          //   onPress: () => submitFlag(postId, "copyright_violation"),
-          // },
-          // {
-          //   text: "Other...",
-          //   onPress: () => promptForCustomReason(postId),
-          // },
         ]);
       } else {
         // Redirect to login
@@ -377,34 +364,11 @@ export default function ChartDetailScreen() {
   ) => {
     try {
       await ChartAPI.flagPost(postId, reason, description);
-      Alert.alert(
-        "Content Reported",
-        "Thank you for helping keep our community safe. Our team will review this content."
-      );
+      Alert.alert(t("contentReported"), t("thankYouReport"));
     } catch (err) {
       console.error("Error submitting flag:", err);
       Alert.alert("Error", "Failed to report content. Please try again.");
     }
-  };
-
-  const promptForCustomReason = (postId: string) => {
-    Alert.prompt(
-      "Custom Reason",
-      "Please provide details about why you're reporting this content:",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Submit",
-          onPress: (description?: string) => {
-            if (description && description.trim()) {
-              submitFlag(postId, "other", description);
-            } else {
-              Alert.alert("Error", "Please provide a description");
-            }
-          },
-        },
-      ]
-    );
   };
 
   // Add this function to the ChartDetailScreen component near the other handler functions
@@ -414,27 +378,23 @@ export default function ChartDetailScreen() {
 
       if (isLoggedIn) {
         // Show confirmation dialog
-        Alert.alert(
-          "Block User",
-          "Are you sure you want to block this user? You won't see their posts and they won't be able to interact with you.",
-          [
-            { text: "Cancel", style: "cancel" },
-            {
-              text: "Block",
-              style: "destructive",
-              onPress: async () => {
-                await UserAPI.blockUser(userId);
-                // Remove all posts by this user from the current view
-                const blockedUserId = posts.find((p) => p.id === optionsPostId)
-                  ?.user?.id;
-                if (blockedUserId) {
-                  setPosts(posts.filter((p) => p.user?.id !== blockedUserId));
-                }
-                Alert.alert("Success", "User has been blocked");
-              },
+        Alert.alert(t("blockUserTitle"), t("blockUserConfirm"), [
+          { text: t("cancel"), style: "cancel" },
+          {
+            text: t("block"),
+            style: "destructive",
+            onPress: async () => {
+              await UserAPI.blockUser(userId);
+              // Remove all posts by this user from the current view
+              const blockedUserId = posts.find((p) => p.id === optionsPostId)
+                ?.user?.id;
+              if (blockedUserId) {
+                setPosts(posts.filter((p) => p.user?.id !== blockedUserId));
+              }
+              Alert.alert(t("success"), t("userBlocked"));
             },
-          ]
-        );
+          },
+        ]);
       } else {
         // Redirect to login
         router.push({
@@ -447,12 +407,17 @@ export default function ChartDetailScreen() {
     }
   };
 
+  // Add the tag translation function to your component
+  const getTagDisplay = (tag: string) => {
+    return t(`tag_${tag.replace(/\s+/g, "_")}`);
+  };
+
   return (
     <>
       <Stack.Screen
         options={{
           headerTitle: chart ? chart.title : "Chart Details",
-          headerBackTitle: "Charts",
+          headerBackTitle: t("charts"),
           headerRight: () => (
             <TouchableOpacity
               ref={headerBtnRef}
@@ -507,7 +472,9 @@ export default function ChartDetailScreen() {
                 size={22}
                 color={Colors[colorScheme ?? "light"].text}
               />
-              <ThemedText style={styles.dropdownText}>Copy Title</ThemedText>
+              <ThemedText style={styles.dropdownText}>
+                {t("copyTitle")}
+              </ThemedText>
             </TouchableOpacity>
 
             <View
@@ -527,56 +494,12 @@ export default function ChartDetailScreen() {
                 color={Colors[colorScheme ?? "light"].text}
               />
               <ThemedText style={styles.dropdownText}>
-                Search on YouTube
+                {t("searchYoutube")}
               </ThemedText>
             </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
-
-      {/* Post Options Dropdown */}
-      {/* <Modal
-        visible={showPostOptionsDropdown}
-        transparent={true}
-        animationType="none"
-        onRequestClose={() => setShowPostOptionsDropdown(false)}
-      >
-        <TouchableOpacity
-          style={[
-            styles.modalOverlay,
-            { backgroundColor: "rgba(0, 0, 0, 0.2)" },
-          ]}
-          activeOpacity={1}
-          onPress={() => setShowPostOptionsDropdown(false)}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[
-              styles.dropdownContainer,
-              {
-                backgroundColor: Colors[colorScheme ?? "light"].background,
-                borderColor: Colors[colorScheme ?? "light"].background,
-                position: "absolute",
-                top: postOptionsPosition.top,
-                right: postOptionsPosition.right,
-              },
-            ]}
-          >
-            <TouchableOpacity
-              style={styles.dropdownItem}
-              onPress={() => {
-                setShowPostOptionsDropdown(false);
-                handleDeletePost(optionsPostId as string);
-              }}
-            >
-              <MaterialIcons name="delete" size={22} color="#E53935" />
-              <ThemedText style={[styles.dropdownText, { color: "#E53935" }]}>
-                Delete Post
-              </ThemedText>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal> */}
       <Modal
         visible={showPostOptionsDropdown}
         transparent={true}
@@ -619,7 +542,7 @@ export default function ChartDetailScreen() {
                   <ThemedText
                     style={[styles.dropdownText, { color: "#E53935" }]}
                   >
-                    Delete Post
+                    {t("deletePost")}
                   </ThemedText>
                 </TouchableOpacity>
               )}
@@ -642,7 +565,7 @@ export default function ChartDetailScreen() {
                     color="#888888"
                   />
                   <ThemedText style={styles.dropdownText}>
-                    Hide this post
+                    {t("hidePost")}
                   </ThemedText>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -654,7 +577,7 @@ export default function ChartDetailScreen() {
                 >
                   <MaterialIcons name="flag" size={22} color="#E53935" />
                   <ThemedText style={[styles.dropdownText]}>
-                    Report Content
+                    {t("reportContent")}
                   </ThemedText>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -670,7 +593,7 @@ export default function ChartDetailScreen() {
                 >
                   <MaterialIcons name="block" size={22} color="#E53935" />
                   <ThemedText style={[styles.dropdownText]}>
-                    Block User
+                    {t("blockUser")}
                   </ThemedText>
                 </TouchableOpacity>
               </>
@@ -687,7 +610,7 @@ export default function ChartDetailScreen() {
               color={Colors[colorScheme ?? "light"].tint}
             />
             <ThemedText style={styles.loadingText}>
-              Loading chart details...
+              {t("loadingChartDetails")}
             </ThemedText>
           </ThemedView>
         ) : error ? (
@@ -823,7 +746,9 @@ export default function ChartDetailScreen() {
             {/* Posts Section */}
             <View style={styles.postsSection}>
               <View style={styles.postsSectionHeader}>
-                <ThemedText style={styles.sectionTitle}>Posts</ThemedText>
+                <ThemedText style={styles.sectionTitle}>
+                  {t("posts")}
+                </ThemedText>
                 <TouchableOpacity
                   style={styles.addPostButton}
                   onPress={async () => {
@@ -853,7 +778,7 @@ export default function ChartDetailScreen() {
                 >
                   <MaterialIcons name="add" size={18} color="#FFFFFF" />
                   <ThemedText style={styles.addPostButtonText}>
-                    Add Post
+                    {t("addPost")}
                   </ThemedText>
                 </TouchableOpacity>
               </View>
@@ -865,7 +790,7 @@ export default function ChartDetailScreen() {
                     color={Colors[colorScheme ?? "light"].tint}
                   />
                   <ThemedText style={styles.loadingText}>
-                    Loading posts...
+                    {t("loadingPosts")}
                   </ThemedText>
                 </View>
               ) : posts.length > 0 ? (
@@ -887,13 +812,6 @@ export default function ChartDetailScreen() {
                           <View style={styles.userInfo}>
                             <View style={styles.avatarContainer}>
                               {
-                                /* {post.userId?.avatar ? (
-                                <Image
-                                  source={{ uri: post.userId.avatar }}
-                                  style={styles.avatarImage}
-                                  contentFit="cover"
-                                />
-                              ) : */
                                 <View style={styles.defaultAvatarContainer}>
                                   <Ionicons
                                     name="person"
@@ -927,8 +845,6 @@ export default function ChartDetailScreen() {
                               </ThemedText>
                             </View>
                           </View>
-
-                          {/* {user && post.user.id === user._id && ( */}
                           {user && (
                             <TouchableOpacity
                               onPress={(event) =>
@@ -944,13 +860,6 @@ export default function ChartDetailScreen() {
                             </TouchableOpacity>
                           )}
                         </View>
-
-                        {/* <ThemedText
-                          style={styles.postContent}
-                          selectable={true}
-                        >
-                          {post.content}
-                        </ThemedText> */}
                         <FormattedText
                           text={post.content}
                           style={[
@@ -979,7 +888,7 @@ export default function ChartDetailScreen() {
                             {post.tags.map((tag, i) => (
                               <View key={i} style={styles.tag}>
                                 <ThemedText style={styles.tagText}>
-                                  {tag}
+                                  {getTagDisplay(tag)}
                                 </ThemedText>
                               </View>
                             ))}
@@ -1035,7 +944,7 @@ export default function ChartDetailScreen() {
                 </View>
               ) : (
                 <ThemedText style={styles.noPosts}>
-                  No posts yet for this difficulty
+                  {t("noPostsYet")}
                 </ThemedText>
               )}
             </View>

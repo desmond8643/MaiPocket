@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -12,6 +13,7 @@ export default function SocialPreferencesScreen() {
   const router = useRouter();
   const [preference, setPreference] = useState("facebook");
   const colorScheme = useColorScheme();
+  const { t } = useLocalization();
 
   useEffect(() => {
     loadPreference();
@@ -51,14 +53,13 @@ export default function SocialPreferencesScreen() {
               style={{ marginRight: 15 }}
             />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>Social Preferences</ThemedText>
+          <ThemedText style={styles.headerTitle}>{t("socialPreferences")}</ThemedText>
         </View>
 
         <View style={styles.content}>
-          <ThemedText style={styles.title}>Choose Social Media Feed</ThemedText>
+          <ThemedText style={styles.title}>{t("chooseSocialMediaFeed")}</ThemedText>
           <ThemedText style={styles.description}>
-            Select which social media feed you would like to see on the home
-            page.
+            {t("selectSocialMediaDescription")}
           </ThemedText>
 
           <View style={styles.optionsContainer}>
@@ -80,7 +81,7 @@ export default function SocialPreferencesScreen() {
                   preference === "facebook" && styles.selectedOptionText,
                 ]}
               >
-                Facebook
+                {t("facebook")}
               </ThemedText>
               {preference === "facebook" && (
                 <Ionicons name="checkmark" size={24} color="#FFFFFF" />
@@ -111,7 +112,7 @@ export default function SocialPreferencesScreen() {
                   preference === "twitter" && styles.selectedOptionText,
                 ]}
               >
-                X (Twitter)
+                {t("xTwitter")}
               </ThemedText>
               {preference === "twitter" && (
                 <Ionicons name="checkmark" size={24} color="#FFFFFF" />
@@ -136,7 +137,7 @@ export default function SocialPreferencesScreen() {
                   preference === "off" && styles.selectedOptionText,
                 ]}
               >
-                Don't show feeds
+                {t("dontShowFeeds")}
               </ThemedText>
               {preference === "off" && (
                 <Ionicons name="checkmark" size={24} color="#FFFFFF" />

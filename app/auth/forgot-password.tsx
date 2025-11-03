@@ -1,22 +1,24 @@
+import { AuthAPI } from "@/api/client";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useLocalization } from "@/context/LocalizationContext";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { ThemedView } from "@/components/ThemedView";
-import { ThemedText } from "@/components/ThemedText";
-import { Ionicons } from "@expo/vector-icons";
-import { AuthAPI } from "@/api/client";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const { t } = useLocalization();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const textColor = useThemeColor({}, "text");
@@ -24,7 +26,7 @@ export default function ForgotPasswordScreen() {
 
   const handleSendCode = async () => {
     if (!email) {
-      Alert.alert("Error", "Please enter your email address");
+      Alert.alert(t("error"), t("enterEmailAddress"));
       return;
     }
 
@@ -41,9 +43,8 @@ export default function ForgotPasswordScreen() {
     } catch (error: any) {
       console.error("Error:", error);
       Alert.alert(
-        "Error",
-        error.response?.data?.message ||
-          "Failed to send verification code. Please try again."
+        t("error"),
+        error.response?.data?.message || t("failedToSendCode")
       );
     } finally {
       setLoading(false);
@@ -60,12 +61,11 @@ export default function ForgotPasswordScreen() {
           >
             <Ionicons name="arrow-back" size={24} color="#AE75DA" />
           </TouchableOpacity>
-          <ThemedText style={styles.title}>Forgot Password</ThemedText>
+          <ThemedText style={styles.title}>{t("forgotPassword")}</ThemedText>
         </View>
 
         <ThemedText style={styles.subtitle}>
-          Enter your email address and we'll send you a verification code to
-          reset your password.
+          {t("forgotPasswordDescription")}
         </ThemedText>
 
         <View style={styles.inputContainer}>
@@ -77,7 +77,7 @@ export default function ForgotPasswordScreen() {
           />
           <TextInput
             style={[styles.input, { color: textColor }]}
-            placeholder="Email Address"
+            placeholder={t("emailAddress")}
             placeholderTextColor={iconColor}
             value={email}
             onChangeText={setEmail}
@@ -94,7 +94,7 @@ export default function ForgotPasswordScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <ThemedText style={styles.buttonText}>Send Code</ThemedText>
+            <ThemedText style={styles.buttonText}>{t("sendCode")}</ThemedText>
           )}
         </TouchableOpacity>
       </SafeAreaView>

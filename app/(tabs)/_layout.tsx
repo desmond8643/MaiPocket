@@ -1,13 +1,14 @@
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
+import { useLocalization } from "@/context/LocalizationContext";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TabLayout() {
+  const { t } = useLocalization();
+
   return (
       <View style={{ flex: 1 }}>
         <Tabs
@@ -28,7 +29,7 @@ export default function TabLayout() {
           <Tabs.Screen
             name="index"
             options={{
-              title: "Home",
+               title: t("tabHome"),
               tabBarIcon: ({ color }) => (
                 <IconSymbol size={28} name="house.fill" color={color} />
               ),
@@ -37,7 +38,7 @@ export default function TabLayout() {
           <Tabs.Screen
             name="charts"
             options={{
-              title: "Charts",
+              title: t("tabCharts"),
               tabBarIcon: ({ color }) => (
                 <IconSymbol size={28} name="music.note.list" color={color} />
               ),
@@ -46,7 +47,7 @@ export default function TabLayout() {
           <Tabs.Screen
             name="profile"
             options={{
-              title: "Profile",
+              title: t("tabProfile"),
               tabBarIcon: ({ color }) => (
                 <IconSymbol size={28} name="person.fill" color={color} />
               ),

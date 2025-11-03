@@ -2,10 +2,10 @@ import { BannerAdComponent } from "@/components/BannerAdComponent";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useAds } from "@/context/AdContext";
 import { fetchDataImmediately } from "@/context/GameQueryProvider";
+import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -14,10 +14,10 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
@@ -40,6 +40,7 @@ export default function HomeScreen() {
   };
 
   const [socialFeedPreference, setSocialFeedPreference] = useState("facebook");
+  const { t } = useLocalization();
 
   const loadPreference = async () => {
     try {
@@ -143,13 +144,13 @@ export default function HomeScreen() {
               type="subtitle"
               style={{ color: "white", marginTop: 8 }}
             >
-              Browse Song Charts
+                {t("browseSongCharts")}
             </ThemedText>
             <Ionicons name="musical-note-outline" size={48} color="white" />
           </View>
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
-              Explore songs in maimai
+            {t("exploreSongs")}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -162,13 +163,13 @@ export default function HomeScreen() {
               type="subtitle"
               style={{ color: "white", marginTop: 8 }}
             >
-              Your Profile
+                {t("yourProfile")}
             </ThemedText>
             <Ionicons name="person-outline" size={48} color="white" />
           </View>
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
-              Manage your account
+            {t("manageAccount")}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -182,7 +183,7 @@ export default function HomeScreen() {
               type="subtitle"
               style={{ color: "white", marginTop: 8 }}
             >
-              Song Quiz Game
+               {t("songQuizGame")}
             </ThemedText>
 
             <Ionicons name="game-controller-outline" size={48} color="white" />
@@ -193,8 +194,9 @@ export default function HomeScreen() {
             )}
             <ThemedText style={{ color: "white" }}>
               {isLoggedIn && isDataLoading
-                ? "Loading..."
-                : "Test your maimai knowledge"}
+                ? // ? "Loading..."
+                  t("loading")
+                :  t("testKnowledge")}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -209,7 +211,7 @@ export default function HomeScreen() {
                 type="subtitle"
                 style={{ color: "white", marginTop: 8 }}
               >
-                Shop
+                 {t("shop")}
               </ThemedText>
 
               <Ionicons name="bag-outline" size={48} color="white" />
@@ -220,8 +222,8 @@ export default function HomeScreen() {
               )}
               <ThemedText style={{ color: "white" }}>
                 {isLoggedIn && isDataLoading
-                  ? "Loading..."
-                  : "Unlock features and special items"}
+                 ? t("loading")
+                 : t("unlockFeatures")}
               </ThemedText>
             </View>
           </TouchableOpacity>
@@ -230,9 +232,9 @@ export default function HomeScreen() {
           <ThemedView
             style={{ ...styles.featureContainer, paddingHorizontal: 0 }}
           >
-            <ThemedText type="subtitle">Recent Updates</ThemedText>
+            <ThemedText type="subtitle">{t("recentUpdates")}</ThemedText>
             <ThemedText>
-              Stay updated with the latest maimai news and announcements.
+            {t("stayUpdated")}
             </ThemedText>
             <View style={{ ...styles.socialFeedContainer }}>
               {socialFeedPreference === "twitter" ? (
@@ -279,7 +281,7 @@ export default function HomeScreen() {
             onPress={() => router.push("/copyright")}
           >
             <ThemedText style={styles.copyrightButtonText}>
-              Copyright Notice
+            {t("copyrightNotice")}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
