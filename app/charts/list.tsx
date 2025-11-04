@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Modal,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   View,
-  SectionList,
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
@@ -21,19 +21,38 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
+import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useShowAds } from "@/hooks/useShowAds";
 import { Chart } from "@/types/chart";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useLocalization } from "@/context/LocalizationContext";
 
 type ViewMode = "list" | "icon";
 type GroupMode = "none" | "level" | "version";
 
-interface GroupedSection {
-  title: string;
-  data: Chart[];
-}
+// Helper function to check if a numerical level matches a string level representation
+const matchesLevelString = (numLevel: number, levelString: string): boolean => {
+  if (!levelString) return true;
+
+  // Handle "X+" format
+  if (levelString.endsWith("+")) {
+    const baseLevel = parseInt(levelString.replace("+", ""));
+
+    return (
+      Math.floor(numLevel) === baseLevel &&
+      Math.round((numLevel % 1) * 100) / 100 >= 0.6
+    );
+  }
+  // Handle regular integer level
+  else {
+    const baseLevel = parseInt(levelString);
+
+    return (
+      Math.floor(numLevel) === baseLevel &&
+      Math.round((numLevel % 1) * 100) / 100 < 0.6
+    );
+  }
+};
 
 export default function ChartListScreen() {
   const { type, value } = useLocalSearchParams();
@@ -48,6 +67,111 @@ export default function ChartListScreen() {
   const insets = useSafeAreaInsets();
   const { showAds, dynamicStyles } = useShowAds(false);
   const { t } = useLocalization();
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedChart, setSelectedChart] = useState<Chart | null>(null);
+  // Add this state to track image loading
+  const [imageLoading, setImageLoading] = useState(true);
+  const [nextChart, setNextChart] = useState<Chart | null>(null);
+
+  console.log(type);
+  const handleShuffle = () => {
+    if (charts.length === 0) return;
+
+    // Set imageLoading to true when we shuffle
+    setImageLoading(true);
+
+    // Pick a random chart from the filtered list
+    const randomIndex = Math.floor(Math.random() * charts.length);
+    const randomChart = charts[randomIndex];
+
+    // Store the next chart but don't update selectedChart yet
+    setNextChart(randomChart);
+
+    // If this is the first shuffle, also set selectedChart and show the modal
+    if (!selectedChart) {
+      setSelectedChart(randomChart);
+    }
+    setModalVisible(true);
+  };
+
+  const getMatchingDifficulty = (chart: Chart) => {
+    const levelValue = value?.toString();
+
+    // If no levelValue is provided, return a randomly chosen available version
+    if (!parseFloat(levelValue)) {
+      const versions = [];
+
+      if (chart.standard && chart.standard.difficulties?.length > 0) {
+        if (
+          type !== "version" ||
+          chart.standard.versionReleased === levelValue
+        ) {
+          versions.push("standard");
+        }
+      }
+      if (chart.deluxe && chart.deluxe.difficulties?.length > 0) {
+        console.log(chart.deluxe.versionReleased);
+        if (type !== "version" || chart.deluxe.versionReleased === levelValue) {
+          versions.push("deluxe");
+        }
+      }
+
+      if (versions.length === 0) {
+        return null;
+      }
+
+      console.log(versions);
+
+      // Randomly select a version if multiple are available
+      const randomIndex = Math.floor(Math.random() * versions.length);
+      return {
+        type: null,
+        level: null,
+        version: versions[randomIndex] as "standard" | "deluxe",
+      };
+    }
+
+    // Existing code for when levelValue is provided
+    let matchingDifficulty: {
+      type: string | null;
+      level: number | null;
+      version: "standard" | "deluxe";
+    } | null = null;
+
+    // Check for standard difficulties
+    if (chart.standard && chart.standard.difficulties) {
+      for (const diff of chart.standard.difficulties) {
+        const numLevel = diff.level.jp;
+
+        if (matchesLevelString(numLevel, levelValue)) {
+          matchingDifficulty = {
+            type: diff.type,
+            level: numLevel,
+            version: "standard",
+          };
+          break;
+        }
+      }
+    }
+
+    // If no matching standard difficulty, check deluxe
+    if (!matchingDifficulty && chart.deluxe && chart.deluxe.difficulties) {
+      for (const diff of chart.deluxe.difficulties) {
+        const numLevel = diff.level.jp;
+        if (matchesLevelString(numLevel, levelValue)) {
+          matchingDifficulty = {
+            type: diff.type,
+            level: numLevel,
+            version: "deluxe",
+          };
+          break;
+        }
+      }
+    }
+
+    return matchingDifficulty;
+  };
 
   // Preload an interstitial ad when the component mounts
   useEffect(() => {
@@ -115,25 +239,6 @@ export default function ChartListScreen() {
   ): { level: number | string; color: string } => {
     let maxLevel = 0;
     let difficultyType = "";
-
-    // Helper function to check if a numerical level matches a string level representation
-    const matchesLevelString = (
-      numLevel: number,
-      levelString: string
-    ): boolean => {
-      if (!levelString) return true;
-
-      // Handle "X+" format
-      if (levelString.endsWith("+")) {
-        const baseLevel = parseInt(levelString.replace("+", ""));
-        return Math.floor(numLevel) === baseLevel && numLevel % 1 >= 0.6;
-      }
-      // Handle regular integer level
-      else {
-        const baseLevel = parseInt(levelString);
-        return Math.floor(numLevel) === baseLevel && numLevel % 1 < 0.6;
-      }
-    };
 
     // Helper function to process difficulties
     const processDifficulties = (
@@ -273,8 +378,6 @@ export default function ChartListScreen() {
 
   const renderChartItem = ({ item }: { item: Chart }) => {
     const difficulties = getDifficulties(item);
-
-    console.log(difficulties.deluxe);
 
     if (viewMode === "icon") {
       return (
@@ -501,12 +604,28 @@ export default function ChartListScreen() {
 
   return (
     <ThemedView style={{ flex: 1 }}>
+      {/* <Stack.Screen
+        options={{
+          title: value
+            ? `${value.toString()}${!loading ? ` (${charts.length})` : ""}`
+            : t("charts"),
+          headerBackButtonDisplayMode: "minimal",
+        }}
+      /> */}
       <Stack.Screen
         options={{
           title: value
             ? `${value.toString()}${!loading ? ` (${charts.length})` : ""}`
             : t("charts"),
           headerBackButtonDisplayMode: "minimal",
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={handleShuffle}
+              style={{ marginRight: 0 }}
+            >
+              <IconSymbol name="shuffle" size={22} color="#9944DD" />
+            </TouchableOpacity>
+          ),
         }}
       />
 
@@ -595,6 +714,186 @@ export default function ChartListScreen() {
         <View style={dynamicStyles.bottomAdContainer}>
           <BannerAdComponent />
         </View>
+      )}
+      {modalVisible && selectedChart && (
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            onPress={() => setModalVisible(false)}
+            activeOpacity={1}
+          >
+            {/* <View > */}
+            <TouchableOpacity
+              style={{
+                ...styles.modalContainer,
+                backgroundColor:
+                  colorScheme === "dark"
+                    ? Colors.dark.background
+                    : Colors.light.background,
+              }}
+            >
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <IconSymbol name="xmark" size={24} color="#888888" />
+              </TouchableOpacity>
+              <View style={styles.modalContent}>
+                {/* <Image
+                  source={{ uri: selectedChart.image }}
+                  style={styles.modalImage}
+                  contentFit="cover"
+                  onLoadStart={() => setImageLoading(true)}
+                  onLoad={() => setImageLoading(false)}
+                /> */}
+                <Image
+                  source={{ uri: nextChart?.image || selectedChart?.image }}
+                  style={styles.modalImage}
+                  contentFit="cover"
+                  onLoadStart={() => setImageLoading(true)}
+                  onLoad={() => {
+                    // Only update the selected chart after the image loads
+                    if (nextChart) {
+                      setSelectedChart(nextChart);
+                      setNextChart(null);
+                    }
+                    setImageLoading(false);
+                  }}
+                />
+
+                <ThemedText
+                  type="defaultSemiBold"
+                  style={styles.modalSongTitle}
+                >
+                  {selectedChart.title}
+                </ThemedText>
+
+                <ThemedText style={styles.modalArtist}>
+                  {selectedChart.artist}
+                </ThemedText>
+                <View style={styles.modalDifficultyContainer}>
+                  <>
+                    {/* {getMatchingDifficulty(selectedChart)?.level && (
+                      <ThemedView
+                        style={[
+                          styles.difficultyBadge,
+                          {
+                            backgroundColor: getDifficultyColor(
+                              getMatchingDifficulty(selectedChart)?.type || ""
+                            ),
+                            marginBottom: 0,
+                          },
+                        ]}
+                      >
+                        <ThemedText style={styles.difficultyText}>
+                          {formatLevelDisplay({
+                            jp: getMatchingDifficulty(selectedChart)
+                              ?.level as number,
+                          })}
+                        </ThemedText>
+                      </ThemedView>
+                    )} */}
+
+                    <ThemedText style={styles.modalDifficultyType}>
+                      {getMatchingDifficulty(selectedChart)?.version ===
+                      "standard" ? (
+                        <View style={{ ...styles.standardLabel, width: 108 }}>
+                          <ThemedText style={styles.standardLabelText}>
+                            スタンダード
+                          </ThemedText>
+                        </View>
+                      ) : (
+                        <View style={{ ...styles.deluxeLabel, width: 96 }}>
+                          <ThemedText style={styles.deluxeLabelText}>
+                            <ThemedText
+                              style={[
+                                styles.deluxeLabelText,
+                                { color: "#FF0000" },
+                              ]}
+                            >
+                              で
+                            </ThemedText>
+                            <ThemedText
+                              style={[
+                                styles.deluxeLabelText,
+                                { color: "#FF8C00" },
+                              ]}
+                            >
+                              ら
+                            </ThemedText>
+                            <ThemedText
+                              style={[
+                                styles.deluxeLabelText,
+                                { color: "#FFD93D" },
+                              ]}
+                            >
+                              っ
+                            </ThemedText>
+                            <ThemedText
+                              style={[
+                                styles.deluxeLabelText,
+                                { color: "#7ADAA5" },
+                              ]}
+                            >
+                              く
+                            </ThemedText>
+                            <ThemedText
+                              style={[
+                                styles.deluxeLabelText,
+                                { color: "#3396D3" },
+                              ]}
+                            >
+                              す
+                            </ThemedText>
+                          </ThemedText>
+                        </View>
+                      )}
+                    </ThemedText>
+                  </>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.viewButton}
+                onPress={() => {
+                  setModalVisible(false);
+                  navigateToChart(selectedChart._id);
+                }}
+              >
+                <ThemedText style={styles.viewButtonText}>
+                  {t("viewChart")}
+                </ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.shuffleAgainButton,
+                  imageLoading && { opacity: 0.5 },
+                ]}
+                onPress={() => {
+                  if (!imageLoading) {
+                    handleShuffle();
+                  }
+                }}
+                disabled={imageLoading}
+              >
+                <IconSymbol
+                  name="shuffle"
+                  size={18}
+                  color="#FFFFFF"
+                  style={{ marginRight: 8 }}
+                />
+                <ThemedText style={styles.shuffleAgainText}>
+                  {imageLoading ? t("shuffling") : t("shuffleAgain")}
+                </ThemedText>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
       )}
     </ThemedView>
   );
@@ -876,5 +1175,100 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 999,
     alignItems: "center",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalContainer: {
+    width: "90%",
+    maxWidth: 400,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: "center",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    zIndex: 10,
+  },
+  modalHeader: {
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    marginBottom: 8,
+  },
+  modalContent: {
+    width: "100%",
+    alignItems: "center",
+    marginTop: 16,
+  },
+  modalImage: {
+    width: 180,
+    height: 180,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  modalSongTitle: {
+    fontSize: 18,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  modalArtist: {
+    fontSize: 14,
+    opacity: 0.8,
+    marginBottom: 16,
+  },
+  modalDifficultyContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 16,
+  },
+  modalDifficultyType: {
+    marginLeft: 12,
+    fontSize: 16,
+  },
+  viewButton: {
+    backgroundColor: "#9944DD",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    marginTop: 24,
+    width: "100%",
+    alignItems: "center",
+  },
+  viewButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  shuffleAgainButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#555555",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    marginTop: 12,
+    width: "100%",
+  },
+  shuffleAgainText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 14,
   },
 });

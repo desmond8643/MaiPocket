@@ -398,4 +398,10 @@ export default {
   noPreviousPurchasesFound: "過去の購入はありません。",
   restoreFailed: "復元失敗",
   couldNotRestorePurchases: "購入を復元できませんでした。",
+
+  // shuffle
+  randomSong: "ランダム曲",
+  viewChart: "詳細を見る",
+  shuffleAgain: "もう一度シャッフル",
+  shuffling: "シャッフル中...",
 };

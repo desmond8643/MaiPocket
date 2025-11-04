@@ -1,6 +1,9 @@
 export interface Difficulty {
   type: "basic" | "advanced" | "expert" | "master" | "remaster";
-  level: number;
+  level: {
+    jp: number;
+    international: number;
+  };
   charter?: string;
   noteCount?: number;
 }

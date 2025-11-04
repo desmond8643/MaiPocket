@@ -400,4 +400,10 @@ restoredItems: "Restored: {{items}}",
 noPreviousPurchasesFound: "No previous purchases found.",
 restoreFailed: "Restore Failed",
 couldNotRestorePurchases: "Could not restore purchases.",
+
+// shuffle
+"randomSong": "Random Song",
+"viewChart": "View Chart",
+"shuffleAgain": "Shuffle Again",
+"shuffling": "Shuffling..."
 };
