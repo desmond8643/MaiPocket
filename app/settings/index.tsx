@@ -1,3 +1,4 @@
+import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useLocalization } from "@/context/LocalizationContext";
@@ -13,7 +14,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-// import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
 
 // Key for storing the ad watch count data
 const AD_WATCH_COUNT_KEY = "ad_watch_count";
@@ -200,11 +200,11 @@ export default function SettingsScreen() {
                   </ThemedText>
                 </View>
                 <ThemedText style={styles.statsSubtext}>
-                {t('resetsAtTime', {time: '4:00 AM (GMT+8)'})} • {formatRemainingTime()}
+                  {t("resetsAtTime", { time: "4:00 AM (GMT+8)" })} •{" "}
+                  {formatRemainingTime()}
                 </ThemedText>
               </ThemedView>
             )}
-
             <TouchableOpacity
               style={styles.optionItem}
               onPress={() => router.push("/settings/social-preferences")}
@@ -215,6 +215,14 @@ export default function SettingsScreen() {
               </ThemedText>
               <Ionicons name="chevron-forward" size={24} color="#999" />
             </TouchableOpacity>
+            {/* <TouchableOpacity
+              style={styles.optionItem}
+              onPress={() => router.push("/settings/sensor")}
+            >
+              <Ionicons name="radio-outline" size={24} color="#AE75DA" />
+              <ThemedText style={styles.optionText}>{t("sensor")}</ThemedText>
+              <Ionicons name="chevron-forward" size={24} color="#999" />
+            </TouchableOpacity> */}
             <TouchableOpacity
               style={styles.optionItem}
               onPress={() => router.push("/settings/language")}

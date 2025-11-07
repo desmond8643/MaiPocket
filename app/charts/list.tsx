@@ -363,12 +363,14 @@ export default function ChartListScreen() {
   const navigateToChart = (chartId: string) => {
     if (showAds) {
       showInterstitialAd(() => {
+        setModalVisible(false);
         router.push({
           pathname: "/charts/[id]",
           params: { id: chartId },
         });
       });
     } else {
+      setModalVisible(false);
       router.push({
         pathname: "/charts/[id]",
         params: { id: chartId },
@@ -861,7 +863,7 @@ export default function ChartListScreen() {
               <TouchableOpacity
                 style={styles.viewButton}
                 onPress={() => {
-                  setModalVisible(false);
+                  // setModalVisible(false);
                   navigateToChart(selectedChart._id);
                 }}
               >
