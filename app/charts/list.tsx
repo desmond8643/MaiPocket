@@ -730,13 +730,19 @@ export default function ChartListScreen() {
             activeOpacity={1}
           >
             {/* <View > */}
-            <TouchableOpacity
+            <View
               style={{
                 ...styles.modalContainer,
                 backgroundColor:
                   colorScheme === "dark"
                     ? Colors.dark.background
                     : Colors.light.background,
+              }}
+              // This is important to stop event propagation from inside the modal
+              onStartShouldSetResponder={() => true}
+              onTouchEnd={(e) => {
+                // Prevent clicks inside the modal from closing it
+                e.stopPropagation();
               }}
             >
               <TouchableOpacity
@@ -893,7 +899,7 @@ export default function ChartListScreen() {
                   {imageLoading ? t("shuffling") : t("shuffleAgain")}
                 </ThemedText>
               </TouchableOpacity>
-            </TouchableOpacity>
+            </View>
           </TouchableOpacity>
         </Modal>
       )}
