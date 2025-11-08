@@ -786,7 +786,7 @@ export default function ChartListScreen() {
                 </ThemedText>
                 <View style={styles.modalDifficultyContainer}>
                   <>
-                    {/* {getMatchingDifficulty(selectedChart)?.level && (
+                    {getMatchingDifficulty(selectedChart)?.level && (
                       <ThemedView
                         style={[
                           styles.difficultyBadge,
@@ -799,13 +799,20 @@ export default function ChartListScreen() {
                         ]}
                       >
                         <ThemedText style={styles.difficultyText}>
-                          {formatLevelDisplay({
-                            jp: getMatchingDifficulty(selectedChart)
-                              ?.level as number,
-                          })}
+                          {(() => {
+                            const type =
+                              getMatchingDifficulty(selectedChart)?.type;
+
+                            if (type === "remaster") {
+                              return "Re:Master";
+                            }
+                            return type
+                              ? type.charAt(0).toUpperCase() + type.slice(1)
+                              : "";
+                          })()}
                         </ThemedText>
                       </ThemedView>
-                    )} */}
+                    )}
 
                     <ThemedText style={styles.modalDifficultyType}>
                       {getMatchingDifficulty(selectedChart)?.version ===
@@ -1074,13 +1081,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   difficultyBadge: {
-    width: 40,
+    // width: 40,
     height: 40,
     borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 8,
     marginBottom: 8,
+    paddingHorizontal: 8,
   },
   difficultyText: {
     color: "white",
