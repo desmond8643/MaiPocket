@@ -72,7 +72,7 @@ export default function EditProfileScreen() {
     }
     
     // Only allow letters, numbers, underscores, and hyphens
-    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+    const usernameRegex = /^[a-z0-9_-]+$/;
     if (!usernameRegex.test(value)) {
       setUsernameError(t('usernameCharactersError'));
       return false;
