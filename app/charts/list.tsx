@@ -789,12 +789,16 @@ export default function ChartListScreen() {
                     {getMatchingDifficulty(selectedChart)?.level && (
                       <ThemedView
                         style={[
-                          styles.difficultyBadge,
                           {
                             backgroundColor: getDifficultyColor(
                               getMatchingDifficulty(selectedChart)?.type || ""
                             ),
-                            marginBottom: 0,
+                            paddingHorizontal: 8,
+                            height: 40,
+                            borderRadius: 6,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            marginRight: 8,
                           },
                         ]}
                       >
@@ -1081,14 +1085,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   difficultyBadge: {
-    // width: 40,
+    width: 40,
     height: 40,
     borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 8,
     marginBottom: 8,
-    paddingHorizontal: 8,
+    // paddingHorizontal: 8,
   },
   difficultyText: {
     color: "white",
