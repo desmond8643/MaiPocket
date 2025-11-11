@@ -1,3 +1,4 @@
+import { AuthAPI, NotificationAPI } from "@/api/client";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
@@ -7,6 +8,7 @@ import { useAds } from "@/context/AdContext";
 import { fetchDataImmediately } from "@/context/GameQueryProvider";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { getFCMToken } from "@/utils/useFCMToken";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -21,6 +23,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
+import messaging from "@react-native-firebase/messaging";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -117,6 +120,29 @@ export default function HomeScreen() {
     checkLoginStatus();
   }, []);
 
+  // Add this useEffect in your HomeScreen component
+  useEffect(() => {
+    const initializeFCM = async () => {
+      const loggedIn = await AuthAPI.isLoggedIn();
+      if (loggedIn) {
+        const token = await getFCMToken();
+        if (token) {
+          await NotificationAPI.sendFCMToken(token);
+        }
+
+        // Listen for token refresh
+        messaging().onTokenRefresh(async (newToken) => {
+          const stillLoggedIn = await AuthAPI.isLoggedIn();
+          if (stillLoggedIn) {
+            await NotificationAPI.sendFCMToken(newToken);
+          }
+        });
+      }
+    };
+
+    initializeFCM();
+  }, []);
+
   return (
     <View style={styles.container}>
       <ParallaxScrollView
@@ -144,13 +170,13 @@ export default function HomeScreen() {
               type="subtitle"
               style={{ color: "white", marginTop: 8 }}
             >
-                {t("browseSongCharts")}
+              {t("browseSongCharts")}
             </ThemedText>
             <Ionicons name="musical-note-outline" size={48} color="white" />
           </View>
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
-            {t("exploreSongs")}
+              {t("exploreSongs")}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -163,13 +189,13 @@ export default function HomeScreen() {
               type="subtitle"
               style={{ color: "white", marginTop: 8 }}
             >
-                {t("yourProfile")}
+              {t("yourProfile")}
             </ThemedText>
             <Ionicons name="person-outline" size={48} color="white" />
           </View>
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
-            {t("manageAccount")}
+              {t("manageAccount")}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -183,7 +209,7 @@ export default function HomeScreen() {
               type="subtitle"
               style={{ color: "white", marginTop: 8 }}
             >
-               {t("songQuizGame")}
+              {t("songQuizGame")}
             </ThemedText>
 
             <Ionicons name="game-controller-outline" size={48} color="white" />
@@ -196,7 +222,7 @@ export default function HomeScreen() {
               {isLoggedIn && isDataLoading
                 ? // ? "Loading..."
                   t("loading")
-                :  t("testKnowledge")}
+                : t("testKnowledge")}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -211,7 +237,7 @@ export default function HomeScreen() {
                 type="subtitle"
                 style={{ color: "white", marginTop: 8 }}
               >
-                 {t("shop")}
+                {t("shop")}
               </ThemedText>
 
               <Ionicons name="bag-outline" size={48} color="white" />
@@ -222,8 +248,8 @@ export default function HomeScreen() {
               )}
               <ThemedText style={{ color: "white" }}>
                 {isLoggedIn && isDataLoading
-                 ? t("loading")
-                 : t("unlockFeatures")}
+                  ? t("loading")
+                  : t("unlockFeatures")}
               </ThemedText>
             </View>
           </TouchableOpacity>
@@ -233,9 +259,7 @@ export default function HomeScreen() {
             style={{ ...styles.featureContainer, paddingHorizontal: 0 }}
           >
             <ThemedText type="subtitle">{t("recentUpdates")}</ThemedText>
-            <ThemedText>
-            {t("stayUpdated")}
-            </ThemedText>
+            <ThemedText>{t("stayUpdated")}</ThemedText>
             <View style={{ ...styles.socialFeedContainer }}>
               {socialFeedPreference === "twitter" ? (
                 <WebView
@@ -281,7 +305,7 @@ export default function HomeScreen() {
             onPress={() => router.push("/copyright")}
           >
             <ThemedText style={styles.copyrightButtonText}>
-            {t("copyrightNotice")}
+              {t("copyrightNotice")}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>

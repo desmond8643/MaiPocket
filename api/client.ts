@@ -436,6 +436,19 @@ export const NotificationAPI = {
       throw error;
     }
   },
+
+   // Send FCM token to backend
+   sendFCMToken: async (fcmToken: string) => {
+    try {
+      const response = await apiClient.post("/auth/fcm-token", {
+        fcmToken,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error sending FCM token:", error);
+      throw error;
+    }
+  },
 };
 
 export const UserAPI = {
