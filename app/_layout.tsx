@@ -23,14 +23,15 @@ function useNotificationNavigation() {
     const app = getApp();
     const messaging = getMessaging(app);
 
-    // App opened from background by tapping notification
-    const unsub = onNotificationOpenedApp(messaging, (remoteMessage) => {
+    // When app is in background and user taps the notification
+    const unsubscribe = onNotificationOpenedApp(messaging, (remoteMessage) => {
       const d = remoteMessage?.data || {};
+      // Prefer explicit deep link if provided
       if (d.link) {
-        router.push(d.link); // maipocket://... handled by your linking config
+        router.push(d.link);
         return;
       }
-      // Fallback: build route from data
+      // Fallback: build route from data fields
       if (d.type === "post_approval" && d.chartId) {
         router.push({
           pathname: "/charts/[id]",
@@ -43,7 +44,7 @@ function useNotificationNavigation() {
       }
     });
 
-    // App opened from quit (cold start) by tapping notification
+    // When app is opened from a terminated state by tapping the notification
     getInitialNotification(messaging).then((remoteMessage) => {
       const d = remoteMessage?.data || {};
       if (!d) return;
@@ -63,12 +64,13 @@ function useNotificationNavigation() {
       }
     });
 
-    return () => unsub();
+    return () => unsubscribe();
   }, []);
 }
 
 export default function RootLayout() {
   useNotificationNavigation();
+
   const colorScheme = useColorScheme();
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
