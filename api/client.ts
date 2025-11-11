@@ -249,6 +249,12 @@ export const AuthAPI = {
   // Logout user
   logout: async () => {
     try {
+      try {
+        await NotificationAPI.clearFCMToken();
+      } catch (e) {
+        console.warn("Unable to clear FCM token on logout:", e);
+      }
+      
       await AsyncStorage.removeItem("authToken");
       await AsyncStorage.removeItem("userData");
 
@@ -437,8 +443,8 @@ export const NotificationAPI = {
     }
   },
 
-   // Send FCM token to backend
-   sendFCMToken: async (fcmToken: string) => {
+  // Send FCM token to backend
+  sendFCMToken: async (fcmToken: string) => {
     try {
       const response = await apiClient.post("/auth/fcm-token", {
         fcmToken,
@@ -447,6 +453,15 @@ export const NotificationAPI = {
     } catch (error) {
       console.error("Error sending FCM token:", error);
       throw error;
+    }
+  },
+
+  clearFCMToken: async () => {
+    try {
+      await apiClient.delete("/auth/fcm-token");
+    } catch (error) {
+      console.error("Error clearing FCM token:", error);
+      // Do not rethrow; logout should proceed even if this fails
     }
   },
 };
@@ -595,7 +610,9 @@ export const addCrystalsToBalance = async (
 ): Promise<boolean> => {
   try {
     // No need to manually get token as apiClient interceptor handles it
-    const response = await apiClient.post("/shop/purchase/add-crystals", { amount });
+    const response = await apiClient.post("/shop/purchase/add-crystals", {
+      amount,
+    });
     return true;
   } catch (error) {
     console.error("Failed to add crystals:", error);
