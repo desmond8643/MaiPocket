@@ -4,15 +4,71 @@ import { AdProvider } from "@/context/AdContext";
 import { GameQueryProvider } from "@/context/GameQueryProvider";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as Updates from "expo-updates";
 import { LocalizationProvider } from "@/context/LocalizationContext";
+import { getApp } from "@react-native-firebase/app";
+import {
+  getInitialNotification,
+  getMessaging,
+  onNotificationOpenedApp,
+} from "@react-native-firebase/messaging";
+
+function useNotificationNavigation() {
+  useEffect(() => {
+    const app = getApp();
+    const messaging = getMessaging(app);
+
+    // App opened from background by tapping notification
+    const unsub = onNotificationOpenedApp(messaging, (remoteMessage) => {
+      const d = remoteMessage?.data || {};
+      if (d.link) {
+        router.push(d.link); // maipocket://... handled by your linking config
+        return;
+      }
+      // Fallback: build route from data
+      if (d.type === "post_approval" && d.chartId) {
+        router.push({
+          pathname: "/charts/[id]",
+          params: {
+            id: d.chartId,
+            type: d.chartType || "",
+            difficulty: d.chartDifficulty || "",
+          },
+        });
+      }
+    });
+
+    // App opened from quit (cold start) by tapping notification
+    getInitialNotification(messaging).then((remoteMessage) => {
+      const d = remoteMessage?.data || {};
+      if (!d) return;
+      if (d.link) {
+        router.replace(d.link);
+        return;
+      }
+      if (d.type === "post_approval" && d.chartId) {
+        router.replace({
+          pathname: "/charts/[id]",
+          params: {
+            id: d.chartId,
+            type: d.chartType || "",
+            difficulty: d.chartDifficulty || "",
+          },
+        });
+      }
+    });
+
+    return () => unsub();
+  }, []);
+}
 
 export default function RootLayout() {
+  useNotificationNavigation();
   const colorScheme = useColorScheme();
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
