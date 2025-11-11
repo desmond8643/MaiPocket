@@ -1,14 +1,18 @@
 // utils/fcmToken.ts or hooks/useFCMToken.ts
 import { useEffect, useState } from 'react';
-import messaging from '@react-native-firebase/messaging';
+import { getMessaging, getToken, onTokenRefresh, requestPermission, AuthorizationStatus } from '@react-native-firebase/messaging';
+import { getApp } from '@react-native-firebase/app';
 
 export async function getFCMToken(): Promise<string | null> {
   try {
+    const app = getApp();
+    const messaging = getMessaging(app);
+    
     // Request permission (iOS)
-    const authStatus = await messaging().requestPermission();
+    const authStatus = await requestPermission(messaging);
     const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      authStatus === AuthorizationStatus.AUTHORIZED ||
+      authStatus === AuthorizationStatus.PROVISIONAL;
 
     if (!enabled) {
       console.log('User permission not granted');
@@ -16,7 +20,7 @@ export async function getFCMToken(): Promise<string | null> {
     }
 
     // Get the token
-    const token = await messaging().getToken();
+    const token = await getToken(messaging);
     console.log('FCM Registration Token:', token);
     return token;
   } catch (error) {
@@ -39,8 +43,11 @@ export function useFCMToken() {
 
     fetchToken();
 
-    // Listen for token refresh
-    const unsubscribe = messaging().onTokenRefresh((newToken) => {
+    // Listen for token refresh using modular API
+    const app = getApp();
+    const messaging = getMessaging(app);
+    
+    const unsubscribe = onTokenRefresh(messaging, (newToken) => {
       console.log('FCM Token refreshed:', newToken);
       setToken(newToken);
       // Send new token to your backend

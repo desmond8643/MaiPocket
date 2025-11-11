@@ -23,7 +23,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
-import messaging from "@react-native-firebase/messaging";
+import { getMessaging, onTokenRefresh } from "@react-native-firebase/messaging";
+import { getApp } from "@react-native-firebase/app";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -129,17 +130,23 @@ export default function HomeScreen() {
         if (token) {
           await NotificationAPI.sendFCMToken(token);
         }
-
-        // Listen for token refresh
-        messaging().onTokenRefresh(async (newToken) => {
+  
+        // Listen for token refresh using modular API
+        const app = getApp();
+        const messaging = getMessaging(app);
+        
+        const unsubscribe = onTokenRefresh(messaging, async (newToken) => {
           const stillLoggedIn = await AuthAPI.isLoggedIn();
           if (stillLoggedIn) {
             await NotificationAPI.sendFCMToken(newToken);
           }
         });
+  
+        // Cleanup on unmount
+        return () => unsubscribe();
       }
     };
-
+  
     initializeFCM();
   }, []);
 
