@@ -72,6 +72,15 @@ export default function ChartDetailScreen() {
     );
   };
 
+  const openSimaiSearch = () => {
+    if (!chart) return;
+    setShowDropdown(false);
+    const simaiUrl = `https://w.atwiki.jp/simai/search?andor=and&keyword=${chart.title}`;
+    Linking.openURL(simaiUrl).catch((err) =>
+      console.error("Error opening Simai:", err)
+    );
+  };
+
   // Function to handle copy title
   const handleCopyTitle = () => {
     if (!chart) return;
@@ -488,13 +497,44 @@ export default function ChartDetailScreen() {
               style={styles.dropdownItem}
               onPress={openYouTubeSearch}
             >
-              <MaterialIcons
+              {/* <MaterialIcons
                 name="search"
                 size={22}
                 color={Colors[colorScheme ?? "light"].text}
+              /> */}
+              <Image
+                source={require("@/assets/images/youtube-logo.svg")}
+                style={{
+                  width: 22,
+                  height: 22,
+                  tintColor: Colors[colorScheme ?? "light"].text,
+                }}
               />
+
               <ThemedText style={styles.dropdownText}>
                 {t("searchYoutube")}
+              </ThemedText>
+            </TouchableOpacity>
+            <View
+              style={[
+                styles.dropdownSeparator,
+                { backgroundColor: Colors[colorScheme ?? "light"].background },
+              ]}
+            />
+            <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={openSimaiSearch}
+            >
+              <Image
+                source={require("@/assets/images/atwiki_logo_small.svg")}
+                style={{
+                  width: 22,
+                  height: 22,
+                  tintColor: Colors[colorScheme ?? "light"].text,
+                }}
+              />
+              <ThemedText style={styles.dropdownText}>
+                {t("searchSimai")}
               </ThemedText>
             </TouchableOpacity>
           </TouchableOpacity>

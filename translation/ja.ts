@@ -6,6 +6,7 @@ export default {
   copy: "コピー",
   copyTitle: "タイトルをコピー",
   searchYoutube: "YouTubeで検索",
+  searchSimai: "Simaiで検索",
   loading: "読み込み中...",
   loadingChartDetails: "チャート詳細を読み込み中...",
   chartNotFound: "チャートが見つかりません",

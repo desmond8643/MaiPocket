@@ -122,33 +122,33 @@ export default function HomeScreen() {
   }, []);
 
   // Add this useEffect in your HomeScreen component
-  useEffect(() => {
-    const initializeFCM = async () => {
-      const loggedIn = await AuthAPI.isLoggedIn();
-      if (loggedIn) {
-        const token = await getFCMToken();
-        if (token) {
-          await NotificationAPI.sendFCMToken(token);
-        }
+  // useEffect(() => {
+  //   const initializeFCM = async () => {
+  //     const loggedIn = await AuthAPI.isLoggedIn();
+  //     if (loggedIn) {
+  //       const token = await getFCMToken();
+  //       if (token) {
+  //         await NotificationAPI.sendFCMToken(token);
+  //       }
   
-        // Listen for token refresh using modular API
-        const app = getApp();
-        const messaging = getMessaging(app);
+  //       // Listen for token refresh using modular API
+  //       const app = getApp();
+  //       const messaging = getMessaging(app);
         
-        const unsubscribe = onTokenRefresh(messaging, async (newToken) => {
-          const stillLoggedIn = await AuthAPI.isLoggedIn();
-          if (stillLoggedIn) {
-            await NotificationAPI.sendFCMToken(newToken);
-          }
-        });
+  //       const unsubscribe = onTokenRefresh(messaging, async (newToken) => {
+  //         const stillLoggedIn = await AuthAPI.isLoggedIn();
+  //         if (stillLoggedIn) {
+  //           await NotificationAPI.sendFCMToken(newToken);
+  //         }
+  //       });
   
-        // Cleanup on unmount
-        return () => unsubscribe();
-      }
-    };
+  //       // Cleanup on unmount
+  //       return () => unsubscribe();
+  //     }
+  //   };
   
-    initializeFCM();
-  }, []);
+  //   initializeFCM();
+  // }, []);
 
   return (
     <View style={styles.container}>
