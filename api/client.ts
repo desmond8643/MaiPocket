@@ -26,6 +26,26 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      console.log("Session expired - clearing auth data");
+
+      try {
+        await AsyncStorage.removeItem("authToken");
+        await AsyncStorage.removeItem("userData");
+
+        queryClient.clear();
+      } catch (clearError) {
+        console.error("Error clearing auth data:", clearError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 // Define API functions
 export const ChartAPI = {
   // Get all charts
@@ -254,7 +274,7 @@ export const AuthAPI = {
       } catch (e) {
         console.warn("Unable to clear FCM token on logout:", e);
       }
-      
+
       await AsyncStorage.removeItem("authToken");
       await AsyncStorage.removeItem("userData");
 
