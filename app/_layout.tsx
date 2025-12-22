@@ -18,58 +18,58 @@ import {
   onNotificationOpenedApp,
 } from "@react-native-firebase/messaging";
 
-// function useNotificationNavigation() {
-//   useEffect(() => {
-//     const app = getApp();
-//     const messaging = getMessaging(app);
+function useNotificationNavigation() {
+  useEffect(() => {
+    const app = getApp();
+    const messaging = getMessaging(app);
 
-//     // When app is in background and user taps the notification
-//     const unsubscribe = onNotificationOpenedApp(messaging, (remoteMessage) => {
-//       const d = remoteMessage?.data || {};
-//       // Prefer explicit deep link if provided
-//       if (d.link) {
-//         router.push(d.link);
-//         return;
-//       }
-//       // Fallback: build route from data fields
-//       if (d.type === "post_approval" && d.chartId) {
-//         router.push({
-//           pathname: "/charts/[id]",
-//           params: {
-//             id: d.chartId,
-//             type: d.chartType || "",
-//             difficulty: d.chartDifficulty || "",
-//           },
-//         });
-//       }
-//     });
+    // When app is in background and user taps the notification
+    const unsubscribe = onNotificationOpenedApp(messaging, (remoteMessage) => {
+      const d = remoteMessage?.data || {};
+      // Prefer explicit deep link if provided
+      if (d.link) {
+        router.push(d.link);
+        return;
+      }
+      // Fallback: build route from data fields
+      if (d.type === "post_approval" && d.chartId) {
+        router.push({
+          pathname: "/charts/[id]",
+          params: {
+            id: d.chartId,
+            type: d.chartType || "",
+            difficulty: d.chartDifficulty || "",
+          },
+        });
+      }
+    });
 
-//     // When app is opened from a terminated state by tapping the notification
-//     getInitialNotification(messaging).then((remoteMessage) => {
-//       const d = remoteMessage?.data || {};
-//       if (!d) return;
-//       if (d.link) {
-//         router.replace(d.link);
-//         return;
-//       }
-//       if (d.type === "post_approval" && d.chartId) {
-//         router.replace({
-//           pathname: "/charts/[id]",
-//           params: {
-//             id: d.chartId,
-//             type: d.chartType || "",
-//             difficulty: d.chartDifficulty || "",
-//           },
-//         });
-//       }
-//     });
+    // When app is opened from a terminated state by tapping the notification
+    getInitialNotification(messaging).then((remoteMessage) => {
+      const d = remoteMessage?.data || {};
+      if (!d) return;
+      if (d.link) {
+        router.replace(d.link);
+        return;
+      }
+      if (d.type === "post_approval" && d.chartId) {
+        router.replace({
+          pathname: "/charts/[id]",
+          params: {
+            id: d.chartId,
+            type: d.chartType || "",
+            difficulty: d.chartDifficulty || "",
+          },
+        });
+      }
+    });
 
-//     return () => unsubscribe();
-//   }, []);
-// }
+    return () => unsubscribe();
+  }, []);
+}
 
 export default function RootLayout() {
-  // useNotificationNavigation();
+  useNotificationNavigation();
 
   const colorScheme = useColorScheme();
   const [loaded, error] = useFonts({

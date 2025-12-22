@@ -165,7 +165,7 @@ export default function GameHomeScreen() {
         {t("quizGameDescription")}
       </ThemedText>
       <ScrollView>
-        <View style={styles.modeContainer}>
+        <View style={{...styles.modeContainer, paddingBottom: showActualAds ? 60 : 0}}>
           <TouchableOpacity
             style={[styles.modeButton, { backgroundColor: "#9944DD" }]}
             onPress={() => startGame("visual")}

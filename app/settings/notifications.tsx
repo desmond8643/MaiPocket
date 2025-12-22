@@ -2,15 +2,18 @@ import { AuthAPI, NotificationAPI } from "@/api/client";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useLocalization } from "@/context/LocalizationContext";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Modal,
+  Pressable,
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from "react-native";
 
@@ -36,12 +39,15 @@ const BASE_URL = "https://maipocket-backend.vercel.app";
 
 export default function NotificationsScreen() {
   const router = useRouter();
-  const { t } = useLocalization();
+  const { t, locale } = useLocalization();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+
+  const [menuVisible, setMenuVisible] = useState(false);
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
     loadNotifications();
@@ -126,6 +132,7 @@ export default function NotificationsScreen() {
 
   const markAllAsRead = async () => {
     try {
+      setMenuVisible(false);
       await NotificationAPI.markAllAsRead();
       // Update local state
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -134,11 +141,13 @@ export default function NotificationsScreen() {
     }
   };
 
+  const hasUnreadNotifications = notifications.some((n) => !n.read);
+
   const renderNotificationItem = ({ item }: { item: Notification }) => {
     // Format date
     const date = new Date(item.createdAt);
     const formattedDate =
-      date.toLocaleDateString() + " " + date.toLocaleTimeString();
+      date.toLocaleDateString(locale) + " " + date.toLocaleTimeString(locale);
 
     // Get translated title and message based on notification type
     let translatedTitle = item.title;
@@ -207,6 +216,72 @@ export default function NotificationsScreen() {
         options={{
           title: t("notifications"),
           headerBackButtonDisplayMode: "minimal",
+          headerRight: () => (
+            <View>
+              <TouchableOpacity
+                onPress={() => setMenuVisible(true)}
+                style={styles.menuButton}
+              >
+                {/* <Ionicons
+                  name="ellipsis-vertical"
+                  size={24}
+                  color={colorScheme === "dark" ? "#FFF" : "#000"}
+                /> */}
+                <MaterialIcons
+                  name="more-vert"
+                  size={24}
+                  color={colorScheme === "dark" ? "#FFF" : "#000"}
+                />
+              </TouchableOpacity>
+
+              <Modal
+                visible={menuVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setMenuVisible(false)}
+              >
+                <Pressable
+                  style={styles.modalOverlay}
+                  onPress={() => setMenuVisible(false)}
+                >
+                  <View
+                    style={[
+                      styles.dropdownMenu,
+                      {
+                        backgroundColor:
+                          colorScheme === "dark" ? "#2C2C2E" : "#FFF",
+                      },
+                    ]}
+                  >
+                    <TouchableOpacity
+                      style={[
+                        styles.menuItem,
+                        !hasUnreadNotifications && styles.menuItemDisabled,
+                      ]}
+                      onPress={markAllAsRead}
+                      disabled={!hasUnreadNotifications}
+                    >
+                      <Ionicons
+                        name="checkmark-done"
+                        size={20}
+                        color={hasUnreadNotifications ? "#AE75DA" : "#999"}
+                        style={styles.menuIcon}
+                      />
+                      <ThemedText
+                        style={[
+                          styles.menuItemText,
+                          !hasUnreadNotifications &&
+                            styles.menuItemTextDisabled,
+                        ]}
+                      >
+                        {t("markAllAsRead") || "Mark all as read"}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                </Pressable>
+              </Modal>
+            </View>
+          ),
         }}
       />
 
@@ -322,5 +397,47 @@ const styles = StyleSheet.create({
   markAllText: {
     color: "#AE75DA",
     fontSize: 14,
+  },
+  menuButton: {
+    padding: 4,
+    // marginRight: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
+  },
+  dropdownMenu: {
+    marginTop: 90,
+    marginRight: 16,
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    minWidth: 200,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  menuItemDisabled: {
+    opacity: 0.5,
+  },
+  menuIcon: {
+    marginRight: 12,
+  },
+  menuItemText: {
+    fontSize: 16,
+  },
+  menuItemTextDisabled: {
+    color: "#999",
   },
 });

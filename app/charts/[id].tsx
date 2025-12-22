@@ -29,6 +29,7 @@ import { User } from "@/types/user";
 import { extractYouTubeVideoId } from "@/utils/youtubeUtils";
 import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
+import { useShowAds } from "@/hooks/useShowAds";
 
 export default function ChartDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -59,6 +60,7 @@ export default function ChartDetailScreen() {
   });
   const [postsLoading, setPostsLoading] = useState(false);
   const { t } = useLocalization();
+  const { showAds } = useShowAds();
 
   // Function to open YouTube search
   const openYouTubeSearch = () => {
@@ -472,6 +474,24 @@ export default function ChartDetailScreen() {
               },
             ]}
           >
+            {showAds && (
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => router.push("/shop")}
+              >
+                <Image
+                  source={require("@/assets/images/star.svg")}
+                  style={{
+                    width: 22,
+                    height: 22,
+                    tintColor: Colors[colorScheme ?? "light"].text,
+                  }}
+                />
+                <ThemedText style={styles.dropdownText}>
+                  {t("removeAds")}
+                </ThemedText>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={styles.dropdownItem}
               onPress={handleCopyTitle}
@@ -497,11 +517,6 @@ export default function ChartDetailScreen() {
               style={styles.dropdownItem}
               onPress={openYouTubeSearch}
             >
-              {/* <MaterialIcons
-                name="search"
-                size={22}
-                color={Colors[colorScheme ?? "light"].text}
-              /> */}
               <Image
                 source={require("@/assets/images/youtube-logo.svg")}
                 style={{

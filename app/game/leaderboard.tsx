@@ -159,7 +159,7 @@ export default function LeaderboardScreen() {
           data={leaderboard}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={{...styles.listContent, paddingBottom: showActualAds ? 60 : 0}}
           ListEmptyComponent={
             <ThemedText style={styles.emptyText}>{t("noScoresYet")}</ThemedText>
           }

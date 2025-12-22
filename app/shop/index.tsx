@@ -62,7 +62,10 @@ const useShop = (): ShopContext => {
   ): Promise<boolean> => {
     if (price === null) return true;
     if (crystalBalance < price) {
-      Alert.alert(t("insufficientCrystals"), t("needMoreCrystals", { amount: price }));
+      Alert.alert(
+        t("insufficientCrystals"),
+        t("needMoreCrystals", { amount: price })
+      );
       return false;
     }
     await fetchDataImmediately("crystalStatus");
@@ -236,7 +239,10 @@ export default function ShopScreen() {
                   const success = await purchaseProduct(sku);
                   if (success) {
                     await onSuccess();
-                    Alert.alert(t("success"), t("purchaseSuccessful", { itemName }));
+                    Alert.alert(
+                      t("success"),
+                      t("purchaseSuccessful", { itemName })
+                    );
                   } else {
                     Alert.alert(t("failed"), t("purchaseCouldNotBeCompleted"));
                   }
@@ -255,20 +261,31 @@ export default function ShopScreen() {
           ]
         );
       } else {
-        Alert.alert(t("confirm"), t("spendCrystalsOnItem", { price, itemName }), [
-          {
-            text: t("yes"),
-            onPress: async () => {
-              const success = await purchaseItem(itemId, price);
-              if (success) {
-                await onSuccess();
-                Alert.alert(t("success"), t("purchaseSuccessful", { itemName }));
-              }
-              setLoading(false);
+        Alert.alert(
+          t("confirm"),
+          t("spendCrystalsOnItem", { price, itemName }),
+          [
+            {
+              text: t("yes"),
+              onPress: async () => {
+                const success = await purchaseItem(itemId, price);
+                if (success) {
+                  await onSuccess();
+                  Alert.alert(
+                    t("success"),
+                    t("purchaseSuccessful", { itemName })
+                  );
+                }
+                setLoading(false);
+              },
             },
-          },
-          { text: t("cancel"), style: "cancel", onPress: () => setLoading(false) },
-        ]);
+            {
+              text: t("cancel"),
+              style: "cancel",
+              onPress: () => setLoading(false),
+            },
+          ]
+        );
       }
     } catch (error: any) {
       Alert.alert(t("error"), error.message || t("somethingWentWrong"));
@@ -439,8 +456,8 @@ export default function ShopScreen() {
                   <ActivityIndicator color="#FFF" />
                 ) : (
                   <ThemedText style={styles.buttonText}>
-                    {products.find((p) => p.productId === "removeadspermanent")
-                      ?.price || "$28"}
+                    {products.find((p) => p.id === "removeadspermanent")
+                      ?.displayPrice || t("loading")}
                   </ThemedText>
                 )}
               </TouchableOpacity>
@@ -505,7 +522,9 @@ export default function ShopScreen() {
                   {loading ? (
                     <ActivityIndicator color="#FFF" />
                   ) : threeLifeDayPassStatus?.active ? (
-                    <ThemedText style={styles.buttonText}>{t("active")}</ThemedText>
+                    <ThemedText style={styles.buttonText}>
+                      {t("active")}
+                    </ThemedText>
                   ) : (
                     <View style={styles.crystalButtonContent}>
                       <Image
@@ -518,7 +537,7 @@ export default function ShopScreen() {
                 </TouchableOpacity>
               </View>
               {threeLifeDayPassStatus?.active && (
-                <ThemedText style={{ marginTop: 10, alignSelf: 'flex-start' }}>
+                <ThemedText style={{ marginTop: 10, alignSelf: "flex-start" }}>
                   {t("timeRemaining")}: {threeLifedayPassRemainingTime}
                 </ThemedText>
               )}
@@ -567,8 +586,8 @@ export default function ShopScreen() {
                     <ActivityIndicator color="#FFF" />
                   ) : (
                     <ThemedText style={styles.buttonText}>
-                      {products.find((p) => p.productId === item.id)?.price ||
-                        `$${item.price}`}
+                      {products.find((p) => p.id === item.id)?.displayPrice ||
+                        t("loading")}
                     </ThemedText>
                   )}
                 </TouchableOpacity>

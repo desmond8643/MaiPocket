@@ -1,4 +1,4 @@
-// import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
+import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useLocalization } from "@/context/LocalizationContext";

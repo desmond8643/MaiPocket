@@ -113,7 +113,7 @@ export default function GamePlayScreen() {
     if (mode === "visual" && isImageLoading && timeLeft === 15) {
       return; // Don't start timer yet
     }
-    
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 0) {
@@ -520,7 +520,9 @@ export default function GamePlayScreen() {
     return (
       <ThemedView style={[styles.container, styles.centered]}>
         <ActivityIndicator size="large" color="#696FC7" />
-        <ThemedText style={{ marginTop: 16 }}>{t("loadingQuestions")}</ThemedText>
+        <ThemedText style={{ marginTop: 16 }}>
+          {t("loadingQuestions")}
+        </ThemedText>
       </ThemedView>
     );
   }
@@ -575,7 +577,9 @@ export default function GamePlayScreen() {
         <ThemedText style={[styles.scoreText, styles.bestScoreText]}>
           {t("bestScore")}: {bestScore}{" "}
           {isNewRecord && (
-            <ThemedText style={{ color: "#4CAF50" }}>{t("newRecord")}</ThemedText>
+            <ThemedText style={{ color: "#4CAF50" }}>
+              {t("newRecord")}
+            </ThemedText>
           )}
         </ThemedText>
         {/* Add this section to display crystal rewards */}
@@ -610,6 +614,16 @@ export default function GamePlayScreen() {
             <ThemedText style={styles.buttonText}>{t("backToMenu")}</ThemedText>
           </TouchableOpacity>
         </View>
+        {showAds && (
+          <View style={[styles.buttonRow, { marginTop: 16 }]}>
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: "#3AB795" }]}
+              onPress={() => router.replace("/shop")}
+            >
+              <ThemedText style={styles.buttonText}>{t("removeAds")}</ThemedText>
+            </TouchableOpacity>
+          </View>
+        )}
       </ThemedView>
     );
   }
@@ -669,7 +683,9 @@ export default function GamePlayScreen() {
                 ) : isAudioPlaying ? (
                   <>
                     <Ionicons name="pause-circle" size={80} color="#696FC7" />
-                    <ThemedText style={styles.playButtonText}>{t("pause")}</ThemedText>
+                    <ThemedText style={styles.playButtonText}>
+                      {t("pause")}
+                    </ThemedText>
                   </>
                 ) : (
                   <>
