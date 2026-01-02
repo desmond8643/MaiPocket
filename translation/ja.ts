@@ -405,4 +405,8 @@ export default {
   viewChart: "詳細を見る",
   shuffleAgain: "もう一度シャッフル",
   shuffling: "シャッフル中...",
+
+  // timeline
+  timeline: "タイムライン",
+  viewNewReleases: "リリース日順で新曲を表示",
 };

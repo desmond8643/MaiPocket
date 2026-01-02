@@ -477,7 +477,10 @@ export default function ChartDetailScreen() {
             {showAds && (
               <TouchableOpacity
                 style={styles.dropdownItem}
-                onPress={() => router.push("/shop")}
+                onPress={() => {
+                  router.push("/shop");
+                  setShowDropdown(false);
+                }}
               >
                 <Image
                   source={require("@/assets/images/star.svg")}

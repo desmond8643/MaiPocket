@@ -407,4 +407,8 @@ export default {
   viewChart: "View Chart",
   shuffleAgain: "Shuffle Again",
   shuffling: "Shuffling...",
+
+  // timeline
+  timeline: "Timeline",
+  viewNewReleases: "View new song releases by date",
 };

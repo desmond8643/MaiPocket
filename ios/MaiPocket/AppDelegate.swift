@@ -17,7 +17,12 @@ public class AppDelegate: ExpoAppDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
     FirebaseApp.configure()
-    
+    // Clear badge on app launch
+    UIApplication.shared.applicationIconBadgeNumber = 0
+
+    // Remove all delivered notifications from notification center
+    UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+
     UNUserNotificationCenter.current().delegate = self
     let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
     UNUserNotificationCenter.current().requestAuthorization(

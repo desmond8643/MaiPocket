@@ -130,23 +130,23 @@ export default function HomeScreen() {
         if (token) {
           await NotificationAPI.sendFCMToken(token);
         }
-  
+
         // Listen for token refresh using modular API
         const app = getApp();
         const messaging = getMessaging(app);
-        
+
         const unsubscribe = onTokenRefresh(messaging, async (newToken) => {
           const stillLoggedIn = await AuthAPI.isLoggedIn();
           if (stillLoggedIn) {
             await NotificationAPI.sendFCMToken(newToken);
           }
         });
-  
+
         // Cleanup on unmount
         return () => unsubscribe();
       }
     };
-  
+
     initializeFCM();
   }, []);
 
@@ -188,21 +188,21 @@ export default function HomeScreen() {
           </View>
         </TouchableOpacity>
         <TouchableOpacity
-          style={{ ...styles.featureContainer, backgroundColor: "#F75270" }}
-          onPress={() => router.push("/profile")}
+          style={{ ...styles.featureContainer, backgroundColor: "#FF9500" }}
+          onPress={() => router.push("/timeline")}
         >
           <View style={styles.featureTitleContainer}>
             <ThemedText
               type="subtitle"
               style={{ color: "white", marginTop: 8 }}
             >
-              {t("yourProfile")}
+              {t("timeline")}
             </ThemedText>
-            <Ionicons name="person-outline" size={48} color="white" />
+            <Ionicons name="time-outline" size={48} color="white" />
           </View>
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
-              {t("manageAccount")}
+              {t("viewNewReleases")}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -233,6 +233,26 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={{ ...styles.featureContainer, backgroundColor: "#F75270" }}
+          onPress={() => router.push("/profile")}
+        >
+          <View style={styles.featureTitleContainer}>
+            <ThemedText
+              type="subtitle"
+              style={{ color: "white", marginTop: 8 }}
+            >
+              {t("yourProfile")}
+            </ThemedText>
+            <Ionicons name="person-outline" size={48} color="white" />
+          </View>
+          <View style={styles.featureDescription}>
+            <ThemedText style={{ color: "white" }}>
+              {t("manageAccount")}
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
+        
         {(isLoggedIn || !adsRemoved) && (
           <TouchableOpacity
             style={{ ...styles.featureContainer, backgroundColor: "#AA60C8" }}

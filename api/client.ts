@@ -5,7 +5,7 @@ import axios from "axios";
 
 // Change this to your actual backend URL
 const BASE_URL = "https://maipocket-backend.vercel.app";
-// const BASE_URL = "http://192.168.128.98:3000"
+// const BASE_URL = "http://192.168.128.58:3000"
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -201,6 +201,19 @@ export const ChartAPI = {
       return response.data;
     } catch (error) {
       console.error("Error flagging post:", error);
+      throw error;
+    }
+  },
+
+  // Get charts for timeline (paginated, sorted by release date)
+  getTimelineCharts: async (page: number = 1, limit: number = 50) => {
+    try {
+      const response = await apiClient.get(
+        `/charts/timeline?page=${page}&limit=${limit}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching timeline charts:", error);
       throw error;
     }
   },
