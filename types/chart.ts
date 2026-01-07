@@ -6,6 +6,7 @@ export interface Difficulty {
   };
   charter?: string;
   noteCount?: number;
+  simai?: string
 }
 
 export interface ChartVersionDetails {

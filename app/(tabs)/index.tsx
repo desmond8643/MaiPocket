@@ -235,20 +235,20 @@ export default function HomeScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={{ ...styles.featureContainer, backgroundColor: "#F75270" }}
-          onPress={() => router.push("/profile")}
+          onPress={() => router.push("/maimainet")}
         >
           <View style={styles.featureTitleContainer}>
             <ThemedText
               type="subtitle"
               style={{ color: "white", marginTop: 8 }}
             >
-              {t("yourProfile")}
+              {t("maimaiNet")}
             </ThemedText>
-            <Ionicons name="person-outline" size={48} color="white" />
+            <Ionicons name="globe-outline" size={48} color="white" />
           </View>
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
-              {t("manageAccount")}
+              {t("maimaiNetDescription")}
             </ThemedText>
           </View>
         </TouchableOpacity>

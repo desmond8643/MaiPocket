@@ -125,6 +125,9 @@ export default {
   retry: "再試行",
   noChartsFound: "譜面が見つかりません",
 
+  // Simai
+  simaiChart: "Simai 譜面（参考）",
+
   // Create post page
   createNewPost: "新規投稿",
   chart: "譜面",
@@ -409,4 +412,12 @@ export default {
   // timeline
   timeline: "タイムライン",
   viewNewReleases: "リリース日順で新曲を表示",
+
+  // maimai net
+  maimaiNet: "maimaiでらっくすNET",
+  maimaiNetDescription: "maimaiでらっくすNETにアクセス",
+  maimaiRegion: 'maimaiでらっくすNET地域',
+  international: "海外",
+  japan: "日本",
+  selectRegionDescription: 'アクセスするmaimaiでらっくすNETサイトを選択してください',
 };

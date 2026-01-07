@@ -114,7 +114,7 @@ export default function RootLayout() {
         const timeInBackground = currentTime - lastActiveTime;
 
         // If app was in background for more than 4 hours (14400000 ms)
-        if (timeInBackground > 14400000) {
+        if (timeInBackground > 1800000) {
           // Reload the app
           try {
             Updates.reloadAsync();
@@ -237,6 +237,10 @@ export default function RootLayout() {
               />
               <Stack.Screen
                 name="settings/language"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="settings/maimai-region"
                 options={{ headerShown: false }}
               />
             </Stack>

@@ -129,6 +129,9 @@ export default {
   retry: "Retry",
   noChartsFound: "No charts found",
 
+  // Simai
+  simaiChart: "Simai Chart (Reference)",
+
   // Create post page
   createNewPost: "Create New Post",
   chart: "Chart",
@@ -326,7 +329,10 @@ export default {
   searchingCharts: "Searching charts...",
   failedToSearchCharts: "Failed to search charts. Please try again.",
   noResultsFound: 'No results found for "{{query}}"',
-  resultsCount: "{{count}} {{count === 1 ? 'result' : 'results'}} found",
+  resultsCount: {
+    one: "{{count}} result found",
+    other: "{{count}} results found"
+  },
   unknownArtist: "Unknown Artist",
 
   // Edit Profile page
@@ -411,4 +417,12 @@ export default {
   // timeline
   timeline: "Timeline",
   viewNewReleases: "View new song releases by date",
+
+  // maimai net
+  maimaiNet: "maimai DX NET",
+  maimaiNetDescription: "Access your maimai DX NET",
+  maimaiRegion: 'maimai DX NET Region',
+  international: 'International',
+  japan: 'Japan',
+  selectRegionDescription: 'Choose which maimai DX NET site to access'
 };

@@ -233,6 +233,16 @@ export default function SettingsScreen() {
               </ThemedText>
               <Ionicons name="chevron-forward" size={24} color="#999" />
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={() => router.push("/settings/maimai-region")}
+            >
+              <Ionicons name="globe-outline" size={24} color="#AE75DA" />
+              <ThemedText style={styles.optionText}>
+                {t("maimaiRegion")}
+              </ThemedText>
+              <Ionicons name="chevron-forward" size={24} color="#999" />
+            </TouchableOpacity>
             {isLoggedIn && (
               <>
                 <TouchableOpacity

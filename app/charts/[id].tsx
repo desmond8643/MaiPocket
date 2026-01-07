@@ -11,6 +11,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  TextInput,
   ToastAndroid,
   TouchableOpacity,
   View,
@@ -61,6 +62,7 @@ export default function ChartDetailScreen() {
   const [postsLoading, setPostsLoading] = useState(false);
   const { t } = useLocalization();
   const { showAds } = useShowAds();
+  const [simaiExpanded, setSimaiExpanded] = useState(false);
 
   // Function to open YouTube search
   const openYouTubeSearch = () => {
@@ -421,6 +423,14 @@ export default function ChartDetailScreen() {
   // Add the tag translation function to your component
   const getTagDisplay = (tag: string) => {
     return t(`tag_${tag.replace(/\s+/g, "_")}`);
+  };
+
+  const getCurrentSimai = (): string | null => {
+    if (!chart || !selectedDifficulty) return null;
+    const currentDifficulty = chart[selectedType]?.difficulties.find(
+      (d) => d.type === selectedDifficulty
+    );
+    return currentDifficulty?.simai || null;
   };
 
   return (
@@ -800,7 +810,75 @@ export default function ChartDetailScreen() {
                   </TouchableOpacity>
                 ))}
             </View>
+            {/* Simai Chart Section */}
+            {getCurrentSimai() && (
+              <View style={styles.simaiSection}>
+                <TouchableOpacity
+                  style={styles.simaiHeader}
+                  onPress={() => setSimaiExpanded(!simaiExpanded)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.simaiTitleContainer}>
+                    <MaterialIcons
+                      name="code"
+                      size={20}
+                      color={Colors[colorScheme ?? "light"].text}
+                    />
+                    <ThemedText style={styles.simaiTitle}>
+                      {t('simaiChart')}
+                    </ThemedText>
+                  </View>
+                  <MaterialIcons
+                    name={simaiExpanded ? "expand-less" : "expand-more"}
+                    size={24}
+                    color={Colors[colorScheme ?? "light"].text}
+                  />
+                </TouchableOpacity>
 
+                {simaiExpanded && (
+                  <View
+                    style={[
+                      styles.simaiContent,
+                      {
+                        backgroundColor:
+                          colorScheme === "dark" ? "#1a1a2e" : "#f5f5f5",
+                      },
+                    ]}
+                  >
+                    <TextInput
+                      style={[
+                        styles.simaiText,
+                        {
+                          fontFamily:
+                            Platform.OS === "ios" ? "Menlo" : "monospace",
+                          color: colorScheme === "dark" ? "#fff" : "#000",
+                        },
+                      ]}
+                      value={getCurrentSimai()}
+                      editable={false}
+                      multiline={true}
+                      scrollEnabled={false}
+                    />
+                    <TouchableOpacity
+                      style={styles.copySimaiButton}
+                      onPress={() => {
+                        const simai = getCurrentSimai();
+                        if (simai) copyToClipboard(simai);
+                      }}
+                    >
+                      <MaterialIcons
+                        name="content-copy"
+                        size={16}
+                        color="#FFFFFF"
+                      />
+                      <ThemedText style={styles.copySimaiButtonText}>
+                        {t("copy")}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
             {/* Posts Section */}
             <View style={styles.postsSection}>
               <View style={styles.postsSectionHeader}>
@@ -1326,5 +1404,55 @@ const styles = StyleSheet.create({
   tagText: {
     color: "#9944DD",
     fontSize: 12,
+  },
+  simaiSection: {
+    marginBottom: 24,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  simaiHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  simaiTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  simaiTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  simaiContent: {
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  simaiScrollView: {
+    maxHeight: 300,
+  },
+  simaiText: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  copySimaiButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#9944DD",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 12,
+    alignSelf: "flex-end",
+  },
+  copySimaiButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    marginLeft: 6,
+    fontSize: 14,
   },
 });
