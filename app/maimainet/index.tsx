@@ -5,11 +5,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Modal,
   Pressable,
   StyleSheet,
   View,
   useColorScheme,
-  useWindowDimensions,
 } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -27,7 +27,9 @@ export default function MaimaiNetScreen() {
   const [defaultRegion, setDefaultRegion] = useState("international");
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
+  const [popupUrl, setPopupUrl] = useState<string | null>(null);
   const webViewRef = useRef<WebView>(null);
+  const popupWebViewRef = useRef<WebView>(null);
   const colorScheme = useColorScheme();
 
   const translateX = useSharedValue(0);
@@ -139,6 +141,142 @@ export default function MaimaiNetScreen() {
     webViewRef.current?.injectJavaScript(script);
   }, []);
 
+  // Handle when mai-tools script tries to open a new tab
+  const handleOpenWindow = useCallback((syntheticEvent: any) => {
+    const { nativeEvent } = syntheticEvent;
+    if (nativeEvent.targetUrl) {
+      setPopupUrl(nativeEvent.targetUrl);
+    }
+  }, []);
+
+  // Handle messages FROM the main WebView (maimai DX NET)
+  // These are responses from the mai-tools script that need to go to the popup
+  const handleMainWebViewMessage = useCallback((event: any) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === "BRIDGE_TO_POPUP" && popupWebViewRef.current) {
+        // Forward message to popup WebView
+        const script = `
+          window.postMessage(${JSON.stringify(data.payload)}, "*");
+          true;
+        `;
+        popupWebViewRef.current.injectJavaScript(script);
+      }
+    } catch (e) {
+      // Not a bridge message, ignore
+    }
+  }, []);
+
+  // Handle messages FROM the popup WebView (rating-calculator)
+  // These are requests that need to go to the main WebView
+  const handlePopupWebViewMessage = useCallback((event: any) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === "BRIDGE_TO_MAIN" && webViewRef.current) {
+        // Forward message to main WebView - simulate it coming from myjian.github.io
+        const script = `
+          (function() {
+            var event = new MessageEvent('message', {
+              data: ${JSON.stringify(data.payload)},
+              origin: 'https://myjian.github.io',
+              source: window
+            });
+            // Dispatch to any listeners
+            window.dispatchEvent(event);
+            // Also try the ratingCalcMsgListener directly if it exists
+            if (window.ratingCalcMsgListener) {
+              window.ratingCalcMsgListener(event);
+            }
+          })();
+          true;
+        `;
+        webViewRef.current.injectJavaScript(script);
+      }
+    } catch (e) {
+      // Not a bridge message, ignore
+    }
+  }, []);
+
+  // Script injected into the MAIN WebView to intercept postMessage calls to the popup
+  const mainBridgeScript = `
+    (function() {
+      if (window.__mainBridgeInstalled) return;
+      window.__mainBridgeInstalled = true;
+      
+      // Store the original postMessage
+      const originalPostMessage = window.postMessage.bind(window);
+      
+      // Create a fake "source" object that intercepts postMessage from mai-tools
+      // When mai-tools calls e.source.postMessage(data, origin), we forward to React Native
+      const createFakeSource = function() {
+        return {
+          postMessage: function(data, origin) {
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'BRIDGE_TO_POPUP',
+                payload: data
+              }));
+            }
+          }
+        };
+      };
+      
+      // Patch the event listener to inject our fake source
+      const originalAddEventListener = window.addEventListener.bind(window);
+      window.addEventListener = function(type, listener, options) {
+        if (type === 'message') {
+          const wrappedListener = function(event) {
+            // Create a new event with a fake source that bridges to React Native
+            const fakeEvent = {
+              data: event.data,
+              origin: event.origin,
+              source: createFakeSource()
+            };
+            listener(fakeEvent);
+          };
+          return originalAddEventListener(type, wrappedListener, options);
+        }
+        return originalAddEventListener(type, listener, options);
+      };
+    })();
+    true;
+  `;
+
+  // Script injected into the POPUP WebView to bridge messages back to main
+  const popupBridgeScript = `
+    (function() {
+      if (window.__popupBridgeInstalled) return;
+      window.__popupBridgeInstalled = true;
+      
+      // Create a fake opener that forwards postMessage to React Native
+      window.opener = {
+        postMessage: function(data, origin) {
+          if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'BRIDGE_TO_MAIN',
+              payload: data
+            }));
+          }
+        }
+      };
+      
+      // Also override parent.postMessage in case it's used
+      if (!window.parent || window.parent === window) {
+        window.parent = {
+          postMessage: function(data, origin) {
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'BRIDGE_TO_MAIN',
+                payload: data
+              }));
+            }
+          }
+        };
+      }
+    })();
+    true;
+  `;
+
   return (
     <ThemedView style={styles.container}>
       <Stack.Screen
@@ -207,6 +345,11 @@ export default function MaimaiNetScreen() {
               javaScriptEnabled={true}
               domStorageEnabled={true}
               startInLoadingState={true}
+              setSupportMultipleWindows={true}
+              javaScriptCanOpenWindowsAutomatically={true}
+              onOpenWindow={handleOpenWindow}
+              onMessage={handleMainWebViewMessage}
+              injectedJavaScript={mainBridgeScript}
               onNavigationStateChange={(navState) => {
                 setCanGoBack(navState.canGoBack);
                 setCanGoForward(navState.canGoForward);
@@ -219,6 +362,52 @@ export default function MaimaiNetScreen() {
           </Animated.View>
         </View>
       </GestureDetector>
+
+      {/* Popup WebView for mai-tools new tab */}
+      <Modal
+        visible={!!popupUrl}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setPopupUrl(null)}
+      >
+        <View
+          style={[
+            styles.modalContainer,
+            { backgroundColor: colorScheme === "dark" ? "#000" : "#fff" },
+          ]}
+        >
+          <View
+            style={[
+              styles.modalHeader,
+              {
+                borderBottomColor: colorScheme === "dark" ? "#333" : "#eee",
+              },
+            ]}
+          >
+            <Pressable
+              onPress={() => setPopupUrl(null)}
+              style={styles.closeButton}
+            >
+              <Ionicons
+                name="close"
+                size={28}
+                color={colorScheme === "dark" ? "white" : "black"}
+              />
+            </Pressable>
+          </View>
+          {popupUrl && (
+            <WebView
+              ref={popupWebViewRef}
+              source={{ uri: popupUrl }}
+              style={styles.webView}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              onMessage={handlePopupWebViewMessage}
+              injectedJavaScriptBeforeContentLoaded={popupBridgeScript}
+            />
+          )}
+        </View>
+      </Modal>
     </ThemedView>
   );
 }
@@ -258,5 +447,17 @@ const styles = StyleSheet.create({
   toolboxIcon: {
     width: 25,
     height: 25,
+  },
+  modalContainer: {
+    flex: 1,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    padding: 12,
+    borderBottomWidth: 1,
+  },
+  closeButton: {
+    padding: 4,
   },
 });
