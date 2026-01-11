@@ -420,4 +420,36 @@ export default {
   international: "海外",
   japan: "日本",
   selectRegionDescription: 'アクセスするmaimaiでらっくすNETサイトを選択してください',
+
+  // Chart Patterns
+  chartPatterns: "譜面パターン",
+  chartPatternsDesc: "ノーツパターンで譜面を検索",
+  discoverPatterns: "パターンで譜面を探す",
+  discoverPatternsDesc: "特定のノーツパターンを含む譜面を見つけて、スキルを練習・向上させましょう。",
+  patternTrills: "トリル",
+  patternTrillsDesc: "2つのポジション間で交互に高速で叩くノーツ。スピードと安定性の練習に最適。",
+  patternSlides: "スライド",
+  patternSlidesDesc: "画面を横切る連続したスライド動作。",
+  patternSpins: "スピン",
+  patternSpinsDesc: "中心を回る円形のパターン。",
+  comingSoon: "近日公開",
+  
+  // Trill list
+  sortLongestTrill: "最長",
+  sortSpeed: "速度",
+  sortLevel: "レベル",
+  sortTrillCount: "回数",
+  notes: "ノーツ",
+  errorLoadingCharts: "譜面の読み込みに失敗しました。もう一度お試しください。",
+  noTrillChartsFound: "トリルのある譜面が見つかりません",
+  
+  // Trill details modal
+  trillDetails: "トリル詳細",
+  trillsFound: "トリル",
+  trill: "トリル",
+  length: "長さ",
+  duration: "継続時間",
+  speed: "速度",
+  positions: "位置",
+  notesPerSec: "ノーツ/秒"
 };

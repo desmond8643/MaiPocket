@@ -289,13 +289,6 @@ export default function ChartListScreen() {
     };
   };
 
-  // Helper function to get chart constant (level display)
-  const getChartConstant = (level: number): string => {
-    return Math.round((level % 1) * 100) / 100 >= 0.6
-      ? `${Math.floor(level)}+`
-      : `${Math.floor(level)}`;
-  };
-
   // Update the getDifficulties function to handle level as an object
   const getDifficulties = (chart: Chart) => {
     interface SimpleDifficulty {

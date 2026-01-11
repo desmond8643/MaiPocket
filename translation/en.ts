@@ -424,5 +424,37 @@ export default {
   maimaiRegion: 'maimai DX NET Region',
   international: 'International',
   japan: 'Japan',
-  selectRegionDescription: 'Choose which maimai DX NET site to access'
+  selectRegionDescription: 'Choose which maimai DX NET site to access',
+
+  // Chart Patterns
+  chartPatterns: "Chart Patterns",
+  chartPatternsDesc: "Find charts by note patterns",
+  discoverPatterns: "Discover Charts by Pattern",
+  discoverPatternsDesc: "Find charts that feature specific note patterns to help you practice and improve your skills.",
+  patternTrills: "Trills",
+  patternTrillsDesc: "Rapid alternating notes between two positions. Great for practicing speed and consistency.",
+  patternSlides: "Slides",
+  patternSlidesDesc: "Continuous sliding motions across the screen.",
+  patternSpins: "Spins",
+  patternSpinsDesc: "Circular spinning patterns around the center.",
+  comingSoon: "Coming Soon",
+  
+  // Trill list
+  sortLongestTrill: "Longest",
+  sortSpeed: "Speed",
+  sortLevel: "Level", 
+  sortTrillCount: "Count",
+  notes: "notes",
+  errorLoadingCharts: "Failed to load charts. Please try again.",
+  noTrillChartsFound: "No charts with trills found",
+  
+  // Trill details modal
+  trillDetails: "Trill Details",
+  trillsFound: "trills",
+  trill: "Trill",
+  length: "Length",
+  duration: "Duration",
+  speed: "Speed",
+  positions: "Positions",
+  notesPerSec: "Notes/sec"
 };

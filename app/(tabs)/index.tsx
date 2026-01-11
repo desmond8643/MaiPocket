@@ -11,6 +11,8 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { getFCMToken } from "@/utils/useFCMToken";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getApp } from "@react-native-firebase/app";
+import { getMessaging, onTokenRefresh } from "@react-native-firebase/messaging";
 import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -23,8 +25,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
-import { getMessaging, onTokenRefresh } from "@react-native-firebase/messaging";
-import { getApp } from "@react-native-firebase/app";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -207,6 +207,25 @@ export default function HomeScreen() {
           </View>
         </TouchableOpacity>
         <TouchableOpacity
+          style={{ ...styles.featureContainer, backgroundColor: "#E91E63" }}
+          onPress={() => router.push("/charts/patterns")}
+        >
+          <View style={styles.featureTitleContainer}>
+            <ThemedText
+              type="subtitle"
+              style={{ color: "white", marginTop: 8 }}
+            >
+              {t("chartPatterns")}
+            </ThemedText>
+            <Ionicons name="stats-chart-outline" size={48} color="white" />
+          </View>
+          <View style={styles.featureDescription}>
+            <ThemedText style={{ color: "white" }}>
+              {t("chartPatternsDesc")}
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity
           style={{ ...styles.featureContainer, backgroundColor: "#4CAF50" }}
           onPress={() => router.push("/game")}
           disabled={isLoggedIn && isDataLoading}
@@ -234,7 +253,7 @@ export default function HomeScreen() {
           </View>
         </TouchableOpacity>
         <TouchableOpacity
-          style={{ ...styles.featureContainer, backgroundColor: "#F75270" }}
+          style={{ ...styles.featureContainer, backgroundColor: "#313647" }}
           onPress={() => router.push("/maimainet")}
         >
           <View style={styles.featureTitleContainer}>
@@ -252,7 +271,6 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         </TouchableOpacity>
-        
         {(isLoggedIn || !adsRemoved) && (
           <TouchableOpacity
             style={{ ...styles.featureContainer, backgroundColor: "#AA60C8" }}
