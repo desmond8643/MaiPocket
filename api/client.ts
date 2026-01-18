@@ -249,6 +249,39 @@ export const ChartAPI = {
       throw error;
     }
   },
+
+  // Get user's favorite charts
+  getFavoriteCharts: async () => {
+    try {
+      const response = await apiClient.get("/charts/favorites");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching favorite charts:", error);
+      throw error;
+    }
+  },
+
+  // Toggle favorite status for a chart
+  toggleFavorite: async (chartId: string) => {
+    try {
+      const response = await apiClient.post(`/charts/${chartId}/favorite`);
+      return response.data;
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      throw error;
+    }
+  },
+
+  // Check if a chart is favorited
+  checkFavorite: async (chartId: string) => {
+    try {
+      const response = await apiClient.get(`/charts/${chartId}/favorite`);
+      return response.data;
+    } catch (error) {
+      console.error("Error checking favorite status:", error);
+      throw error;
+    }
+  },
 };
 
 export const AuthAPI = {

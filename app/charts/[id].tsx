@@ -25,12 +25,12 @@ import { YouTubePreview } from "@/components/YouTubePreview";
 import { Colors } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useShowAds } from "@/hooks/useShowAds";
 import { Chart, Post } from "@/types/chart";
 import { User } from "@/types/user";
 import { extractYouTubeVideoId } from "@/utils/youtubeUtils";
 import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
-import { useShowAds } from "@/hooks/useShowAds";
 
 export default function ChartDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -63,6 +63,8 @@ export default function ChartDetailScreen() {
   const { t } = useLocalization();
   const { showAds } = useShowAds();
   const [simaiExpanded, setSimaiExpanded] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   // Function to open YouTube search
   const openYouTubeSearch = () => {
@@ -309,6 +311,46 @@ export default function ChartDetailScreen() {
 
     fetchUserData();
   }, []);
+
+  // Check if chart is favorited
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (!id) return;
+      try {
+        const isLoggedIn = await AuthAPI.isLoggedIn();
+        if (isLoggedIn) {
+          const result = await ChartAPI.checkFavorite(id.toString());
+          setIsFavorite(result.isFavorite);
+        }
+      } catch (err) {
+        console.error("Error checking favorite status:", err);
+      }
+    };
+
+    checkFavoriteStatus();
+  }, [id]);
+
+  // Toggle favorite handler
+  const handleToggleFavorite = async () => {
+    try {
+      const isLoggedIn = await AuthAPI.isLoggedIn();
+
+      if (!isLoggedIn) {
+        router.push({
+          pathname: "/auth/login",
+        });
+        return;
+      }
+
+      setFavoriteLoading(true);
+      const result = await ChartAPI.toggleFavorite(id!.toString());
+      setIsFavorite(result.isFavorite);
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
 
   console.log(user);
   console.log(posts);
@@ -810,6 +852,38 @@ export default function ChartDetailScreen() {
                   </TouchableOpacity>
                 ))}
             </View>
+
+            {/* Favorite Button */}
+            <TouchableOpacity
+              style={[
+                styles.favoriteButton,
+                {
+                  backgroundColor: isFavorite
+                    ? "rgba(224, 36, 94, 0.1)"
+                    : colorScheme === "dark"
+                    ? "#333333"
+                    : "#F5F5F5",
+                  borderColor: isFavorite ? "#E0245E" : "transparent",
+                },
+              ]}
+              onPress={handleToggleFavorite}
+              disabled={favoriteLoading}
+            >
+              <MaterialIcons
+                name={isFavorite ? "favorite" : "favorite-border"}
+                size={20}
+                color={isFavorite ? "#E0245E" : Colors[colorScheme ?? "light"].text}
+              />
+              <ThemedText
+                style={[
+                  styles.favoriteButtonText,
+                  isFavorite && { color: "#E0245E" },
+                ]}
+              >
+                {isFavorite ? t("removeFromFavorites") : t("addToFavorites")}
+              </ThemedText>
+            </TouchableOpacity>
+
             {/* Simai Chart Section */}
             {getCurrentSimai() && (
               <View style={styles.simaiSection}>
@@ -1258,6 +1332,21 @@ const styles = StyleSheet.create({
   headerButton: {
     padding: 4,
     marginRight: 0,
+  },
+  favoriteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 24,
+    borderWidth: 1,
+  },
+  favoriteButtonText: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: "500",
   },
   modalOverlay: {
     flex: 1,

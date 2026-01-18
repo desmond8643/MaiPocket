@@ -451,5 +451,12 @@ export default {
   duration: "継続時間",
   speed: "速度",
   positions: "位置",
-  notesPerSec: "ノーツ/秒"
+  notesPerSec: "ノーツ/秒",
+
+  // Favorites
+  favorites: "お気に入り",
+  noFavorites: "お気に入りはまだありません",
+  noFavoritesDesc: "譜面のハートアイコンをタップしてお気に入りに追加してください",
+  addToFavorites: "お気に入りに追加",
+  removeFromFavorites: "お気に入りから削除"
 };

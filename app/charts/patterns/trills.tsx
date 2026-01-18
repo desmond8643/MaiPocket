@@ -167,6 +167,7 @@ export default function TrillsListScreen() {
         });
       });
     } else {
+      setModalVisible(false);
       router.push({
         pathname: "/charts/[id]",
         params: { id: chartId },
@@ -658,7 +659,7 @@ const styles = StyleSheet.create({
     gap: 8,
     flexDirection: "row",
     paddingBottom: 8,
-    marginTop: 4
+    marginTop: 4,
   },
   sortButton: {
     paddingHorizontal: 16,

@@ -456,5 +456,12 @@ export default {
   duration: "Duration",
   speed: "Speed",
   positions: "Positions",
-  notesPerSec: "Notes/sec"
+  notesPerSec: "Notes/sec",
+
+  // Favorites
+  favorites: "Favorites",
+  noFavorites: "No favorites yet",
+  noFavoritesDesc: "Tap the heart icon on any chart to add it to your favorites",
+  addToFavorites: "Add to Favorites",
+  removeFromFavorites: "Remove from Favorites"
 };

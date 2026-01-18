@@ -193,6 +193,17 @@ export default function ProfileScreen() {
 
                 <TouchableOpacity
                   style={styles.settingsItem}
+                  onPress={() => router.push("/settings/favorites")}
+                >
+                  <Ionicons name="heart-outline" size={24} color="#AE75DA" />
+                  <ThemedText style={styles.settingLabel}>
+                  {t("favorites")}
+                  </ThemedText>
+                  <Ionicons name="chevron-forward" size={24} color="#999" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.settingsItem}
                   onPress={handleLogout}
                 >
                   <Ionicons name="log-out-outline" size={24} color="#FF6B6B" />
