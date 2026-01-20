@@ -6,12 +6,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { useShowAds } from "@/hooks/useShowAds";
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
-import {
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface PatternCategory {
   id: string;
@@ -34,13 +29,13 @@ const PATTERN_CATEGORIES: PatternCategory[] = [
     available: true,
   },
   {
-    id: "slides",
-    titleKey: "patternSlides",
-    descriptionKey: "patternSlidesDesc",
-    icon: "arrow-forward",
-    color: "#2196F3",
-    route: "/charts/patterns/slides",
-    available: false, // Coming soon
+    id: "moving-trills",
+    titleKey: "patternMovingTrills",
+    descriptionKey: "patternMovingTrillsDesc",
+    icon: "shuffle",
+    color: "#FF6B35",
+    route: "/charts/patterns/moving-trills",
+    available: true,
   },
   {
     id: "spins",
@@ -49,8 +44,18 @@ const PATTERN_CATEGORIES: PatternCategory[] = [
     icon: "sync",
     color: "#4CAF50",
     route: "/charts/patterns/spins",
+    available: true,
+  },
+  {
+    id: "slides",
+    titleKey: "patternSlides",
+    descriptionKey: "patternSlidesDesc",
+    icon: "arrow-forward",
+    color: "#2196F3",
+    route: "/charts/patterns/slides",
     available: false, // Coming soon
   },
+  
 ];
 
 export default function PatternsIndexScreen() {
@@ -209,4 +214,3 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
-

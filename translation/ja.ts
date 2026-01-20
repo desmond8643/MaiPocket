@@ -428,6 +428,8 @@ export default {
   discoverPatternsDesc: "特定のノーツパターンを含む譜面を見つけて、スキルを練習・向上させましょう。",
   patternTrills: "トリル",
   patternTrillsDesc: "2つのポジション間で交互に高速で叩くノーツ。スピードと安定性の練習に最適。",
+  patternMovingTrills: "移動トリル",
+  patternMovingTrillsDesc: "一定のリズムを保ちながら異なる位置を移動する高速パターン。",
   patternSlides: "スライド",
   patternSlidesDesc: "画面を横切る連続したスライド動作。",
   patternSpins: "スピン",
@@ -452,6 +454,27 @@ export default {
   speed: "速度",
   positions: "位置",
   notesPerSec: "ノーツ/秒",
+
+  // Moving Trill details modal
+  movingTrillDetails: "移動トリル詳細",
+  movingTrillsFound: "移動トリル",
+  movingTrill: "移動トリル",
+  noMovingTrillChartsFound: "移動トリルのある譜面が見つかりません",
+  uniquePositions: "使用位置",
+  pattern: "パターン",
+
+  // Spin list
+  sortLongestSpin: "最長",
+  sortRotations: "回転数",
+  sortSpinCount: "回数",
+  noSpinChartsFound: "スピンのある譜面が見つかりません",
+
+  // Spin details modal
+  spinDetails: "スピン詳細",
+  spinsFound: "スピン",
+  spin: "スピン",
+  rotations: "回転数",
+  direction: "方向",
 
   // Favorites
   favorites: "お気に入り",

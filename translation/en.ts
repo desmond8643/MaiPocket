@@ -433,6 +433,8 @@ export default {
   discoverPatternsDesc: "Find charts that feature specific note patterns to help you practice and improve your skills.",
   patternTrills: "Trills",
   patternTrillsDesc: "Rapid alternating notes between two positions. Great for practicing speed and consistency.",
+  patternMovingTrills: "Moving Trills",
+  patternMovingTrillsDesc: "Rapid notes that move across different positions while maintaining consistent rhythm.",
   patternSlides: "Slides",
   patternSlidesDesc: "Continuous sliding motions across the screen.",
   patternSpins: "Spins",
@@ -457,6 +459,27 @@ export default {
   speed: "Speed",
   positions: "Positions",
   notesPerSec: "Notes/sec",
+
+  // Moving Trill details modal
+  movingTrillDetails: "Moving Trill Details",
+  movingTrillsFound: "moving trills",
+  movingTrill: "Moving Trill",
+  noMovingTrillChartsFound: "No charts with moving trills found",
+  uniquePositions: "Positions Used",
+  pattern: "Pattern",
+
+  // Spin list
+  sortLongestSpin: "Longest",
+  sortRotations: "Rotations",
+  sortSpinCount: "Count",
+  noSpinChartsFound: "No charts with spins found",
+
+  // Spin details modal
+  spinDetails: "Spin Details",
+  spinsFound: "spins",
+  spin: "Spin",
+  rotations: "Rotations",
+  direction: "Direction",
 
   // Favorites
   favorites: "Favorites",

@@ -25,6 +25,8 @@ export interface Chart {
   standard?: ChartVersionDetails | null;
   deluxe?: ChartVersionDetails | null;
   trillAnalysis?: TrillAnalysis | null;
+  movingTrillAnalysis?: MovingTrillAnalysis | null;
+  spinAnalysis?: SpinAnalysis | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -68,6 +70,99 @@ export interface TrillChartItem {
   maxTrillLength: number;
   maxSpeed: number;
   totalTrillCount: number;
+  highestLevel: number;
+  fastestDivision: number;
+  fastestBpm: number;
+}
+
+// Moving Trill pattern types
+export interface MovingTrillDetail {
+  length: number;
+  positions: number[];
+  uniquePositions: number[];
+  bpm: number;
+  effectiveDivision: number;
+  timestamp: string;
+  startTimeMs: number;
+  trillLengthMs: number;
+  notesPerSecond: number;
+}
+
+export interface DifficultyMovingTrillAnalysis {
+  version: "standard" | "deluxe";
+  type: string;
+  level: number;
+  trillCount: number;
+  longestTrill: number;
+  fastestSpeed: number;
+  fastestDivision: number;
+  fastestBpm: number;
+  trills: MovingTrillDetail[];
+}
+
+export interface MovingTrillAnalysis {
+  hasMovingTrills: boolean;
+  difficulties: DifficultyMovingTrillAnalysis[];
+}
+
+// Processed chart with moving trill data for list display
+export interface MovingTrillChartItem {
+  _id: string;
+  title: string;
+  image: string;
+  artist?: string;
+  difficulties: DifficultyMovingTrillAnalysis[];
+  maxTrillLength: number;
+  maxSpeed: number;
+  totalTrillCount: number;
+  highestLevel: number;
+  fastestDivision: number;
+  fastestBpm: number;
+}
+
+// Spin pattern types
+export interface SpinDetail {
+  length: number;
+  positions: number[];
+  direction: "cw" | "ccw"; // clockwise or counter-clockwise
+  rotations: number;
+  bpm: number;
+  effectiveDivision: number;
+  timestamp: string;
+  startTimeMs: number;
+  spinLengthMs: number;
+  notesPerSecond: number;
+}
+
+export interface DifficultySpinAnalysis {
+  version: "standard" | "deluxe";
+  type: string;
+  level: number;
+  spinCount: number;
+  longestSpin: number;
+  longestRotations: number;
+  fastestSpeed: number;
+  fastestDivision: number;
+  fastestBpm: number;
+  spins: SpinDetail[];
+}
+
+export interface SpinAnalysis {
+  hasSpins: boolean;
+  difficulties: DifficultySpinAnalysis[];
+}
+
+// Processed chart with spin data for list display
+export interface SpinChartItem {
+  _id: string;
+  title: string;
+  image: string;
+  artist?: string;
+  difficulties: DifficultySpinAnalysis[];
+  maxSpinLength: number;
+  maxRotations: number;
+  maxSpeed: number;
+  totalSpinCount: number;
   highestLevel: number;
   fastestDivision: number;
   fastestBpm: number;
