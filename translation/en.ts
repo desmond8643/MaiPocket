@@ -486,5 +486,9 @@ export default {
   noFavorites: "No favorites yet",
   noFavoritesDesc: "Tap the heart icon on any chart to add it to your favorites",
   addToFavorites: "Add to Favorites",
-  removeFromFavorites: "Remove from Favorites"
+  removeFromFavorites: "Remove from Favorites",
+
+  // Filter
+  filterByLevel: "Filter by Level",
+  all: "All"
 };

@@ -481,5 +481,9 @@ export default {
   noFavorites: "お気に入りはまだありません",
   noFavoritesDesc: "譜面のハートアイコンをタップしてお気に入りに追加してください",
   addToFavorites: "お気に入りに追加",
-  removeFromFavorites: "お気に入りから削除"
+  removeFromFavorites: "お気に入りから削除",
+
+  // Filter
+  filterByLevel: "レベルで絞り込む",
+  all: "すべて"
 };

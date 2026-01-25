@@ -4,12 +4,14 @@ import {
   preloadInterstitialAd,
   showInterstitialAd,
 } from "@/components/InterstitialAdComponent";
+import { LevelFilterModal } from "@/components/LevelFilterModal";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useLevelFilter } from "@/hooks/useLevelFilter";
 import { useShowAds } from "@/hooks/useShowAds";
 import { DifficultyMovingTrillAnalysis, MovingTrillChartItem } from "@/types/chart";
 import { Ionicons } from "@expo/vector-icons";
@@ -63,6 +65,13 @@ export default function MovingTrillsListScreen() {
   const colorScheme = useColorScheme();
   const { t } = useLocalization();
   const { showAds, dynamicStyles } = useShowAds(false);
+  const {
+    levelFilter,
+    setLevelFilter,
+    levelFilterModalVisible,
+    setLevelFilterModalVisible,
+    levelRange,
+  } = useLevelFilter();
 
   const [charts, setCharts] = useState<MovingTrillChartItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,6 +104,7 @@ export default function MovingTrillsListScreen() {
         order,
         page: pageNum,
         limit: 30,
+        ...levelRange,
       });
 
       if (isLoadMore) {
@@ -121,7 +131,7 @@ export default function MovingTrillsListScreen() {
   useEffect(() => {
     setPage(1);
     fetchCharts(1);
-  }, [sortBy, order]);
+  }, [sortBy, order, levelFilter]);
 
   const handleLoadMore = () => {
     if (!loadingMore && hasMore) {
@@ -578,6 +588,36 @@ export default function MovingTrillsListScreen() {
         options={{
           title: `${t("patternMovingTrills")}`,
           headerBackButtonDisplayMode: "minimal",
+          headerRight: () => (
+            <TouchableOpacity
+              style={[
+                styles.headerLevelFilterButton,
+                {
+                  backgroundColor:
+                    levelFilter !== "All"
+                      ? "#FF9800"
+                      : colorScheme === "dark"
+                      ? "#333333"
+                      : "#F0F0F0",
+                },
+              ]}
+              onPress={() => setLevelFilterModalVisible(true)}
+            >
+              <Ionicons
+                name="filter"
+                size={16}
+                color={levelFilter !== "All" ? "white" : "#FF9800"}
+              />
+              <ThemedText
+                style={[
+                  styles.headerLevelFilterText,
+                  levelFilter !== "All" && { color: "white" },
+                ]}
+              >
+                {levelFilter === "All" ? t("level") : levelFilter}
+              </ThemedText>
+            </TouchableOpacity>
+          ),
         }}
       />
 
@@ -603,6 +643,13 @@ export default function MovingTrillsListScreen() {
       )}
 
       {renderTrillDetailModal()}
+      <LevelFilterModal
+        visible={levelFilterModalVisible}
+        onClose={() => setLevelFilterModalVisible(false)}
+        selectedLevel={levelFilter}
+        onSelectLevel={setLevelFilter}
+        accentColor="#FF9800"
+      />
     </ThemedView>
   );
 }
@@ -627,6 +674,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+  },
+  headerLevelFilterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 0,
+    gap: 4,
+  },
+  headerLevelFilterText: {
+    fontSize: 13,
+    fontWeight: "500",
   },
   sortContent: {
     paddingHorizontal: 12,
