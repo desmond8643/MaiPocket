@@ -1,5 +1,4 @@
 import { ChartAPI } from "@/api/client";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
@@ -7,9 +6,9 @@ import {
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
+import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useShowAds } from "@/hooks/useShowAds";
 import { Chart } from "@/types/chart";
 import { Image } from "expo-image";
 import { router, Stack } from "expo-router";
@@ -22,7 +21,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface TimelineSection {
   date: string;
@@ -33,9 +31,9 @@ const ICON_SIZE = (Dimensions.get("window").width - 80) / 4; // 4 columns with m
 
 export default function TimelineScreen() {
   const colorScheme = useColorScheme();
-  const insets = useSafeAreaInsets();
   const { t } = useLocalization();
-  const { showAds, dynamicStyles } = useShowAds(false);
+  const { adsRemoved, temporaryAdRemoval } = useAds();
+  const showAds = !adsRemoved && !temporaryAdRemoval;
 
   const [sections, setSections] = useState<TimelineSection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -301,20 +299,12 @@ export default function TimelineScreen() {
         data={sections}
         renderItem={renderSection}
         keyExtractor={(item) => item.date}
-        contentContainerStyle={[
-          styles.listContent,
-          { paddingBottom: showAds ? insets.bottom + 70 : insets.bottom + 20 },
-        ]}
+        contentContainerStyle={styles.listContent}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
         showsVerticalScrollIndicator={false}
       />
-      {showAds && (
-        <View style={dynamicStyles.bottomAdContainer}>
-          <BannerAdComponent />
-        </View>
-      )}
     </ThemedView>
   );
 }

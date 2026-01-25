@@ -11,16 +11,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
-import { useAds } from "@/context/AdContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useShowAds } from "@/hooks/useShowAds";
 import { SymbolViewProps } from "expo-symbols";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalization } from "@/context/LocalizationContext";
 
 // Categories for each type (these will be populated from the backend later)
@@ -93,9 +89,6 @@ export default function ChartsScreen() {
     "genre" | "level" | "version"
   >("genre");
   const [searchQuery, setSearchQuery] = useState("");
-  const insets = useSafeAreaInsets(); // Add this line
-  const { adsRemoved, temporaryAdRemoval } = useAds();
-  const { showAds, dynamicStyles } = useShowAds(true); // true because it's in a tab bar
   const { t } = useLocalization();
 
   // Category types
@@ -316,13 +309,6 @@ export default function ChartsScreen() {
           />
         </ScrollView>
       </SafeAreaView>
-
-      {/* Add the bottom ad component */}
-      {showAds && (
-        <View style={dynamicStyles.bottomAdContainer}>
-          <BannerAdComponent />
-        </View>
-      )}
     </ThemedView>
   );
 }

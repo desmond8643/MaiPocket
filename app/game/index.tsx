@@ -1,8 +1,6 @@
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useAds } from "@/context/AdContext";
 import {
   fetchDataImmediately,
   useCrystalStatus,
@@ -71,8 +69,6 @@ export default function GameHomeScreen() {
   const isLoading = scoresLoading || crystalsLoading;
 
   const insets = useSafeAreaInsets();
-  const { adsRemoved, temporaryAdRemoval } = useAds();
-  const showActualAds = !adsRemoved && !temporaryAdRemoval;
 
   // Add state for the modal inside the GameHomeScreen component
   const [showCrystalInfo, setShowCrystalInfo] = useState(false);
@@ -128,13 +124,6 @@ export default function GameHomeScreen() {
     });
   };
 
-  const dynamicStyles = {
-    bottomAdContainer: {
-      ...styles.bottomAdContainer,
-      bottom: insets.bottom,
-    },
-  };
-
   return (
     <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -165,7 +154,7 @@ export default function GameHomeScreen() {
         {t("quizGameDescription")}
       </ThemedText>
       <ScrollView>
-        <View style={{...styles.modeContainer, paddingBottom: showActualAds ? 60 : 0}}>
+        <View style={styles.modeContainer}>
           <TouchableOpacity
             style={[styles.modeButton, { backgroundColor: "#9944DD" }]}
             onPress={() => startGame("visual")}
@@ -355,11 +344,6 @@ export default function GameHomeScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      {showActualAds && (
-        <View style={dynamicStyles.bottomAdContainer}>
-          <BannerAdComponent />
-        </View>
-      )}
 
       <Modal
         visible={showCrystalInfo}

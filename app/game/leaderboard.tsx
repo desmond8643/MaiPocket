@@ -1,8 +1,6 @@
 import { getLeaderboard } from "@/api/client";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { LeaderboardEntry } from "@/types/game";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,8 +22,6 @@ export default function LeaderboardScreen() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const insets = useSafeAreaInsets();
-  const { adsRemoved, temporaryAdRemoval } = useAds();
-  const showActualAds = !adsRemoved && !temporaryAdRemoval;
   const { t } = useLocalization();
 
   useEffect(() => {
@@ -80,13 +76,6 @@ export default function LeaderboardScreen() {
         <ThemedText style={styles.scoreText}>{item.highScore}</ThemedText>
       </View>
     );
-  };
-
-  const dynamicStyles = {
-    bottomAdContainer: {
-      ...styles.bottomAdContainer,
-      bottom: insets.bottom,
-    },
   };
 
   return (
@@ -159,16 +148,11 @@ export default function LeaderboardScreen() {
           data={leaderboard}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{...styles.listContent, paddingBottom: showActualAds ? 60 : 0}}
+          contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <ThemedText style={styles.emptyText}>{t("noScoresYet")}</ThemedText>
           }
         />
-      )}
-      {showActualAds && (
-        <View style={dynamicStyles.bottomAdContainer}>
-          <BannerAdComponent />
-        </View>
       )}
     </ThemedView>
   );

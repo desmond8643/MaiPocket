@@ -1,5 +1,4 @@
 import { AuthAPI, NotificationAPI } from "@/api/client";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -34,14 +33,6 @@ export default function HomeScreen() {
   const [isDataLoading, setIsDataLoading] = useState(true);
 
   const showAdsSection = !adsRemoved; // Only hide for permanent removal
-  const showActualAds = !adsRemoved && !temporaryAdRemoval;
-
-  const dynamicStyles = {
-    bottomAdContainer: {
-      ...styles.bottomAdContainer,
-      bottom: 49 + insets.bottom, // Standard tab bar height (49) + bottom inset
-    },
-  };
 
   const [socialFeedPreference, setSocialFeedPreference] = useState("facebook");
   const { t } = useLocalization();
@@ -355,12 +346,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </ThemedView>
       </ParallaxScrollView>
-      {/* Bottom ad - above tab bar, only if ads aren't removed */}
-      {showActualAds && (
-        <View style={dynamicStyles.bottomAdContainer}>
-          <BannerAdComponent />
-        </View>
-      )}
     </View>
   );
 }

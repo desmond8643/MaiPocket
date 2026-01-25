@@ -1,5 +1,4 @@
 import { ChartAPI } from "@/api/client";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
@@ -9,10 +8,10 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
+import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useLevelFilter } from "@/hooks/useLevelFilter";
-import { useShowAds } from "@/hooks/useShowAds";
 import { DifficultySpinAnalysis, SpinChartItem } from "@/types/chart";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -68,7 +67,8 @@ function getDirectionLabel(direction: "cw" | "ccw"): string {
 export default function SpinsListScreen() {
   const colorScheme = useColorScheme();
   const { t } = useLocalization();
-  const { showAds, dynamicStyles } = useShowAds(false);
+  const { adsRemoved, temporaryAdRemoval } = useAds();
+  const showAds = !adsRemoved && !temporaryAdRemoval;
   const {
     levelFilter,
     setLevelFilter,
@@ -652,12 +652,6 @@ export default function SpinsListScreen() {
       </View>
 
       {renderContent()}
-
-      {showAds && (
-        <View style={dynamicStyles.bottomAdContainer}>
-          <BannerAdComponent />
-        </View>
-      )}
 
       {renderSpinDetailModal()}
       <LevelFilterModal

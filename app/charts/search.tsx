@@ -10,7 +10,6 @@ import {
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
@@ -19,21 +18,20 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
+import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useShowAds } from "@/hooks/useShowAds";
 import { Chart } from "@/types/chart";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ChartSearchScreen() {
   const { query } = useLocalSearchParams();
   const colorScheme = useColorScheme();
   const { t } = useLocalization();
+  const { adsRemoved, temporaryAdRemoval } = useAds();
+  const showAds = !adsRemoved && !temporaryAdRemoval;
   const [charts, setCharts] = useState<Chart[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const insets = useSafeAreaInsets(); // Add this line
-  const { showAds, dynamicStyles } = useShowAds(false); // false because it's not in a tab bar
 
   // Search for charts
   useEffect(() => {
@@ -301,12 +299,6 @@ export default function ChartSearchScreen() {
         />
       )}
 
-      {/* Add the banner ad component */}
-      {showAds && (
-        <View style={dynamicStyles.bottomAdContainer}>
-          <BannerAdComponent />
-        </View>
-      )}
       {/* </SafeAreaView> */}
     </ThemedView>
   );

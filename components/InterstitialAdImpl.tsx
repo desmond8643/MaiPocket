@@ -16,7 +16,11 @@ interface PreloadedAd {
 let preloadedAd: PreloadedAd | null = null;
 let isLoading = false;
 let lastAdShownTime = 0;
-const AD_COOLDOWN = 60000; // 1 minute cooldown
+let actionCount = 0;
+
+// Ad frequency settings
+const AD_COOLDOWN = 180000; // 3 minute cooldown between ads
+const ACTIONS_BETWEEN_ADS = 4; // Require at least 4 actions between ads
 
 const adUnitId = Platform.select({
   ios: "ca-app-pub-7106153117550777/6330997877", // Replace with your iOS interstitial ad unit ID
@@ -64,14 +68,18 @@ export function preloadInterstitialAdImpl() {
 // Actual implementation of showing the ad
 export function showInterstitialAdImpl(onClose = () => {}) {
   const now = Date.now();
+  actionCount++;
 
-  // Skip if we showed an ad recently (cooldown)
-  if (now - lastAdShownTime < AD_COOLDOWN) {
-    console.log("Ad skipped due to cooldown period");
+  // Skip if we showed an ad recently (cooldown) or not enough actions yet
+  if (now - lastAdShownTime < AD_COOLDOWN || actionCount < ACTIONS_BETWEEN_ADS) {
+    console.log(`Ad skipped (cooldown: ${now - lastAdShownTime < AD_COOLDOWN}, actions: ${actionCount}/${ACTIONS_BETWEEN_ADS})`);
     onClose();
     preloadInterstitialAdImpl(); // Preload for next time
     return;
   }
+
+  // Reset action counter when showing ad
+  actionCount = 0;
 
   // If we have a preloaded ad ready
   if (preloadedAd) {

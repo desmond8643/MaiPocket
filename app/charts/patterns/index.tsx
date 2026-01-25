@@ -1,9 +1,7 @@
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useShowAds } from "@/hooks/useShowAds";
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -61,7 +59,6 @@ const PATTERN_CATEGORIES: PatternCategory[] = [
 export default function PatternsIndexScreen() {
   const colorScheme = useColorScheme();
   const { t } = useLocalization();
-  const { showAds, dynamicStyles } = useShowAds(false);
 
   const renderPatternCard = (pattern: PatternCategory) => {
     return (
@@ -129,12 +126,6 @@ export default function PatternsIndexScreen() {
           {PATTERN_CATEGORIES.map(renderPatternCard)}
         </View>
       </ScrollView>
-
-      {showAds && (
-        <View style={dynamicStyles.bottomAdContainer}>
-          <BannerAdComponent />
-        </View>
-      )}
     </ThemedView>
   );
 }

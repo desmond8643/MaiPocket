@@ -11,7 +11,6 @@ import {
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import {
     preloadInterstitialAd,
     showInterstitialAd,
@@ -20,13 +19,12 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
+import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useShowAds } from "@/hooks/useShowAds";
 import { Chart } from "@/types/chart";
 import { useFocusEffect } from "@react-navigation/native";
 import React from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ViewMode = "list" | "icon";
 
@@ -38,9 +36,9 @@ export default function FavoritesScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const insets = useSafeAreaInsets();
-  const { showAds, dynamicStyles } = useShowAds(false);
   const { t } = useLocalization();
+  const { adsRemoved, temporaryAdRemoval } = useAds();
+  const showAds = !adsRemoved && !temporaryAdRemoval;
 
   // Preload an interstitial ad when the component mounts
   useEffect(() => {
@@ -510,13 +508,6 @@ export default function FavoritesScreen() {
       </ThemedView>
 
       {renderContent()}
-
-      {/* Bottom ad */}
-      {showAds && (
-        <View style={dynamicStyles.bottomAdContainer}>
-          <BannerAdComponent />
-        </View>
-      )}
     </ThemedView>
   );
 }

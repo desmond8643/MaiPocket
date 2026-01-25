@@ -12,7 +12,6 @@ import {
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
@@ -21,11 +20,10 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
+import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useShowAds } from "@/hooks/useShowAds";
 import { Chart } from "@/types/chart";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ViewMode = "list" | "icon";
 type GroupMode = "none" | "level" | "version";
@@ -64,9 +62,9 @@ export default function ChartListScreen() {
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [groupMode, setGroupMode] = useState<GroupMode>("none"); // Keep this but we won't change it
-  const insets = useSafeAreaInsets();
-  const { showAds, dynamicStyles } = useShowAds(false);
   const { t } = useLocalization();
+  const { adsRemoved, temporaryAdRemoval } = useAds();
+  const showAds = !adsRemoved && !temporaryAdRemoval;
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedChart, setSelectedChart] = useState<Chart | null>(null);
@@ -704,12 +702,6 @@ export default function ChartListScreen() {
 
       {renderContent()}
 
-      {/* Add the banner ad component */}
-      {showAds && (
-        <View style={dynamicStyles.bottomAdContainer}>
-          <BannerAdComponent />
-        </View>
-      )}
       {modalVisible && selectedChart && (
         <Modal
           animationType="fade"

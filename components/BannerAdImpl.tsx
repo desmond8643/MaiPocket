@@ -15,7 +15,7 @@ export default function BannerAdImpl() {
     <BannerAd
       // unitId={TestIds.BANNER}
       unitId={adUnitId}
-      size={BannerAdSize.BANNER}
+      size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
       requestOptions={{
         requestNonPersonalizedAdsOnly: true,
       }}
