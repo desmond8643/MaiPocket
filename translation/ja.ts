@@ -17,6 +17,9 @@ export default {
   loadingPosts: "投稿を読み込み中...",
   noPostsYet: "この難易度の投稿はまだありません",
   bpm: "BPM: {{value}}",
+  simaiDisplayRaw: "生データ",  // or "Raw" if you prefer keeping it
+  simaiDisplayCombo: "コンボ",
+  simaiDisplayTime: "時間",
 
   // Errors
   failedToLoadChart: "チャート詳細の読み込みに失敗しました",
@@ -435,7 +438,7 @@ export default {
   patternSpins: "スピン",
   patternSpinsDesc: "中心を回る円形のパターン。",
   comingSoon: "近日公開",
-  
+
   // Trill list
   sortLongestTrill: "最長",
   sortSpeed: "速度",
@@ -444,7 +447,7 @@ export default {
   notes: "ノーツ",
   errorLoadingCharts: "譜面の読み込みに失敗しました。もう一度お試しください。",
   noTrillChartsFound: "トリルのある譜面が見つかりません",
-  
+
   // Trill details modal
   trillDetails: "トリル詳細",
   trillsFound: "トリル",

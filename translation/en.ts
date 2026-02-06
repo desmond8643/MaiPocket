@@ -17,6 +17,9 @@ export default {
   loadingPosts: "Loading posts...",
   noPostsYet: "No posts yet for this difficulty",
   bpm: "BPM: {{value}}",
+  simaiDisplayRaw: "Raw",
+  simaiDisplayCombo: "Combo",
+  simaiDisplayTime: "Time",
 
   // Errors
   failedToLoadChart: "Failed to load chart details",
@@ -440,16 +443,16 @@ export default {
   patternSpins: "Spins",
   patternSpinsDesc: "Circular spinning patterns around the center.",
   comingSoon: "Coming Soon",
-  
+
   // Trill list
   sortLongestTrill: "Longest",
   sortSpeed: "Speed",
-  sortLevel: "Level", 
+  sortLevel: "Level",
   sortTrillCount: "Count",
   notes: "notes",
   errorLoadingCharts: "Failed to load charts. Please try again.",
   noTrillChartsFound: "No charts with trills found",
-  
+
   // Trill details modal
   trillDetails: "Trill Details",
   trillsFound: "trills",

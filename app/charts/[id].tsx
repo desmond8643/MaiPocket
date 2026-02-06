@@ -2,7 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -63,6 +63,7 @@ export default function ChartDetailScreen() {
   const { t } = useLocalization();
   const { showAds } = useShowAds();
   const [simaiExpanded, setSimaiExpanded] = useState(false);
+  const [simaiDisplayMode, setSimaiDisplayMode] = useState<'raw' | 'combo' | 'time'>('raw');
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
 
@@ -475,6 +476,122 @@ export default function ChartDetailScreen() {
     return currentDifficulty?.simai || null;
   };
 
+  // Format simai with combo numbers for easier pattern tracking
+  const formatSimaiWithCombo = (simai: string): string => {
+    if (!simai) return '';
+
+    // Split by newlines first to preserve original line structure
+    const originalLines = simai.split('\n');
+    let combo = 0;
+    const resultLines: string[] = [];
+
+    const slidePattern = /[-vpqszwVPQSZW^<>]/
+
+    for (const line of originalLines) {
+      // Record combo at the start of this line
+      const lineStartCombo = combo;
+
+      // Split by commas to count notes in this line
+      const measures = line.split(',');
+
+      for (const measure of measures) {
+        // Clean measure for counting (remove BPM/division markers)
+        const cleanMeasure = measure
+          .replace(/\(\d+(?:\.\d+)?\)/g, '')
+          .replace(/\{\d+\}/g, '');
+
+        // Count notes in this beat
+        if (cleanMeasure.trim()) {
+
+          // Count each simultaneous note group
+          const groups = cleanMeasure.split('/');
+          for (const group of groups) {
+            if (/^[A-E][1-8]/i.test(group.trim())) {
+              combo++;  // Touch note counts as 1 combo
+            } else if (/[1-8]/.test(group)) {
+              combo++;
+
+              if (slidePattern.test(group)) {
+                // Count number of slides: split by * and count non-empty slide segments
+                const slideSegments = group.split('*');
+                combo += slideSegments.filter(seg => slidePattern.test(seg)).length;
+              }
+            }
+
+          }
+        }
+      }
+
+      // Format: [combo] original_line (combo at start of line)
+      const comboStr = String(lineStartCombo).padStart(4, ' ');
+      resultLines.push(`[${comboStr}] ${line}`);
+    }
+
+    return resultLines.join('\n');
+  };
+
+  // Format simai with timestamps for easier pattern tracking
+  const formatSimaiWithTime = (simai: string): string => {
+    if (!simai) return '';
+
+    // Split by newlines first to preserve original line structure
+    const originalLines = simai.split('\n');
+    let currentBeat = 0;
+    let currentBpm = 120; // Default BPM
+    const beatsPerMeasure = 4;
+    let currentDivision = 4;
+    const resultLines: string[] = [];
+
+    const formatTime = (ms: number): string => {
+      const totalSec = ms / 1000;
+      const min = Math.floor(totalSec / 60);
+      const sec = Math.floor(totalSec % 60);
+      return `${min}:${String(sec).padStart(2, '0')}`;
+    };
+
+    for (const line of originalLines) {
+      // Record time at the start of this line
+      const lineStartTimeMs = (currentBeat / currentBpm) * 60000;
+
+      // Split by commas to process measures in this line
+      const measures = line.split(',');
+
+      for (const measure of measures) {
+        // Check for BPM change
+        const bpmMatch = measure.match(/\((\d+(?:\.\d+)?)\)/);
+        if (bpmMatch) {
+          currentBpm = parseFloat(bpmMatch[1]);
+        }
+
+        // Check for division change
+        const divisionMatch = measure.match(/\{(\d+)\}/);
+        if (divisionMatch) {
+          currentDivision = parseInt(divisionMatch[1]);
+        }
+
+        // Advance beat
+        currentBeat += beatsPerMeasure / currentDivision;
+      }
+
+      // Format: [m:ss] original_line (time at start of line)
+      const timeStr = formatTime(lineStartTimeMs);
+      resultLines.push(`[${timeStr}] ${line}`);
+    }
+
+    return resultLines.join('\n');
+  };
+
+  // Memoize formatted simai for performance
+  const formattedSimaiCombo = useMemo(() => {
+    const simai = getCurrentSimai();
+    return simai ? formatSimaiWithCombo(simai) : '';
+  }, [chart, selectedType, selectedDifficulty]);
+
+  const formattedSimaiTime = useMemo(() => {
+    const simai = getCurrentSimai();
+    return simai ? formatSimaiWithTime(simai) : '';
+  }, [chart, selectedType, selectedDifficulty]);
+
   return (
     <>
       <Stack.Screen
@@ -640,7 +757,7 @@ export default function ChartDetailScreen() {
             {/* Show delete option only for owner */}
             {user &&
               posts.find((p) => p.id === optionsPostId)?.user?.id ===
-                user._id && (
+              user._id && (
                 <TouchableOpacity
                   style={styles.dropdownItem}
                   onPress={() => {
@@ -660,54 +777,54 @@ export default function ChartDetailScreen() {
             {/* Hide Post option for all users */}
             {(!user ||
               posts.find((p) => p.id === optionsPostId)?.user?.id !==
-                user._id) && (
-              <>
-                <TouchableOpacity
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setShowPostOptionsDropdown(false);
-                    handleHidePost(optionsPostId as string);
-                  }}
-                >
-                  <MaterialIcons
-                    name="visibility-off"
-                    size={22}
-                    color="#888888"
-                  />
-                  <ThemedText style={styles.dropdownText}>
-                    {t("hidePost")}
-                  </ThemedText>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setShowPostOptionsDropdown(false);
-                    handleFlagPost(optionsPostId as string);
-                  }}
-                >
-                  <MaterialIcons name="flag" size={22} color="#E53935" />
-                  <ThemedText style={[styles.dropdownText]}>
-                    {t("reportContent")}
-                  </ThemedText>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setShowPostOptionsDropdown(false);
-                    const userId = posts.find((p) => p.id === optionsPostId)
-                      ?.user?.id;
-                    if (userId) {
-                      handleBlockUser(userId);
-                    }
-                  }}
-                >
-                  <MaterialIcons name="block" size={22} color="#E53935" />
-                  <ThemedText style={[styles.dropdownText]}>
-                    {t("blockUser")}
-                  </ThemedText>
-                </TouchableOpacity>
-              </>
-            )}
+              user._id) && (
+                <>
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setShowPostOptionsDropdown(false);
+                      handleHidePost(optionsPostId as string);
+                    }}
+                  >
+                    <MaterialIcons
+                      name="visibility-off"
+                      size={22}
+                      color="#888888"
+                    />
+                    <ThemedText style={styles.dropdownText}>
+                      {t("hidePost")}
+                    </ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setShowPostOptionsDropdown(false);
+                      handleFlagPost(optionsPostId as string);
+                    }}
+                  >
+                    <MaterialIcons name="flag" size={22} color="#E53935" />
+                    <ThemedText style={[styles.dropdownText]}>
+                      {t("reportContent")}
+                    </ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setShowPostOptionsDropdown(false);
+                      const userId = posts.find((p) => p.id === optionsPostId)
+                        ?.user?.id;
+                      if (userId) {
+                        handleBlockUser(userId);
+                      }
+                    }}
+                  >
+                    <MaterialIcons name="block" size={22} color="#E53935" />
+                    <ThemedText style={[styles.dropdownText]}>
+                      {t("blockUser")}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </>
+              )}
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -861,8 +978,8 @@ export default function ChartDetailScreen() {
                   backgroundColor: isFavorite
                     ? "rgba(224, 36, 94, 0.1)"
                     : colorScheme === "dark"
-                    ? "#333333"
-                    : "#F5F5F5",
+                      ? "#333333"
+                      : "#F5F5F5",
                   borderColor: isFavorite ? "#E0245E" : "transparent",
                 },
               ]}
@@ -902,11 +1019,49 @@ export default function ChartDetailScreen() {
                       {t('simaiChart')}
                     </ThemedText>
                   </View>
-                  <MaterialIcons
-                    name={simaiExpanded ? "expand-less" : "expand-more"}
-                    size={24}
-                    color={Colors[colorScheme ?? "light"].text}
-                  />
+                  <View style={styles.simaiHeaderRight}>
+                    {simaiExpanded && (
+                      <TouchableOpacity
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          // Cycle through: raw → combo → time → raw
+                          setSimaiDisplayMode((prev) => {
+                            if (prev === 'raw') return 'combo';
+                            if (prev === 'combo') return 'time';
+                            return 'raw';
+                          });
+                        }}
+                        style={[
+                          styles.comboToggleButton,
+                          {
+                            backgroundColor: simaiDisplayMode !== 'raw'
+                              ? "#9944DD"
+                              : colorScheme === "dark"
+                                ? "#444"
+                                : "#ddd",
+                          },
+                        ]}
+                      >
+                        <ThemedText
+                          style={[
+                            styles.comboToggleText,
+                            {
+                              color: simaiDisplayMode !== 'raw'
+                                ? "#FFFFFF"
+                                : Colors[colorScheme ?? "light"].text,
+                            },
+                          ]}
+                        >
+                          {simaiDisplayMode === 'raw' ? t('simaiDisplayRaw') : simaiDisplayMode === 'combo' ? t('simaiDisplayCombo') : t('simaiDisplayTime')}
+                        </ThemedText>
+                      </TouchableOpacity>
+                    )}
+                    <MaterialIcons
+                      name={simaiExpanded ? "expand-less" : "expand-more"}
+                      size={24}
+                      color={Colors[colorScheme ?? "light"].text}
+                    />
+                  </View>
                 </TouchableOpacity>
 
                 {simaiExpanded && (
@@ -928,7 +1083,13 @@ export default function ChartDetailScreen() {
                           color: colorScheme === "dark" ? "#fff" : "#000",
                         },
                       ]}
-                      value={getCurrentSimai()}
+                      value={
+                        simaiDisplayMode === 'raw'
+                          ? (getCurrentSimai() || '')
+                          : simaiDisplayMode === 'combo'
+                            ? formattedSimaiCombo
+                            : formattedSimaiTime
+                      }
                       editable={false}
                       multiline={true}
                       scrollEnabled={false}
@@ -1113,16 +1274,16 @@ export default function ChartDetailScreen() {
                             <MaterialIcons
                               name={
                                 user &&
-                                Array.isArray(post.likes) &&
-                                post.likes.includes(user._id)
+                                  Array.isArray(post.likes) &&
+                                  post.likes.includes(user._id)
                                   ? "favorite"
                                   : "favorite-border"
                               }
                               size={18}
                               color={
                                 user &&
-                                Array.isArray(post.likes) &&
-                                post.likes.includes(user._id)
+                                  Array.isArray(post.likes) &&
+                                  post.likes.includes(user._id)
                                   ? "#E0245E"
                                   : Colors[colorScheme ?? "light"].text
                               }
@@ -1514,6 +1675,20 @@ const styles = StyleSheet.create({
   simaiTitle: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  simaiHeaderRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  comboToggleButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  comboToggleText: {
+    fontSize: 12,
+    fontWeight: "600",
   },
   simaiContent: {
     padding: 12,
