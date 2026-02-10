@@ -314,6 +314,38 @@ export const ChartAPI = {
     }
   },
 
+  // Get charts with jack patterns (single-button trills)
+  getJackCharts: async (options: {
+    sortBy?: "level" | "jackCount" | "speed" | "longestJack";
+    order?: "asc" | "desc";
+    minLevel?: number;
+    maxLevel?: number;
+    version?: "standard" | "deluxe";
+    difficulty?: string;
+    page?: number;
+    limit?: number;
+  } = {}) => {
+    try {
+      const params = new URLSearchParams();
+      if (options.sortBy) params.append("sortBy", options.sortBy);
+      if (options.order) params.append("order", options.order);
+      if (options.minLevel) params.append("minLevel", options.minLevel.toString());
+      if (options.maxLevel) params.append("maxLevel", options.maxLevel.toString());
+      if (options.version) params.append("version", options.version);
+      if (options.difficulty) params.append("difficulty", options.difficulty);
+      if (options.page) params.append("page", options.page.toString());
+      if (options.limit) params.append("limit", options.limit.toString());
+
+      const response = await apiClient.get(
+        `/charts/patterns/jacks?${params.toString()}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching jack charts:", error);
+      throw error;
+    }
+  },
+
   // Get user's favorite charts
   getFavoriteCharts: async () => {
     try {

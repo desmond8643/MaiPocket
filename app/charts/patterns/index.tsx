@@ -45,6 +45,15 @@ const PATTERN_CATEGORIES: PatternCategory[] = [
     available: true,
   },
   {
+    id: "jacks",
+    titleKey: "patternJacks",
+    descriptionKey: "patternJacksDesc",
+    icon: "radio-button-on",
+    color: "#9C27B0",
+    route: "/charts/patterns/jacks",
+    available: true,
+  },
+  {
     id: "slides",
     titleKey: "patternSlides",
     descriptionKey: "patternSlidesDesc",

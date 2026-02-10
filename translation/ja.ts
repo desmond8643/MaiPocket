@@ -437,6 +437,8 @@ export default {
   patternSlidesDesc: "画面を横切る連続したスライド動作。",
   patternSpins: "スピン",
   patternSpinsDesc: "中心を回る円形のパターン。",
+  patternJacks: "縦連",
+  patternJacksDesc: "同じボタンを連続で叩くパターン。片手の速度練習に最適。",
   comingSoon: "近日公開",
 
   // Trill list
@@ -478,6 +480,17 @@ export default {
   spin: "スピン",
   rotations: "回転数",
   direction: "方向",
+
+  // Jack list
+  sortLongestJack: "最長",
+  sortJackCount: "回数",
+  noJackChartsFound: "縦連のある譜面が見つかりません",
+
+  // Jack details modal
+  jackDetails: "縦連詳細",
+  jacksFound: "縦連",
+  jack: "縦連",
+  button: "ボタン",
 
   // Favorites
   favorites: "お気に入り",

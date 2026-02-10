@@ -442,6 +442,8 @@ export default {
   patternSlidesDesc: "Continuous sliding motions across the screen.",
   patternSpins: "Spins",
   patternSpinsDesc: "Circular spinning patterns around the center.",
+  patternJacks: "Jacks",
+  patternJacksDesc: "Rapid repeated taps on the same button. Great for practicing single-hand speed.",
   comingSoon: "Coming Soon",
 
   // Trill list
@@ -483,6 +485,17 @@ export default {
   spin: "Spin",
   rotations: "Rotations",
   direction: "Direction",
+
+  // Jack list
+  sortLongestJack: "Longest",
+  sortJackCount: "Count",
+  noJackChartsFound: "No charts with jacks found",
+
+  // Jack details modal
+  jackDetails: "Jack Details",
+  jacksFound: "jacks",
+  jack: "Jack",
+  button: "Button",
 
   // Favorites
   favorites: "Favorites",

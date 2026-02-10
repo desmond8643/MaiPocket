@@ -27,6 +27,7 @@ export interface Chart {
   trillAnalysis?: TrillAnalysis | null;
   movingTrillAnalysis?: MovingTrillAnalysis | null;
   spinAnalysis?: SpinAnalysis | null;
+  jackAnalysis?: JackAnalysis | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -163,6 +164,50 @@ export interface SpinChartItem {
   maxRotations: number;
   maxSpeed: number;
   totalSpinCount: number;
+  highestLevel: number;
+  fastestDivision: number;
+  fastestBpm: number;
+}
+
+// Jack pattern types (single-button trills)
+export interface JackDetail {
+  length: number;
+  position: number; // Single position (1-8)
+  bpm: number;
+  effectiveDivision: number;
+  timestamp: string;
+  startTimeMs: number;
+  jackLengthMs: number;
+  notesPerSecond: number;
+}
+
+export interface DifficultyJackAnalysis {
+  version: "standard" | "deluxe";
+  type: string;
+  level: number;
+  jackCount: number;
+  longestJack: number;
+  fastestSpeed: number;
+  fastestDivision: number;
+  fastestBpm: number;
+  jacks: JackDetail[];
+}
+
+export interface JackAnalysis {
+  hasJacks: boolean;
+  difficulties: DifficultyJackAnalysis[];
+}
+
+// Processed chart with jack data for list display
+export interface JackChartItem {
+  _id: string;
+  title: string;
+  image: string;
+  artist?: string;
+  difficulties: DifficultyJackAnalysis[];
+  maxJackLength: number;
+  maxSpeed: number;
+  totalJackCount: number;
   highestLevel: number;
   fastestDivision: number;
   fastestBpm: number;
