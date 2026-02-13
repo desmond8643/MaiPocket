@@ -375,6 +375,9 @@ export default {
   userNotificationTitle: "ユーザー通知",
 
   // Shop page
+  maipocketPremium: "MaiPocket プレミアム",
+  maipocketPremiumTitle: "MaiPocket プレミアム",
+  maipocketPremiumDesc: "広告削除 + パターン分析 + Simai譜面",
   removeAds: "広告を削除",
   removeAdsOneDay: "広告を削除（1日）",
   removeAdsPermanently: "広告を永久に削除",
@@ -423,6 +426,14 @@ export default {
   international: "海外",
   japan: "日本",
   selectRegionDescription: 'アクセスするmaimaiでらっくすNETサイトを選択してください',
+  chartData: "譜面まとめ",
+
+  // Cache
+  clearCache: "キャッシュをクリア",
+  clearCacheConfirm: "キャッシュされた曲のサムネイルをクリアします。必要に応じて再ダウンロードされます。",
+  cacheCleared: "キャッシュをクリアしました",
+  clear: "クリア",
+  items: "件",
 
   // Chart Patterns
   chartPatterns: "譜面パターン",
@@ -501,5 +512,12 @@ export default {
 
   // Filter
   filterByLevel: "レベルで絞り込む",
-  all: "すべて"
+  all: "すべて",
+
+  // Premium
+  premium: "プレミアム",
+  premiumRequired: "プレミアム限定",
+  premiumPatternsDesc: "MaiPocket プレミアムで譜面パターン分析をアンロック",
+  premiumSimaiDesc: "MaiPocket プレミアムでSimai譜面ビューアをアンロック",
+  getPremium: "プレミアムを取得"
 };

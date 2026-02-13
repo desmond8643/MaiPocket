@@ -1,10 +1,11 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
-import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface PatternCategory {
   id: string;
@@ -68,8 +69,28 @@ const PATTERN_CATEGORIES: PatternCategory[] = [
 export default function PatternsIndexScreen() {
   const colorScheme = useColorScheme();
   const { t } = useLocalization();
+  const { isPremium } = useAds();
+
+  const handlePatternPress = (pattern: PatternCategory) => {
+    if (!isPremium) {
+      Alert.alert(
+        t("premiumRequired"),
+        t("premiumPatternsDesc"),
+        [
+          { text: t("cancel"), style: "cancel" },
+          { text: t("getPremium"), onPress: () => router.push("/shop") }
+        ]
+      );
+      return;
+    }
+    if (pattern.available) {
+      router.push(pattern.route as any);
+    }
+  };
 
   const renderPatternCard = (pattern: PatternCategory) => {
+    const isLocked = !isPremium || !pattern.available;
+    
     return (
       <TouchableOpacity
         key={pattern.id}
@@ -78,11 +99,7 @@ export default function PatternsIndexScreen() {
           { backgroundColor: pattern.color },
           !pattern.available && styles.patternCardDisabled,
         ]}
-        onPress={() => {
-          if (pattern.available) {
-            router.push(pattern.route as any);
-          }
-        }}
+        onPress={() => handlePatternPress(pattern)}
         disabled={!pattern.available}
       >
         <View style={styles.patternCardContent}>
@@ -90,7 +107,12 @@ export default function PatternsIndexScreen() {
             <ThemedText type="subtitle" style={styles.patternTitle}>
               {t(pattern.titleKey)}
             </ThemedText>
-            <Ionicons name={pattern.icon} size={32} color="white" />
+            <View style={styles.iconContainer}>
+              {/* {!isPremium && pattern.available && (
+                <Ionicons name="lock-closed" size={18} color="white" style={styles.lockIcon} />
+              )} */}
+              <Ionicons name={pattern.icon} size={32} color="white" />
+            </View>
           </View>
           <View style={styles.patternDescription}>
             <ThemedText style={styles.patternDescText}>
@@ -101,6 +123,13 @@ export default function PatternsIndexScreen() {
             <View style={styles.comingSoonBadge}>
               <ThemedText style={styles.comingSoonText}>
                 {t("comingSoon")}
+              </ThemedText>
+            </View>
+          )}
+          {!isPremium && pattern.available && (
+            <View style={styles.premiumBadge}>
+              <ThemedText style={styles.premiumBadgeText}>
+                {t("premium")}
               </ThemedText>
             </View>
           )}
@@ -210,6 +239,28 @@ const styles = StyleSheet.create({
   },
   comingSoonText: {
     color: "white",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  iconContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  lockIcon: {
+    opacity: 0.9,
+  },
+  premiumBadge: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    backgroundColor: "rgba(255, 215, 0, 0.9)",
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  premiumBadgeText: {
+    color: "#333",
     fontSize: 11,
     fontWeight: "600",
   },

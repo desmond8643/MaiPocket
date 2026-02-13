@@ -23,6 +23,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { YouTubePreview } from "@/components/YouTubePreview";
 import { Colors } from "@/constants/Colors";
+import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useShowAds } from "@/hooks/useShowAds";
@@ -62,6 +63,7 @@ export default function ChartDetailScreen() {
   const [postsLoading, setPostsLoading] = useState(false);
   const { t } = useLocalization();
   const { showAds } = useShowAds();
+  const { isPremium } = useAds();
   const [simaiExpanded, setSimaiExpanded] = useState(false);
   const [simaiDisplayMode, setSimaiDisplayMode] = useState<'raw' | 'combo' | 'time'>('raw');
   const [isFavorite, setIsFavorite] = useState(false);
@@ -1006,7 +1008,20 @@ export default function ChartDetailScreen() {
               <View style={styles.simaiSection}>
                 <TouchableOpacity
                   style={styles.simaiHeader}
-                  onPress={() => setSimaiExpanded(!simaiExpanded)}
+                  onPress={() => {
+                    if (!isPremium) {
+                      Alert.alert(
+                        t("premiumRequired"),
+                        t("premiumSimaiDesc"),
+                        [
+                          { text: t("cancel"), style: "cancel" },
+                          { text: t("getPremium"), onPress: () => router.push("/shop") }
+                        ]
+                      );
+                      return;
+                    }
+                    setSimaiExpanded(!simaiExpanded);
+                  }}
                   activeOpacity={0.7}
                 >
                   <View style={styles.simaiTitleContainer}>
@@ -1018,9 +1033,15 @@ export default function ChartDetailScreen() {
                     <ThemedText style={styles.simaiTitle}>
                       {t('simaiChart')}
                     </ThemedText>
+                    {/* {!isPremium && (
+                      <View style={styles.simaiPremiumBadge}>
+                        <Ionicons name="lock-closed" size={12} color="#333" />
+                        <ThemedText style={styles.simaiPremiumText}>{t("premium")}</ThemedText>
+                      </View>
+                    )} */}
                   </View>
                   <View style={styles.simaiHeaderRight}>
-                    {simaiExpanded && (
+                    {isPremium && simaiExpanded && (
                       <TouchableOpacity
                         onPress={(e) => {
                           e.stopPropagation();
@@ -1057,14 +1078,14 @@ export default function ChartDetailScreen() {
                       </TouchableOpacity>
                     )}
                     <MaterialIcons
-                      name={simaiExpanded ? "expand-less" : "expand-more"}
+                      name={isPremium && simaiExpanded ? "expand-less" : isPremium ? "expand-more" : "lock"}
                       size={24}
                       color={Colors[colorScheme ?? "light"].text}
                     />
                   </View>
                 </TouchableOpacity>
 
-                {simaiExpanded && (
+                {isPremium && simaiExpanded && (
                   <View
                     style={[
                       styles.simaiContent,
@@ -1675,6 +1696,21 @@ const styles = StyleSheet.create({
   simaiTitle: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  simaiPremiumBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 215, 0, 0.9)",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    gap: 4,
+    marginLeft: 4,
+  },
+  simaiPremiumText: {
+    color: "#333",
+    fontSize: 10,
+    fontWeight: "600",
   },
   simaiHeaderRight: {
     flexDirection: "row",

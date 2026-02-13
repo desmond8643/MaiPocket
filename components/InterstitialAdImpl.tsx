@@ -19,8 +19,8 @@ let lastAdShownTime = 0;
 let actionCount = 0;
 
 // Ad frequency settings
-const AD_COOLDOWN = 180000; // 3 minute cooldown between ads
-const ACTIONS_BETWEEN_ADS = 4; // Require at least 4 actions between ads
+const AD_COOLDOWN = 90000; // 3 minute cooldown between ads
+const ACTIONS_BETWEEN_ADS = 2; // Require at least 4 actions between ads
 
 const adUnitId = Platform.select({
   ios: "ca-app-pub-7106153117550777/6330997877", // Replace with your iOS interstitial ad unit ID

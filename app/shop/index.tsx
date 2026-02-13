@@ -385,7 +385,7 @@ export default function ShopScreen() {
       <ScrollView style={styles.scrollContainer}>
         {!adsRemoved && (
           <ThemedView style={styles.section}>
-            <ThemedText type="subtitle">{t("removeAds")}</ThemedText>
+            <ThemedText type="subtitle">{t("maipocketPremium")}</ThemedText>
 
             <ThemedView style={[styles.itemCard, { flexDirection: "column" }]}>
               <View
@@ -435,16 +435,21 @@ export default function ShopScreen() {
               )}
             </ThemedView>
 
-            <ThemedView style={styles.itemCard}>
-              <ThemedText style={styles.itemTitle}>
-                {t("removeAdsPermanently")}
-              </ThemedText>
+            <ThemedView style={[styles.itemCard, { flexDirection: "column" }]}>
+              <View style={styles.itemInfo}>
+                <ThemedText style={styles.itemTitle}>
+                  {t("maipocketPremiumTitle")}
+                </ThemedText>
+                <ThemedText style={styles.premiumDescription}>
+                  {t("maipocketPremiumDesc")}
+                </ThemedText>
+              </View>
               <TouchableOpacity
-                style={[styles.button, styles.premiumButton]}
+                style={[styles.button, styles.premiumButton, { marginTop: 12, alignSelf: "flex-end" }]}
                 onPress={() =>
                   handlePurchase(
                     "removeadspermanent",
-                    t("removeAdsPermanently"),
+                    t("maipocketPremiumTitle"),
                     null,
                     "USD",
                     removeAdsPermanently
@@ -626,6 +631,7 @@ const styles = StyleSheet.create({
   },
   itemInfo: { flex: 1, marginRight: 12 },
   itemTitle: { fontSize: 16, fontWeight: "600" },
+  premiumDescription: { fontSize: 13, opacity: 0.7, marginTop: 6, lineHeight: 18 },
   button: {
     paddingVertical: 8,
     paddingHorizontal: 16,

@@ -378,6 +378,34 @@ export const ChartAPI = {
       throw error;
     }
   },
+
+  // Bulk lookup thumbnails by titles
+  getThumbnails: async (titles: string[]): Promise<Record<string, { image: string; id: string }>> => {
+    try {
+      const response = await apiClient.post("/charts/thumbnails", { titles });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching thumbnails:", error);
+      throw error;
+    }
+  },
+
+  // Get thumbnails by both titles and ids (for handling duplicate titles)
+  getThumbnailsWithIds: async (
+    titles: string[],
+    ids: string[]
+  ): Promise<{ 
+    byTitle: Record<string, { image: string; id: string }>; 
+    byId: Record<string, { image: string; id: string }> 
+  }> => {
+    try {
+      const response = await apiClient.post("/charts/thumbnails", { titles, ids });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching thumbnails:", error);
+      throw error;
+    }
+  },
 };
 
 export const AuthAPI = {

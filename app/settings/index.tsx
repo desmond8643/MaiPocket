@@ -2,8 +2,10 @@ import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useLocalization } from "@/context/LocalizationContext";
+import { ThumbnailCache } from "@/utils/thumbnailCache";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -24,7 +26,40 @@ export default function SettingsScreen() {
   const [userId, setUserId] = useState("");
   const [adWatchCount, setAdWatchCount] = useState(0);
   const [resetTime, setResetTime] = useState<number | null>(null);
+  const [cacheSize, setCacheSize] = useState(0);
+  const [cacheCount, setCacheCount] = useState(0);
   const { t } = useLocalization();
+
+  // Load cache info
+  const loadCacheInfo = async () => {
+    const size = await ThumbnailCache.getSize();
+    const count = await ThumbnailCache.getCount();
+    setCacheSize(size);
+    setCacheCount(count);
+  };
+
+  // Clear cache handler
+  const handleClearCache = () => {
+    Alert.alert(t("clearCache"), t("clearCacheConfirm"), [
+      { text: t("cancel"), style: "cancel" },
+      {
+        text: t("clear"),
+        style: "destructive",
+        onPress: async () => {
+          // Clear URL mappings from AsyncStorage
+          await ThumbnailCache.clear();
+
+          // Clear actual image files cached by expo-image
+          await Image.clearDiskCache();
+          await Image.clearMemoryCache();
+
+          setCacheSize(0);
+          setCacheCount(0);
+          Alert.alert(t("success"), t("cacheCleared"));
+        },
+      },
+    ]);
+  };
 
   // Calculate the next 4 AM GMT+8 time
   const getNextResetTime = () => {
@@ -135,6 +170,7 @@ export default function SettingsScreen() {
 
     checkLoginStatus();
     loadAdWatchData(); // Load the ad watch count data
+    loadCacheInfo(); // Load cache info
   }, []);
 
   const handleShowRewardAd = () => {
@@ -240,6 +276,19 @@ export default function SettingsScreen() {
               <Ionicons name="globe-outline" size={24} color="#AE75DA" />
               <ThemedText style={styles.optionText}>
                 {t("maimaiRegion")}
+              </ThemedText>
+              <Ionicons name="chevron-forward" size={24} color="#999" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={handleClearCache}
+            >
+              <Ionicons name="trash-bin-outline" size={24} color="#AE75DA" />
+              <ThemedText style={styles.optionText}>
+                {t("clearCache")}
+              </ThemedText>
+              <ThemedText style={{ color: "#999", marginRight: 8 }}>
+                {cacheCount > 0 ? `${cacheCount} ${t("items")}` : ""}
               </ThemedText>
               <Ionicons name="chevron-forward" size={24} color="#999" />
             </TouchableOpacity>

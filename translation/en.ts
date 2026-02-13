@@ -380,6 +380,9 @@ export default {
   userNotificationTitle: "User Notification",
 
   // Shop page
+  maipocketPremium: "MaiPocket Premium",
+  maipocketPremiumTitle: "MaiPocket Premium",
+  maipocketPremiumDesc: "Remove ads + Chart Pattern Analysis + Simai Charts",
   removeAds: "Remove Ads",
   removeAdsOneDay: "Remove Ads (1 Day)",
   removeAdsPermanently: "Remove Ads Permanently",
@@ -428,6 +431,14 @@ export default {
   international: 'International',
   japan: 'Japan',
   selectRegionDescription: 'Choose which maimai DX NET site to access',
+  chartData: "Chart Summary",
+
+  // Cache
+  clearCache: "Clear Cache",
+  clearCacheConfirm: "This will clear cached song thumbnails. They will be re-downloaded when needed.",
+  cacheCleared: "Cache cleared successfully",
+  clear: "Clear",
+  items: "items",
 
   // Chart Patterns
   chartPatterns: "Chart Patterns",
@@ -506,5 +517,12 @@ export default {
 
   // Filter
   filterByLevel: "Filter by Level",
-  all: "All"
+  all: "All",
+
+  // Premium
+  premium: "Premium",
+  premiumRequired: "Premium Required",
+  premiumPatternsDesc: "Unlock chart pattern analysis with MaiPocket Premium",
+  premiumSimaiDesc: "Unlock simai chart viewer with MaiPocket Premium",
+  getPremium: "Get Premium"
 };

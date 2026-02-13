@@ -144,6 +144,7 @@ import { SHOW_ADS } from '@/constants/adsConfig';
 
 interface AdContextType {
   adsRemoved: boolean;
+  isPremium: boolean;
   temporaryAdRemoval: boolean;
   temporaryAdRemovalEndTime: number | null;
   removeAdsTemporarily: () => Promise<void>;
@@ -275,10 +276,13 @@ export const AdProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       return false;
     }
   };
+  const isPremiumValue = adsRemoved || !SHOW_ADS;
+  
   return (
     <AdContext.Provider
       value={{
-        adsRemoved: adsRemoved || !SHOW_ADS, // Always treat ads as removed if SHOW_ADS is false
+        adsRemoved: isPremiumValue, // Always treat ads as removed if SHOW_ADS is false
+        isPremium: isPremiumValue, // Alias for premium feature gating
         temporaryAdRemoval,
         temporaryAdRemovalEndTime,
         removeAdsTemporarily,
@@ -298,6 +302,7 @@ export const useAds = () => {
     // Create a mock context instead of throwing an error
     return {
       adsRemoved: true,
+      isPremium: true,
       temporaryAdRemoval: false,
       temporaryAdRemovalEndTime: null,
       removeAdsTemporarily: async () => {},
