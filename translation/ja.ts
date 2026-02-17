@@ -109,6 +109,8 @@ export default {
   // Home screen
   browseSongCharts: "譜面を閲覧",
   exploreSongs: "maimai の楽曲を探索",
+  popularCharts: "人気譜面",
+  popularChartsDesc: "最も閲覧された楽曲を見る",
   yourProfile: "プロフィール",
   manageAccount: "アカウント管理",
   songQuizGame: "クイズゲーム",

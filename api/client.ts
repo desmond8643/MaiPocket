@@ -379,6 +379,17 @@ export const ChartAPI = {
     }
   },
 
+  // Get popular/ranking charts
+  getPopularCharts: async (limit: number = 20) => {
+    try {
+      const response = await apiClient.get(`/charts/ranking?limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching popular charts:", error);
+      throw error;
+    }
+  },
+
   // Bulk lookup thumbnails by titles
   getThumbnails: async (titles: string[]): Promise<Record<string, { image: string; id: string }>> => {
     try {

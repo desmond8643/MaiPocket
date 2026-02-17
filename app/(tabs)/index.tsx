@@ -99,7 +99,7 @@ export default function HomeScreen() {
 
       refreshData();
 
-      return () => {}; // cleanup function
+      return () => { }; // cleanup function
     }, [])
   );
 
@@ -160,6 +160,25 @@ export default function HomeScreen() {
         </ThemedView>
 
         <TouchableOpacity
+          style={{ ...styles.featureContainer, backgroundColor: "#FF6B6B" }}
+          onPress={() => router.push("/charts/ranking")}
+        >
+          <View style={styles.featureTitleContainer}>
+            <ThemedText
+              type="subtitle"
+              style={{ color: "white", marginTop: 8 }}
+            >
+              {t("popularCharts")}
+            </ThemedText>
+            <Ionicons name="trophy-outline" size={48} color="white" />
+          </View>
+          <View style={styles.featureDescription}>
+            <ThemedText style={{ color: "white" }}>
+              {t("popularChartsDesc")}
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
+        {/* <TouchableOpacity
           style={{ ...styles.featureContainer, backgroundColor: "#696FC7" }}
           onPress={() => router.push("/charts")}
         >
@@ -177,7 +196,7 @@ export default function HomeScreen() {
               {t("exploreSongs")}
             </ThemedText>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity
           style={{ ...styles.featureContainer, backgroundColor: "#FF9500" }}
           onPress={() => router.push("/timeline")}
@@ -194,6 +213,25 @@ export default function HomeScreen() {
           <View style={styles.featureDescription}>
             <ThemedText style={{ color: "white" }}>
               {t("viewNewReleases")}
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ ...styles.featureContainer, backgroundColor: "#313647" }}
+          onPress={() => router.push("/maimainet")}
+        >
+          <View style={styles.featureTitleContainer}>
+            <ThemedText
+              type="subtitle"
+              style={{ color: "white", marginTop: 8 }}
+            >
+              {t("maimaiNet")}
+            </ThemedText>
+            <Ionicons name="globe-outline" size={48} color="white" />
+          </View>
+          <View style={styles.featureDescription}>
+            <ThemedText style={{ color: "white" }}>
+              {t("maimaiNetDescription")}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -238,27 +276,8 @@ export default function HomeScreen() {
             <ThemedText style={{ color: "white" }}>
               {isLoggedIn && isDataLoading
                 ? // ? "Loading..."
-                  t("loading")
+                t("loading")
                 : t("testKnowledge")}
-            </ThemedText>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ ...styles.featureContainer, backgroundColor: "#313647" }}
-          onPress={() => router.push("/maimainet")}
-        >
-          <View style={styles.featureTitleContainer}>
-            <ThemedText
-              type="subtitle"
-              style={{ color: "white", marginTop: 8 }}
-            >
-              {t("maimaiNet")}
-            </ThemedText>
-            <Ionicons name="globe-outline" size={48} color="white" />
-          </View>
-          <View style={styles.featureDescription}>
-            <ThemedText style={{ color: "white" }}>
-              {t("maimaiNetDescription")}
             </ThemedText>
           </View>
         </TouchableOpacity>

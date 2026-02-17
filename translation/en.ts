@@ -109,6 +109,8 @@ export default {
   // Home screen
   browseSongCharts: "Browse Song Charts",
   exploreSongs: "Explore songs in maimai",
+  popularCharts: "Popular Charts",
+  popularChartsDesc: "See the most viewed songs",
   yourProfile: "Your Profile",
   manageAccount: "Manage your account",
   songQuizGame: "Song Quiz Game",
