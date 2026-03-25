@@ -1,4 +1,5 @@
 import { ChartAPI } from "@/api/client";
+import { InlineBannerAd } from "@/components/InlineBannerAd";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
@@ -10,9 +11,10 @@ import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
+import { AdItem, insertInlineAds, isAdItem } from "@/utils/adHelper";
 import { Image } from "expo-image";
 import { router, Stack } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -182,77 +184,67 @@ export default function TimelineScreen() {
     item: TimelineSection;
     index: number;
   }) => {
-    const isFirst = index === 0;
     const isLast = index === sections.length - 1;
 
     return (
-      <View style={styles.sectionContainer}>
-        {/* Timeline connector */}
-        <View style={styles.timelineConnector}>
-          {/* Dot */}
-          {/* <View
-            style={[
-              styles.timelineDot,
-              { backgroundColor: Colors[colorScheme ?? "light"].tint },
-            ]}
-          /> */}
-          <Image
-            source={
-              index % 2 === 0
-                ? require("@/assets/images/tap.svg")
-                : require("@/assets/images/slide.svg")
-            }
-            style={[
-              styles.timelineIcon,
-              {
-                tintColor:
-                  index % 2 === 0
-                    ? "#E83C91"
-                    : Colors[colorScheme ?? "light"].tint,
-              },
-            ]}
-          />
-          {/* Line */}
-          {!isLast && (
-            <View
+      <>
+        <View style={styles.sectionContainer}>
+          <View style={styles.timelineConnector}>
+            <Image
+              source={
+                index % 2 === 0
+                  ? require("@/assets/images/tap.svg")
+                  : require("@/assets/images/slide.svg")
+              }
               style={[
-                styles.timelineLine,
+                styles.timelineIcon,
                 {
-                  backgroundColor:
-                    colorScheme === "dark" ? "#444444" : "#E0E0E0",
+                  tintColor:
+                    index % 2 === 0
+                      ? "#E83C91"
+                      : Colors[colorScheme ?? "light"].tint,
                 },
               ]}
             />
-          )}
-        </View>
+            {!isLast && (
+              <View
+                style={[
+                  styles.timelineLine,
+                  {
+                    backgroundColor:
+                      colorScheme === "dark" ? "#444444" : "#E0E0E0",
+                  },
+                ]}
+              />
+            )}
+          </View>
 
-        {/* Content */}
-        <View style={styles.sectionContent}>
-          {/* Date header */}
-          <ThemedText style={styles.dateHeader}>
-            {formatDate(item.date)}
-          </ThemedText>
+          <View style={styles.sectionContent}>
+            <ThemedText style={styles.dateHeader}>
+              {formatDate(item.date)}
+            </ThemedText>
 
-          {/* Charts grid */}
-          <View style={styles.chartsGrid}>
-            {item.charts.map((chart) => (
-              <TouchableOpacity
-                key={chart._id}
-                style={styles.iconWrapper}
-                onPress={() => navigateToChart(chart._id)}
-                activeOpacity={0.7}
-              >
-                <Image
-                  source={{ uri: chart.image }}
-                  style={styles.chartIcon}
-                  contentFit="cover"
-                  transition={200}
-                />
-              </TouchableOpacity>
-            ))}
+            <View style={styles.chartsGrid}>
+              {item.charts.map((chart) => (
+                <TouchableOpacity
+                  key={chart._id}
+                  style={styles.iconWrapper}
+                  onPress={() => navigateToChart(chart._id)}
+                  activeOpacity={0.7}
+                >
+                  <Image
+                    source={{ uri: chart.image }}
+                    style={styles.chartIcon}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
-      </View>
+        {showAds && (index + 1) % 4 === 0 && !isLast && <InlineBannerAd />}
+      </>
     );
   };
 

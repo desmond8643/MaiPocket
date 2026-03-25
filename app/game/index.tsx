@@ -474,14 +474,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     justifyContent: "space-between",
   },
-  bottomAdContainer: {
-    position: "absolute",
-    bottom: 16,
-    left: 0,
-    right: 0,
-    zIndex: 999,
-    alignItems: "center",
-  },
   trophyContainer: {
     marginLeft: 16,
   },

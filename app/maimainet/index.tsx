@@ -212,6 +212,33 @@ const DUPLICATE_TITLE_GENRE_MAP: Record<string, Record<string, string>> = {
   },
 };
 
+// Level to URL parameter mapping for maimai DX NET
+const LEVEL_OPTIONS: { label: string; param: number }[] = [
+  { label: "1", param: 1 },
+  { label: "2", param: 2 },
+  { label: "3", param: 3 },
+  { label: "4", param: 4 },
+  { label: "5", param: 5 },
+  { label: "6", param: 6 },
+  { label: "7", param: 7 },
+  { label: "7+", param: 8 },
+  { label: "8", param: 9 },
+  { label: "8+", param: 10 },
+  { label: "9", param: 11 },
+  { label: "9+", param: 12 },
+  { label: "10", param: 13 },
+  { label: "10+", param: 14 },
+  { label: "11", param: 15 },
+  { label: "11+", param: 16 },
+  { label: "12", param: 17 },
+  { label: "12+", param: 18 },
+  { label: "13", param: 19 },
+  { label: "13+", param: 20 },
+  { label: "14", param: 21 },
+  { label: "14+", param: 22 },
+  { label: "15", param: 23 },
+];
+
 export default function MaimaiNetScreen() {
   const [defaultRegion, setDefaultRegion] = useState("international");
   const [canGoBack, setCanGoBack] = useState(false);
@@ -222,6 +249,9 @@ export default function MaimaiNetScreen() {
   const [groupedChartData, setGroupedChartData] = useState<GroupedCharts | null>(null);
   const [isLoadingThumbnails, setIsLoadingThumbnails] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>("achievement");
+  const [showLevelSelector, setShowLevelSelector] = useState(false);
+  const [isLoadingCharts, setIsLoadingCharts] = useState(false);
+  const [pendingLevelExtraction, setPendingLevelExtraction] = useState<number | null>(null);
   const webViewRef = useRef<WebView>(null);
   const popupWebViewRef = useRef<WebView>(null);
   const colorScheme = useColorScheme();
@@ -229,9 +259,8 @@ export default function MaimaiNetScreen() {
   const { adsRemoved, temporaryAdRemoval } = useAds();
   const showAds = !adsRemoved && !temporaryAdRemoval;
 
-  const isOnMusicLevelPage = currentUrl.includes(
-    "maimai-mobile/record/musicLevel/search/?level="
-  );
+  // Check if on maimai domain (either Japan or International)
+  const isOnMaimaiDomain = currentUrl.includes("maimaidx.jp") || currentUrl.includes("maimaidx-eng.com");
 
   const translateX = useSharedValue(0);
   const SWIPE_THRESHOLD = 100;
@@ -376,7 +405,27 @@ export default function MaimaiNetScreen() {
     webViewRef.current?.injectJavaScript(script);
   }, []);
 
-  const fetchChartData = useCallback(() => {
+  // Navigate to level page and prepare for extraction
+  const fetchChartData = useCallback((levelParam: number) => {
+    setShowLevelSelector(false);
+    setIsLoadingCharts(true);
+    setPendingLevelExtraction(levelParam);
+
+    // Get the base URL based on current URL
+    const baseUrl = currentUrl.includes("maimaidx.jp") 
+      ? "https://maimaidx.jp" 
+      : "https://maimaidx-eng.com";
+    const levelUrl = `${baseUrl}/maimai-mobile/record/musicLevel/search/?level=${levelParam}`;
+    
+    // Navigate the WebView to the level page
+    webViewRef.current?.injectJavaScript(`
+      window.location.href = "${levelUrl}";
+      true;
+    `);
+  }, [currentUrl]);
+
+  // Run extraction after level page has loaded
+  const runChartExtraction = useCallback(() => {
     // First inject mai-tools
     const maiToolsScript = `
       (function(d){
@@ -390,8 +439,7 @@ export default function MaimaiNetScreen() {
     `;
     webViewRef.current?.injectJavaScript(maiToolsScript);
 
-    // Poll for mai-tools to finish, then extract
-    // Pass duplicate titles list to the script
+    // Wait for mai-tools to process, then extract
     const duplicateTitlesArray = JSON.stringify([...DUPLICATE_TITLES]);
     const extractScript = `
       (function() {
@@ -425,7 +473,6 @@ export default function MaimaiNetScreen() {
             const doc = parser.parseFromString(html, 'text/html');
             const blueEl = doc.querySelector('.basic_block .blue');
             if (blueEl) {
-              // Get text content, removing any img tags
               const genre = blueEl.textContent?.trim() || '';
               return genre;
             }
@@ -437,7 +484,6 @@ export default function MaimaiNetScreen() {
         }
         
         async function extractCharts() {
-          const charts = [];
           const chartDivs = document.querySelectorAll('.music_master_score_back, .music_expert_score_back, .music_remaster_score_back');
           
           // First pass: collect all chart data
@@ -509,7 +555,8 @@ export default function MaimaiNetScreen() {
           }));
         }
         
-        checkAndExtract();
+        // Start checking after a short delay to let the page settle
+        setTimeout(checkAndExtract, 500);
       })();
       true;
     `;
@@ -534,7 +581,14 @@ export default function MaimaiNetScreen() {
     try {
       const data = JSON.parse(event.nativeEvent.data);
 
+      if (data.type === "CHART_DATA_ERROR") {
+        console.error("Error fetching chart data:", data.payload?.error);
+        setIsLoadingCharts(false);
+        return;
+      }
+
       if (data.type === "CHART_DATA") {
+        setIsLoadingCharts(false);
         const charts: ChartInfo[] = data.payload;
         setChartData(charts);
         setIsLoadingThumbnails(true);
@@ -774,9 +828,9 @@ export default function MaimaiNetScreen() {
           gestureEnabled: false,
           headerRight: () => (
             <View style={styles.headerButtons}>
-              {isOnMusicLevelPage && (
+              {isOnMaimaiDomain && (
                 <Pressable
-                  onPress={fetchChartData}
+                  onPress={() => setShowLevelSelector(true)}
                   style={({ pressed }) => ({
                     opacity: pressed ? 0.5 : 1,
                   })}
@@ -859,6 +913,26 @@ export default function MaimaiNetScreen() {
                 setCanGoBack(navState.canGoBack);
                 setCanGoForward(navState.canGoForward);
                 setCurrentUrl(navState.url || "");
+                
+                // If user navigates away from level page while we're waiting, cancel the pending extraction
+                if (pendingLevelExtraction !== null && !navState.loading && !navState.url?.includes("musicLevel/search/?level=")) {
+                  setPendingLevelExtraction(null);
+                  setIsLoadingCharts(false);
+                }
+              }}
+              onLoadEnd={(syntheticEvent) => {
+                // Check if we're waiting for a level page to load for extraction
+                if (pendingLevelExtraction !== null) {
+                  const { nativeEvent } = syntheticEvent;
+                  if (nativeEvent.url?.includes("musicLevel/search/?level=")) {
+                    // Clear the pending state and run extraction
+                    setPendingLevelExtraction(null);
+                    // Small delay to ensure page is fully rendered
+                    setTimeout(() => {
+                      runChartExtraction();
+                    }, 300);
+                  }
+                }
               }}
               onError={(syntheticEvent) => {
                 const { nativeEvent } = syntheticEvent;
@@ -1129,6 +1203,76 @@ export default function MaimaiNetScreen() {
           )}
         </View>
       </Modal>
+
+      {/* Level Selector Modal */}
+      <Modal
+        visible={showLevelSelector || isLoadingCharts}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => {
+          if (!isLoadingCharts) {
+            setShowLevelSelector(false);
+          }
+        }}
+      >
+        <Pressable
+          style={styles.levelSelectorOverlay}
+          onPress={() => {
+            if (!isLoadingCharts) {
+              setShowLevelSelector(false);
+            }
+          }}
+        >
+          <Pressable
+            style={[
+              styles.levelSelectorContainer,
+              { backgroundColor: colorScheme === "dark" ? "#1a1a1a" : "#fff" },
+            ]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {isLoadingCharts ? (
+              <View style={styles.levelSelectorLoading}>
+                <ActivityIndicator size="large" />
+                <ThemedText style={styles.levelSelectorLoadingText}>
+                  Loading chart data...
+                </ThemedText>
+              </View>
+            ) : (
+              <>
+                <ThemedText style={styles.levelSelectorTitle}>
+                  {t("selectLevel") || "Select Level"}
+                </ThemedText>
+                <ScrollView
+                  style={styles.levelSelectorScroll}
+                  contentContainerStyle={styles.levelSelectorContent}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {LEVEL_OPTIONS.slice().reverse().map((level) => (
+                    <TouchableOpacity
+                      key={level.param}
+                      style={[
+                        styles.levelOption,
+                        {
+                          backgroundColor:
+                            colorScheme === "dark"
+                              ? "rgba(255, 255, 255, 0.1)"
+                              : "rgba(0, 0, 0, 0.05)",
+                        },
+                      ]}
+                      onPress={() => fetchChartData(level.param)}
+                      activeOpacity={0.7}
+                    >
+                      <ThemedText style={styles.levelOptionText}>
+                        {level.label}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ThemedView>
   );
 }
@@ -1343,5 +1487,55 @@ const styles = StyleSheet.create({
   chartDetailText: {
     fontSize: 14,
     opacity: 0.8,
+  },
+  levelSelectorOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  levelSelectorContainer: {
+    width: "80%",
+    maxHeight: "70%",
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  levelSelectorTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  levelSelectorScroll: {
+    maxHeight: 400,
+  },
+  levelSelectorContent: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 10,
+  },
+  levelOption: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  levelOptionText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  levelSelectorLoading: {
+    paddingVertical: 40,
+    alignItems: "center",
+    gap: 16,
+  },
+  levelSelectorLoadingText: {
+    fontSize: 14,
+    opacity: 0.7,
   },
 });

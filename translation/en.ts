@@ -434,6 +434,7 @@ export default {
   japan: 'Japan',
   selectRegionDescription: 'Choose which maimai DX NET site to access',
   chartData: "Chart Summary",
+  selectLevel: "Select Level",
 
   // Cache
   clearCache: "Clear Cache",

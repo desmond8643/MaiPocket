@@ -40,6 +40,7 @@ target 'MaiPocket' do
 
   config = use_native_modules!(config_command)
 
+  pod 'GoogleMobileAdsMediationUnity'
   pod 'Firebase/Core'
   pod 'Firebase/Messaging'
 

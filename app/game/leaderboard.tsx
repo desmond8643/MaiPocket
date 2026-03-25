@@ -262,14 +262,6 @@ const styles = StyleSheet.create({
     // paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  bottomAdContainer: {
-    position: "absolute",
-    bottom: 16,
-    left: 0,
-    right: 0,
-    zIndex: 999,
-    alignItems: "center",
-  },
   loginPrompt: {
     flexDirection: "row",
     backgroundColor: "rgba(174, 117, 218, 0.1)",

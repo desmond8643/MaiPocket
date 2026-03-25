@@ -54,6 +54,7 @@ const CATEGORIES = {
     "1",
   ],
   version: [
+    { display: "CiRCLE+", value: "CiRCLE+" },
     { display: "CiRCLE", value: "CiRCLE" },
     { display: "PRiSM+ (彩)", value: "PRiSM+" },
     { display: "PRiSM (鏡)", value: "PRiSM" },
@@ -109,14 +110,6 @@ export default function ChartsScreen() {
       icon: "calendar" as SymbolViewProps["name"],
     },
   ];
-
-  // Add these dynamic styles
-  // const dynamicStyles = {
-  //   bottomAdContainer: {
-  //     ...styles.bottomAdContainer,
-  //     bottom: 49 + insets.bottom, // Standard tab bar height (49) + bottom inset
-  //   }
-  // };
 
   // Render each category item
   const renderCategoryItem = ({
@@ -431,13 +424,5 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: "#FFFFFF",
     fontWeight: "600",
-  },
-  bottomAdContainer: {
-    position: "absolute",
-    bottom: 80, // Adjust this value based on your tab bar height
-    left: 0,
-    right: 0,
-    zIndex: 999,
-    alignItems: "center",
   },
 });

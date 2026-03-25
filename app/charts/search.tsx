@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
+import { InlineBannerAd } from "@/components/InlineBannerAd";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
@@ -22,6 +23,7 @@ import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
+import { AdItem, insertInlineAds, isAdItem } from "@/utils/adHelper";
 
 export default function ChartSearchScreen() {
   const { query } = useLocalSearchParams();
@@ -286,11 +288,14 @@ export default function ChartSearchScreen() {
         </ThemedView>
       ) : (
         <FlatList
-          data={charts}
-          renderItem={renderChartItem}
-          keyExtractor={(item) => item._id}
+          data={showAds ? insertInlineAds(charts, 8) : charts}
+          renderItem={({ item }) => {
+            if (isAdItem(item)) return <InlineBannerAd />;
+            return renderChartItem({ item });
+          }}
+          keyExtractor={(item) => (isAdItem(item) ? item.key : item._id)}
           numColumns={1}
-          contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]} // Add extra padding for ad
+          contentContainerStyle={styles.chartsList}
           ListHeaderComponent={
             <ThemedText style={styles.resultsCount}>
               {t("resultsCount", { count: charts.length })}
@@ -460,13 +465,5 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
-  },
-  bottomAdContainer: {
-    position: "absolute",
-    bottom: 0, // Can be at the bottom since there's no tab bar
-    left: 0,
-    right: 0,
-    zIndex: 999,
-    alignItems: "center",
   },
 });

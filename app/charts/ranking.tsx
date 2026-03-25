@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { router, Stack } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
+import { InlineBannerAd } from "@/components/InlineBannerAd";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
@@ -23,6 +24,7 @@ import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
+import { AdItem, insertInlineAds, isAdItem } from "@/utils/adHelper";
 
 type ViewMode = "list" | "icon";
 
@@ -411,14 +413,22 @@ export default function RankingScreen() {
       );
     }
 
+    const dataWithAds: (Chart | AdItem)[] =
+      viewMode === "list" && showAds
+        ? insertInlineAds(charts, 8)
+        : charts;
+
     return (
       <FlatList
-        data={charts}
-        renderItem={renderChartItem}
-        keyExtractor={(item) => item._id}
+        data={dataWithAds}
+        renderItem={({ item, index }) => {
+          if (isAdItem(item)) return <InlineBannerAd />;
+          return renderChartItem({ item, index });
+        }}
+        keyExtractor={(item) => (isAdItem(item) ? item.key : item._id)}
         numColumns={getNumColumns()}
         key={`${viewMode}-flat`}
-        contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]}
+        contentContainerStyle={styles.chartsList}
       />
     );
   };

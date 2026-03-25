@@ -429,6 +429,7 @@ export default {
   japan: "日本",
   selectRegionDescription: 'アクセスするmaimaiでらっくすNETサイトを選択してください',
   chartData: "譜面まとめ",
+  selectLevel: "レベルを選択",
 
   // Cache
   clearCache: "キャッシュをクリア",

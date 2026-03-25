@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
+import { InlineBannerAd } from "@/components/InlineBannerAd";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
@@ -24,6 +25,7 @@ import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
+import { AdItem, insertInlineAds, isAdItem } from "@/utils/adHelper";
 
 type ViewMode = "list" | "icon";
 type GroupMode = "none" | "level" | "version";
@@ -582,15 +584,22 @@ export default function ChartListScreen() {
       );
     }
 
-    // Always use the FlatList since we're only using "none" groupMode
+    const dataWithAds: (Chart | AdItem)[] =
+      viewMode === "list" && showAds
+        ? insertInlineAds(charts, 8)
+        : charts;
+
     return (
       <FlatList
-        data={charts}
-        renderItem={renderChartItem}
-        keyExtractor={(item) => item._id}
+        data={dataWithAds}
+        renderItem={({ item, index }) => {
+          if (isAdItem(item)) return <InlineBannerAd />;
+          return renderChartItem({ item });
+        }}
+        keyExtractor={(item) => (isAdItem(item) ? item.key : item._id)}
         numColumns={getNumColumns()}
         key={`${viewMode}-flat`}
-        contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]}
+        contentContainerStyle={styles.chartsList}
       />
     );
   };
@@ -1173,15 +1182,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     color: "#888888",
   },
-  bottomAdContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 999,
-    alignItems: "center",
-  },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.6)",

@@ -445,14 +445,6 @@ const styles = StyleSheet.create({
   copyrightButtonText: {
     fontSize: 12,
   },
-  bottomAdContainer: {
-    position: "absolute",
-    bottom: 80, // Adjust this value based on your tab bar height
-    left: 0,
-    right: 0,
-    zIndex: 999,
-    alignItems: "center",
-  },
   socialFeedContainer: {
     height: 600,
     borderRadius: 8,

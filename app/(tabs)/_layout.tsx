@@ -1,32 +1,20 @@
-import { BANNER_AD_HEIGHT } from "@/components/GlobalBannerAd";
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
-import { SHOW_ADS } from "@/constants/adsConfig";
-import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { Tabs } from "expo-router";
 import React from "react";
 
 export default function TabLayout() {
   const { t } = useLocalization();
-  const { adsRemoved, temporaryAdRemoval } = useAds();
-
-  // Calculate bottom padding for tab bar when ads are shown
-  const showBannerAd = SHOW_ADS && !adsRemoved && !temporaryAdRemoval;
-  const tabBarBottomPadding = showBannerAd ? BANNER_AD_HEIGHT : 0;
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#AE75DA", // Custom purple color
+        tabBarActiveTintColor: "#AE75DA",
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
-        tabBarStyle: {
-          height: 60 + tabBarBottomPadding,
-          paddingBottom: tabBarBottomPadding,
-        },
       }}
     >
       <Tabs.Screen

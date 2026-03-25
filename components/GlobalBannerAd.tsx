@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions, Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAds } from '@/context/AdContext';
 import { SHOW_ADS } from '@/constants/adsConfig';
 import { usePathname } from 'expo-router';
@@ -9,12 +8,12 @@ const { width } = Dimensions.get('window');
 const isTablet = Platform.OS === 'ios' && (Platform.isPad || width >= 768);
 export const BANNER_AD_HEIGHT = isTablet ? 90 : 50;
 
+const BannerAdImpl = React.lazy(() => import('./BannerAdImpl'));
+
 export function GlobalBannerAd() {
-  const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();
   const pathname = usePathname()
 
-  // Don't render if ads are disabled or removed
   if (!SHOW_ADS || adsRemoved || temporaryAdRemoval) {
     return null;
   }
@@ -22,9 +21,6 @@ export function GlobalBannerAd() {
   if (pathname === '/maimainet' || pathname.startsWith('/maimainet/')) {
     return null
   }
-
-  // Lazy load the actual ad implementation
-  const BannerAdImpl = React.lazy(() => import('./BannerAdImpl'));
 
   return (
     <View style={[styles.container, { bottom: 0 }]}>

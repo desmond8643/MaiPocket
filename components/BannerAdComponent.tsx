@@ -21,13 +21,11 @@ import React from 'react';
 import { View } from 'react-native';
 import { SHOW_ADS } from '@/constants/adsConfig';
 
+const BannerAdImpl = React.lazy(() => import('./BannerAdImpl'));
+
 export function BannerAdComponent() {
   if (!SHOW_ADS) return null;
-  
-  // Only import the ad module if we're showing ads
-  // This is done inside the component to prevent import errors in Expo Go
-  const BannerAdImpl = React.lazy(() => import('./BannerAdImpl'))
-  
+
   return (
     <React.Suspense fallback={<View />}>
       <BannerAdImpl />
