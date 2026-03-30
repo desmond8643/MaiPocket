@@ -10,7 +10,6 @@ import {
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
-import { InlineBannerAd } from "@/components/InlineBannerAd";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
@@ -23,7 +22,6 @@ import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
-import { AdItem, insertInlineAds, isAdItem } from "@/utils/adHelper";
 
 export default function ChartSearchScreen() {
   const { query } = useLocalSearchParams();
@@ -288,14 +286,11 @@ export default function ChartSearchScreen() {
         </ThemedView>
       ) : (
         <FlatList
-          data={showAds ? insertInlineAds(charts, 8) : charts}
-          renderItem={({ item }) => {
-            if (isAdItem(item)) return <InlineBannerAd />;
-            return renderChartItem({ item });
-          }}
-          keyExtractor={(item) => (isAdItem(item) ? item.key : item._id)}
+          data={charts}
+          renderItem={({ item }) => renderChartItem({ item })}
+          keyExtractor={(item) => item._id}
           numColumns={1}
-          contentContainerStyle={styles.chartsList}
+          contentContainerStyle={[styles.chartsList, showAds && { paddingBottom: 70 }]}
           ListHeaderComponent={
             <ThemedText style={styles.resultsCount}>
               {t("resultsCount", { count: charts.length })}

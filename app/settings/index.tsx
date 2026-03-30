@@ -5,11 +5,13 @@ import { useLocalization } from "@/context/LocalizationContext";
 import { ThumbnailCache } from "@/utils/thumbnailCache";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Clipboard from "expo-clipboard";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  Linking,
   StyleSheet,
   TouchableOpacity,
   Vibration,
@@ -20,6 +22,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 // Key for storing the ad watch count data
 const AD_WATCH_COUNT_KEY = "ad_watch_count";
 
+const FEEDBACK_EMAIL = "maimai.pocket@gmail.com";
+
 export default function SettingsScreen() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -29,6 +33,32 @@ export default function SettingsScreen() {
   const [cacheSize, setCacheSize] = useState(0);
   const [cacheCount, setCacheCount] = useState(0);
   const { t } = useLocalization();
+
+  const openFeedback = () => {
+    Alert.alert(t("contactUs"), t("contactUsMessage", { email: FEEDBACK_EMAIL }), [
+      { text: t("cancel"), style: "cancel" },
+      {
+        text: t("copyEmail"),
+        onPress: async () => {
+          await Clipboard.setStringAsync(FEEDBACK_EMAIL);
+          Alert.alert(t("copied"), t("emailCopiedToClipboard"));
+        },
+      },
+      {
+        text: t("openInMail"),
+        onPress: () => {
+          const subject = encodeURIComponent("MaiPocket feedback");
+          const url = `mailto:${FEEDBACK_EMAIL}?subject=${subject}`;
+          Linking.openURL(url).catch(() =>
+            Alert.alert(
+              t("error"),
+              `${t("contactUsOpenMailFailed")}\n\n${FEEDBACK_EMAIL}`
+            )
+          );
+        },
+      },
+    ]);
+  };
 
   // Load cache info
   const loadCacheInfo = async () => {
@@ -249,6 +279,11 @@ export default function SettingsScreen() {
               <ThemedText style={styles.optionText}>
                 {t("socialPreferences")}
               </ThemedText>
+              <Ionicons name="chevron-forward" size={24} color="#999" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.optionItem} onPress={openFeedback}>
+              <Ionicons name="mail-outline" size={24} color="#AE75DA" />
+              <ThemedText style={styles.optionText}>{t("contactUs")}</ThemedText>
               <Ionicons name="chevron-forward" size={24} color="#999" />
             </TouchableOpacity>
             {/* <TouchableOpacity

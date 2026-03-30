@@ -1,5 +1,4 @@
 import { ChartAPI } from "@/api/client";
-import { InlineBannerAd } from "@/components/InlineBannerAd";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
@@ -11,7 +10,6 @@ import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
-import { AdItem, insertInlineAds, isAdItem } from "@/utils/adHelper";
 import { Image } from "expo-image";
 import { router, Stack } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -243,7 +241,6 @@ export default function TimelineScreen() {
             </View>
           </View>
         </View>
-        {showAds && (index + 1) % 4 === 0 && !isLast && <InlineBannerAd />}
       </>
     );
   };
@@ -291,7 +288,7 @@ export default function TimelineScreen() {
         data={sections}
         renderItem={renderSection}
         keyExtractor={(item) => item.date}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, showAds && { paddingBottom: 70 }]}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}

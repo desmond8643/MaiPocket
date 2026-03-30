@@ -69,6 +69,13 @@ export default {
   // Settings
   settings: "設定",
   socialPreferences: "ソーシャル設定",
+  contactUs: "お問い合わせ",
+  contactUsMessage:
+    "フィードバックは次のメールアドレスまでお送りください：\n\n{{email}}\n\nアドレスをコピーするか、メールアプリで開けます。",
+  copyEmail: "メールをコピー",
+  openInMail: "メールで開く",
+  emailCopiedToClipboard: "メールアドレスをコピーしました。",
+  contactUsOpenMailFailed: "メールアプリを開けませんでした。",
   appLanguage: "アプリの言語",
   blockedUsers: "ブロックしたユーザー",
   deleteAccount: "アカウント削除",

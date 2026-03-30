@@ -17,6 +17,7 @@ import {
   getMessaging,
   onNotificationOpenedApp,
 } from "@react-native-firebase/messaging";
+import { GlobalBannerAd } from "@/components/GlobalBannerAd";
 
 function useNotificationNavigation() {
   useEffect(() => {
@@ -246,6 +247,7 @@ export default function RootLayout() {
                   options={{ headerShown: false }}
                 />
               </Stack>
+              <GlobalBannerAd />
             </View>
           </GestureHandlerRootView>
         </AdProvider>

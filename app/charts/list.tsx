@@ -12,7 +12,6 @@ import {
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
-import { InlineBannerAd } from "@/components/InlineBannerAd";
 import {
   preloadInterstitialAd,
   showInterstitialAd,
@@ -25,7 +24,6 @@ import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
-import { AdItem, insertInlineAds, isAdItem } from "@/utils/adHelper";
 
 type ViewMode = "list" | "icon";
 type GroupMode = "none" | "level" | "version";
@@ -584,22 +582,14 @@ export default function ChartListScreen() {
       );
     }
 
-    const dataWithAds: (Chart | AdItem)[] =
-      viewMode === "list" && showAds
-        ? insertInlineAds(charts, 8)
-        : charts;
-
     return (
       <FlatList
-        data={dataWithAds}
-        renderItem={({ item, index }) => {
-          if (isAdItem(item)) return <InlineBannerAd />;
-          return renderChartItem({ item });
-        }}
-        keyExtractor={(item) => (isAdItem(item) ? item.key : item._id)}
+        data={charts}
+        renderItem={({ item }) => renderChartItem({ item })}
+        keyExtractor={(item) => item._id}
         numColumns={getNumColumns()}
         key={`${viewMode}-flat`}
-        contentContainerStyle={styles.chartsList}
+        contentContainerStyle={[styles.chartsList, showAds && { paddingBottom: 70 }]}
       />
     );
   };

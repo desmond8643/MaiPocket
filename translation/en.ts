@@ -69,6 +69,13 @@ export default {
   // Settings
   settings: "Settings",
   socialPreferences: "Social Preferences",
+  contactUs: "Contact us",
+  contactUsMessage:
+    "Send feedback to:\n\n{{email}}\n\nYou can copy the address or open it in your mail app.",
+  copyEmail: "Copy email",
+  openInMail: "Open in Mail",
+  emailCopiedToClipboard: "Email address copied to clipboard.",
+  contactUsOpenMailFailed: "Could not open the mail app.",
   appLanguage: "App Language",
   blockedUsers: "Blocked Users",
   deleteAccount: "Delete Account",

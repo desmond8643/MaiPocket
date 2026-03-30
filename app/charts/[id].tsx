@@ -15,6 +15,7 @@ import {
   ToastAndroid,
   TouchableOpacity,
   View,
+  Text
 } from "react-native";
 
 import { AuthAPI, ChartAPI, UserAPI } from "@/api/client";
@@ -1095,7 +1096,7 @@ export default function ChartDetailScreen() {
                       },
                     ]}
                   >
-                    <TextInput
+                    {/*<TextInput
                       style={[
                         styles.simaiText,
                         {
@@ -1114,8 +1115,26 @@ export default function ChartDetailScreen() {
                       editable={false}
                       multiline={true}
                       scrollEnabled={false}
-                    />
-                    <TouchableOpacity
+                    />*/}
+                    
+                    <Text
+                      selectable={false}
+                      style={[
+                        styles.simaiText,
+                        {
+                          fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+                          color: colorScheme === "dark" ? "#fff" : "#000",
+                        },
+                      ]}
+                    >
+                      {simaiDisplayMode === "raw"
+                        ? getCurrentSimai() || ""
+                        : simaiDisplayMode === "combo"
+                          ? formattedSimaiCombo
+                          : formattedSimaiTime}
+                    </Text>
+
+                    {/*  <TouchableOpacity
                       style={styles.copySimaiButton}
                       onPress={() => {
                         const simai = getCurrentSimai();
@@ -1130,7 +1149,7 @@ export default function ChartDetailScreen() {
                       <ThemedText style={styles.copySimaiButtonText}>
                         {t("copy")}
                       </ThemedText>
-                    </TouchableOpacity>
+                    </TouchableOpacity>*/}
                   </View>
                 )}
               </View>
