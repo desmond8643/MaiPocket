@@ -54,6 +54,8 @@ const matchesLevelString = (numLevel: number, levelString: string): boolean => {
 
 export default function ChartListScreen() {
   const { type, value } = useLocalSearchParams();
+  const listType = type?.toString();
+  const listValue = value?.toString();
   const colorScheme = useColorScheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [charts, setCharts] = useState<Chart[]>([]);
@@ -287,6 +289,16 @@ export default function ChartListScreen() {
     };
   };
 
+  const getIconLevelBadge = (chart: Chart) => {
+    if (listType === "level" && listValue) {
+      return getMaxLevel(chart, "level", listValue);
+    }
+    if (listType === "version" && listValue) {
+      return getMaxLevel(chart, "version", listValue);
+    }
+    return getMaxLevel(chart);
+  };
+
   // Update the getDifficulties function to handle level as an object
   const getDifficulties = (chart: Chart) => {
     interface SimpleDifficulty {
@@ -373,6 +385,7 @@ export default function ChartListScreen() {
     const difficulties = getDifficulties(item);
 
     if (viewMode === "icon") {
+      const iconBadge = getIconLevelBadge(item);
       return (
         <TouchableOpacity
           style={[
@@ -395,15 +408,14 @@ export default function ChartListScreen() {
             </ThemedText>
           </View>
 
-          {/* Show max level badge */}
           <View
             style={[
               styles.levelBadge,
-              { backgroundColor: getMaxLevel(item).color },
+              { backgroundColor: iconBadge.color },
             ]}
           >
             <ThemedText style={styles.levelBadgeText}>
-              {getMaxLevel(item).level}
+              {iconBadge.level}
             </ThemedText>
           </View>
         </TouchableOpacity>
