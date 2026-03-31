@@ -1,6 +1,7 @@
 import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { ADMIN_CURATOR_USER_ID } from "@/constants/adminCurator";
 import { useLocalization } from "@/context/LocalizationContext";
 import { ThumbnailCache } from "@/utils/thumbnailCache";
 import { Ionicons } from "@expo/vector-icons";
@@ -254,7 +255,7 @@ export default function SettingsScreen() {
         <View style={styles.content}>
           <View style={styles.optionsContainer}>
             {/* Ad Watch Count Display */}
-            {isLoggedIn && userId === "68c9565dad96c1064ad9f2f0" && (
+            {isLoggedIn && userId === ADMIN_CURATOR_USER_ID && (
               <ThemedView style={styles.statsCard}>
                 <View style={styles.statsRow}>
                   <Ionicons name="eye-outline" size={24} color="#AE75DA" />
@@ -339,7 +340,7 @@ export default function SettingsScreen() {
                   </ThemedText>
                   <Ionicons name="chevron-forward" size={24} color="#999" />
                 </TouchableOpacity>
-                {userId === "68c9565dad96c1064ad9f2f0" && (
+                {userId === ADMIN_CURATOR_USER_ID && (
                   <TouchableOpacity
                     style={styles.optionItem}
                     onPress={handleShowRewardAd}

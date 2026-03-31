@@ -1,4 +1,5 @@
 import { queryClient } from "@/context/GameQueryProvider";
+import { ChartCurationNext } from "@/types/chart";
 import { LeaderboardEntry, QuizQuestion } from "@/types/game";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -95,6 +96,31 @@ export const ChartAPI = {
       return response.data;
     } catch (error) {
       console.error("Error fetching chart details:", error);
+      throw error;
+    }
+  },
+
+  getCurationNext: async (): Promise<ChartCurationNext> => {
+    try {
+      const response = await apiClient.get("/charts/curation/next");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching curation candidate:", error);
+      throw error;
+    }
+  },
+
+  patchCurationTags: async (body: {
+    chartId: string;
+    gameVersion: "standard" | "deluxe";
+    difficultyType: "expert" | "master" | "remaster";
+    tags: string[];
+  }) => {
+    try {
+      const response = await apiClient.patch("/charts/curation/tags", body);
+      return response.data;
+    } catch (error) {
+      console.error("Error saving curation tags:", error);
       throw error;
     }
   },

@@ -6,12 +6,23 @@ export interface Difficulty {
   };
   charter?: string;
   noteCount?: number;
-  simai?: string
+  simai?: string;
+  tags?: string[];
 }
 
 export interface ChartVersionDetails {
   versionReleased: string;
   difficulties: Difficulty[];
+}
+
+/** One expert+ slot returned by GET /charts/curation/next */
+export interface ChartCurationNext {
+  chartId: string;
+  title: string;
+  gameVersion: "standard" | "deluxe";
+  difficultyType: "expert" | "master" | "remaster";
+  tags: string[];
+  levelConstant: number | null;
 }
 
 export interface Chart {

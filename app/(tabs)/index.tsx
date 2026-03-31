@@ -1,5 +1,6 @@
 import { AuthAPI, NotificationAPI } from "@/api/client";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
+import { ADMIN_CURATOR_USER_ID } from "@/constants/adminCurator";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
@@ -30,6 +31,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState("");
   const [isDataLoading, setIsDataLoading] = useState(true);
 
   const showAdsSection = !adsRemoved; // Only hide for permanent removal
@@ -79,6 +81,21 @@ export default function HomeScreen() {
   useFocusEffect(
     React.useCallback(() => {
       loadPreference();
+
+      const loadUserId = async () => {
+        try {
+          const userData = await AsyncStorage.getItem("userData");
+          if (userData) {
+            const parsed = JSON.parse(userData);
+            setUserId(parsed._id || "");
+          } else {
+            setUserId("");
+          }
+        } catch {
+          setUserId("");
+        }
+      };
+      loadUserId();
 
       const refreshData = async () => {
         try {
@@ -254,6 +271,27 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         </TouchableOpacity>
+        {isLoggedIn && userId === ADMIN_CURATOR_USER_ID && (
+          <TouchableOpacity
+            style={{ ...styles.featureContainer, backgroundColor: "#607D8B" }}
+            onPress={() => router.push("/charts/tag-curation")}
+          >
+            <View style={styles.featureTitleContainer}>
+              <ThemedText
+                type="subtitle"
+                style={{ color: "white", marginTop: 8 }}
+              >
+                {t("chartTagCuration")}
+              </ThemedText>
+              <Ionicons name="pricetags-outline" size={48} color="white" />
+            </View>
+            <View style={styles.featureDescription}>
+              <ThemedText style={{ color: "white" }}>
+                {t("chartTagCurationDesc")}
+              </ThemedText>
+            </View>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={{ ...styles.featureContainer, backgroundColor: "#4CAF50" }}
           onPress={() => router.push("/game")}
