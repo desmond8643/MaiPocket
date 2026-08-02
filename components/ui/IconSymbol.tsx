@@ -23,8 +23,16 @@ const MAPPING = {
   'calendar': 'date-range',
   'magnifyingglass': 'search',
   'chevron.right': 'chevron-right',
+  'chevron.left': 'chevron-left',
   'chevron.left.forwardslash.chevron.right': 'code',
   'paperplane.fill': 'send',
+  'list.bullet': 'format-list-bulleted',
+  'square.grid.3x3': 'grid-view',
+  'shuffle': 'shuffle',
+  'xmark': 'close',
+  'exclamationmark.triangle': 'warning',
+  'checkmark.circle.fill': 'check-circle',
+  'heart': 'favorite',
 } as IconMapping;
 
 /**

@@ -3,6 +3,11 @@ import { Colors } from "@/constants/Colors";
 import { AdProvider } from "@/context/AdContext";
 import { GameQueryProvider } from "@/context/GameQueryProvider";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -138,117 +143,123 @@ export default function RootLayout() {
     };
   }, []);
 
+  const navTheme = colorScheme === "dark" ? DarkTheme : DefaultTheme;
+
   return (
     <LocalizationProvider>
       <GameQueryProvider>
         <AdProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <View style={{ flex: 1 }}>
-              <Stack
-                screenOptions={{
-                  headerStyle: {
-                    backgroundColor:
-                      colorScheme === "dark"
-                        ? Colors.dark.background
-                        : Colors.light.background,
-                  },
-                  headerTintColor:
-                    colorScheme === "dark" ? Colors.dark.text : Colors.light.text,
-                  headerTitleStyle: {
-                    color:
+            <ThemeProvider value={navTheme}>
+              <View style={{ flex: 1 }}>
+                <Stack
+                  screenOptions={{
+                    headerStyle: {
+                      backgroundColor:
+                        colorScheme === "dark"
+                          ? Colors.dark.background
+                          : Colors.light.background,
+                    },
+                    headerTintColor:
                       colorScheme === "dark"
                         ? Colors.dark.text
                         : Colors.light.text,
-                  },
-                  contentStyle: {
-                    backgroundColor:
-                      colorScheme === "dark"
-                        ? Colors.dark.background
-                        : Colors.light.background,
-                  },
-                  autoHideHomeIndicator: true
-                }}
-              >
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen
-                  name="auth/login"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="auth/register"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="auth/verify"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="auth/forgot-password"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="auth/reset-password"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="settings/edit-profile"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="settings/change-password"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="remove-ads"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="settings/social-preferences"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="settings/index"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="game/index"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="game/play"
-                  options={{ headerShown: false, gestureEnabled: false }}
-                />
-                <Stack.Screen
-                  name="game/leaderboard"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="game/casual-play"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="shop/index"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="settings/delete-account"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="settings/blocked-user"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="settings/language"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="settings/maimai-region"
-                  options={{ headerShown: false }}
-                />
-              </Stack>
-              <GlobalBannerAd />
-            </View>
+                    headerTitleStyle: {
+                      color:
+                        colorScheme === "dark"
+                          ? Colors.dark.text
+                          : Colors.light.text,
+                    },
+                    contentStyle: {
+                      backgroundColor:
+                        colorScheme === "dark"
+                          ? Colors.dark.background
+                          : Colors.light.background,
+                    },
+                    autoHideHomeIndicator: true,
+                  }}
+                >
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="auth/login"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="auth/register"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="auth/verify"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="auth/forgot-password"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="auth/reset-password"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="settings/edit-profile"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="settings/change-password"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="remove-ads"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="settings/social-preferences"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="settings/index"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="game/index"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="game/play"
+                    options={{ headerShown: false, gestureEnabled: false }}
+                  />
+                  <Stack.Screen
+                    name="game/leaderboard"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="game/casual-play"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="shop/index"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="settings/delete-account"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="settings/blocked-user"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="settings/language"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="settings/maimai-region"
+                    options={{ headerShown: false }}
+                  />
+                </Stack>
+                <GlobalBannerAd />
+              </View>
+            </ThemeProvider>
           </GestureHandlerRootView>
         </AdProvider>
       </GameQueryProvider>

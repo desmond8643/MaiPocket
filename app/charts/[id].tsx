@@ -28,6 +28,7 @@ import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useShowAds } from "@/hooks/useShowAds";
+import { recordChartView } from "@/lib/recommendations/recordChartView";
 import { Chart, Post } from "@/types/chart";
 import { User } from "@/types/user";
 import { extractYouTubeVideoId } from "@/utils/youtubeUtils";
@@ -202,6 +203,20 @@ export default function ChartDetailScreen() {
 
     // Fetch posts for the selected chart type and difficulty
     fetchPosts(chart._id, selectedType, selectedDifficulty);
+  }, [chart, selectedType, selectedDifficulty]);
+
+  useEffect(() => {
+    if (!chart || !selectedDifficulty) return;
+    const slot = chart[selectedType];
+    const diff = slot?.difficulties?.find(
+      (d: { type: string }) => d.type === selectedDifficulty
+    );
+    void recordChartView({
+      chartId: chart._id,
+      category: chart.category,
+      bpm: chart.bpm,
+      tags: diff?.tags ?? [],
+    });
   }, [chart, selectedType, selectedDifficulty]);
 
   const getDifficultyColor = (type: string) => {

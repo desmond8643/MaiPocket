@@ -1,4 +1,4 @@
-package com.anonymous.maimaiviewer
+package com.anonymous.maipocket
 
 import android.app.Application
 import android.content.res.Configuration

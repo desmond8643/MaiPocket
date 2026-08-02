@@ -10,7 +10,6 @@ export const CHART_PATTERN_TAG_OPTIONS = [
   "Stamina",
   "Jack",
   "Each",
-  "Taps",
   "Touch",
   "Heart beat",
   "Umiyuri"

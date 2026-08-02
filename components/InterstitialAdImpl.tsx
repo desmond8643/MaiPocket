@@ -24,6 +24,7 @@ const ACTIONS_BETWEEN_ADS = 2; // Require at least 4 actions between ads
 
 const adUnitId = Platform.select({
   ios: "ca-app-pub-7106153117550777/6330997877", // Replace with your iOS interstitial ad unit ID
+  android: "ca-app-pub-7106153117550777/1662616745",
   default: "", // Fallback to test ID
 });
 

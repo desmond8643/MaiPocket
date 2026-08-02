@@ -1,4 +1,5 @@
 import { AuthAPI, NotificationAPI } from "@/api/client";
+import { IntroOnboardingModal } from "@/components/IntroOnboardingModal";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ADMIN_CURATOR_USER_ID } from "@/constants/adminCurator";
 import { ThemedText } from "@/components/ThemedText";
@@ -8,6 +9,10 @@ import { useAds } from "@/context/AdContext";
 import { fetchDataImmediately } from "@/context/GameQueryProvider";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import {
+  loadIntroOnboardingDismissed,
+  setIntroOnboardingDismissed,
+} from "@/lib/recommendations/profileStorage";
 import { getFCMToken } from "@/utils/useFCMToken";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -37,6 +42,7 @@ export default function HomeScreen() {
   const showAdsSection = !adsRemoved; // Only hide for permanent removal
 
   const [socialFeedPreference, setSocialFeedPreference] = useState("facebook");
+  const [showIntroOnboarding, setShowIntroOnboarding] = useState(false);
   const { t } = useLocalization();
 
   const loadPreference = async () => {
@@ -51,6 +57,14 @@ export default function HomeScreen() {
       console.error("Error loading social feed preference:", error);
     }
   };
+
+  useEffect(() => {
+    const loadIntro = async () => {
+      const dismissed = await loadIntroOnboardingDismissed();
+      if (!dismissed) setShowIntroOnboarding(true);
+    };
+    loadIntro();
+  }, []);
 
   useEffect(() => {
     const preloadData = async () => {
@@ -158,13 +172,19 @@ export default function HomeScreen() {
     initializeFCM();
   }, []);
 
+  const handleIntroSkip = async () => {
+    await setIntroOnboardingDismissed();
+    setShowIntroOnboarding(false);
+  };
+
   return (
     <View style={styles.container}>
+      {/*<IntroOnboardingModal visible={showIntroOnboarding} onSkip={handleIntroSkip} />*/}
       <ParallaxScrollView
         headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
         headerImage={
           <Image
-            source={require("@/assets/images/milk.png")}
+            source={require("@/assets/images/milk2.png")}
             style={styles.reactLogo}
           />
         }
@@ -195,6 +215,25 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         </TouchableOpacity>
+        {/* <TouchableOpacity
+          style={{ ...styles.featureContainer, backgroundColor: "#AE75DA" }}
+          onPress={() => router.push("/charts/recommendations")}
+        >
+          <View style={styles.featureTitleContainer}>
+            <ThemedText
+              type="subtitle"
+              style={{ color: "white", marginTop: 8 }}
+            >
+              {t("chartRecommendations")}
+            </ThemedText>
+            <Ionicons name="sparkles-outline" size={48} color="white" />
+          </View>
+          <View style={styles.featureDescription}>
+            <ThemedText style={{ color: "white" }}>
+              {t("chartRecommendationsDesc")}
+            </ThemedText>
+          </View>
+        </TouchableOpacity> */}
         {/* <TouchableOpacity
           style={{ ...styles.featureContainer, backgroundColor: "#696FC7" }}
           onPress={() => router.push("/charts")}
@@ -271,7 +310,7 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         </TouchableOpacity>
-        {isLoggedIn && userId === ADMIN_CURATOR_USER_ID && (
+        {/* {isLoggedIn && userId === ADMIN_CURATOR_USER_ID && (
           <TouchableOpacity
             style={{ ...styles.featureContainer, backgroundColor: "#607D8B" }}
             onPress={() => router.push("/charts/tag-curation")}
@@ -291,7 +330,7 @@ export default function HomeScreen() {
               </ThemedText>
             </View>
           </TouchableOpacity>
-        )}
+        )} */}
         <TouchableOpacity
           style={{ ...styles.featureContainer, backgroundColor: "#4CAF50" }}
           onPress={() => router.push("/game")}

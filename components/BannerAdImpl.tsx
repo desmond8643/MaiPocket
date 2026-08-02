@@ -9,6 +9,7 @@ import {
 export default function BannerAdImpl() {
   const adUnitId = Platform.select({
     ios: "ca-app-pub-7106153117550777/5330249389", // Replace with your iOS banner ad unit ID
+    android: "ca-app-pub-7106153117550777/2304212203",
     default: "",
   });
   return (

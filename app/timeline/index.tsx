@@ -194,15 +194,12 @@ export default function TimelineScreen() {
                   ? require("@/assets/images/tap.svg")
                   : require("@/assets/images/slide.svg")
               }
-              style={[
-                styles.timelineIcon,
-                {
-                  tintColor:
-                    index % 2 === 0
-                      ? "#E83C91"
-                      : Colors[colorScheme ?? "light"].tint,
-                },
-              ]}
+              tintColor={
+                index % 2 === 0
+                  ? "#E83C91"
+                  : Colors[colorScheme ?? "light"].tint
+              }
+              style={styles.timelineIcon}
             />
             {!isLast && (
               <View

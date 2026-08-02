@@ -8,6 +8,7 @@ import { Platform } from "react-native";
 
 const adUnitId = Platform.select({
   ios: "ca-app-pub-7106153117550777/4794554924", // Replace with your iOS interstitial ad unit ID
+  android: "ca-app-pub-7106153117550777/9349535072",
   default: "", // Fallback to test ID
 });
 export function showRewardedAdImpl(

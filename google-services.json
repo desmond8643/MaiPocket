@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "626746730199",
+    "project_id": "maipocket-9d121",
+    "storage_bucket": "maipocket-9d121.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:626746730199:android:f66dac8b9b60b6e3adb292",
+        "android_client_info": {
+          "package_name": "com.anonymous.maipocket"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcjGMKhLBAMDpboon9F_5QrXifzLKD8ug"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

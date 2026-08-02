@@ -1,39 +1,19 @@
 import Expo
+import FirebaseCore
 import React
 import ReactAppDependencyProvider
-import Firebase
-import FirebaseMessaging
-import UserNotifications
 
 @UIApplicationMain
 public class AppDelegate: ExpoAppDelegate {
   var window: UIWindow?
-  
+
   var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
-  
+
   public override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
-    FirebaseApp.configure()
-    // Clear badge on app launch
-    UIApplication.shared.applicationIconBadgeNumber = 0
-
-    // Remove all delivered notifications from notification center
-    UNUserNotificationCenter.current().removeAllDeliveredNotifications()
-
-    UNUserNotificationCenter.current().delegate = self
-    let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-    UNUserNotificationCenter.current().requestAuthorization(
-      options: authOptions,
-      completionHandler: { _, _ in }
-    )
-    
-    application.registerForRemoteNotifications()
-    
-    Messaging.messaging().delegate = self
-    
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()
@@ -44,6 +24,9 @@ public class AppDelegate: ExpoAppDelegate {
 
 #if os(iOS) || os(tvOS)
     window = UIWindow(frame: UIScreen.main.bounds)
+// @generated begin @react-native-firebase/app-didFinishLaunchingWithOptions - expo prebuild (DO NOT MODIFY) sync-10e8520570672fd76b2403b7e1e27f5198a6349a
+FirebaseApp.configure()
+// @generated end @react-native-firebase/app-didFinishLaunchingWithOptions
     factory.startReactNative(
       withModuleName: "main",
       in: window,
@@ -71,47 +54,6 @@ public class AppDelegate: ExpoAppDelegate {
     let result = RCTLinkingManager.application(application, continue: userActivity, restorationHandler: restorationHandler)
     return super.application(application, continue: userActivity, restorationHandler: restorationHandler) || result
   }
-}
-
-// MARK: - UNUserNotificationCenterDelegate
-extension AppDelegate: UNUserNotificationCenterDelegate {
-  // Receive displayed notifications for iOS 10 devices.
-  public func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                   willPresent notification: UNNotification,
-                                   withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-    let userInfo = notification.request.content.userInfo
-
-    // With swizzling disabled you must let Messaging know about the message, for Analytics
-    Messaging.messaging().appDidReceiveMessage(userInfo)
-
-    // Change this to your preferred presentation option
-    completionHandler([[.alert, .sound]])
-  }
-
-  public func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                   didReceive response: UNNotificationResponse,
-                                   withCompletionHandler completionHandler: @escaping () -> Void) {
-    let userInfo = response.notification.request.content.userInfo
-
-    // With swizzling disabled you must let Messaging know about the message, for Analytics
-    Messaging.messaging().appDidReceiveMessage(userInfo)
-
-    completionHandler()
-  }
-}
-
-// MARK: - MessagingDelegate
-extension AppDelegate: MessagingDelegate {
-  // [START refresh_token]
-  public func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-    print("Firebase registration token: \(String(describing: fcmToken))")
-
-    let dataDict: [String: String] = ["token": fcmToken ?? ""]
-    NotificationCenter.default.post(name: Notification.Name("FCMToken"), object: nil, userInfo: dataDict)
-    // TODO: If necessary send token to application server.
-    // Note: This callback is fired at each app startup and whenever a new token is generated.
-  }
-  // [END refresh_token]
 }
 
 class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {

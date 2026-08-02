@@ -1,4 +1,4 @@
-package com.anonymous.maimaiviewer
+package com.anonymous.maipocket
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

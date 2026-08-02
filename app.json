@@ -10,11 +10,13 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.maipocket"
+      "bundleIdentifier": "com.anonymous.maipocket",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon2.png",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
@@ -26,6 +28,25 @@
       "favicon": "./assets/images/icon2.png"
     },
     "plugins": [
+      "@react-native-firebase/app",
+      [
+        "@react-native-firebase/messaging",
+        {
+          "android_notification_channel_id": "default"
+        }
+      ],
+      [
+    "expo-build-properties",
+    {
+      "ios": {
+        "useFrameworks": "static",
+        "forceStaticLinking": [
+          "RNFBApp",
+          "RNFBMessaging"
+        ]
+      }
+    }
+  ],
       "expo-router",
       [
         "expo-splash-screen",

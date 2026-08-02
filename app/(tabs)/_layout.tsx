@@ -3,14 +3,17 @@ import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { SHOW_ADS } from "@/constants/adsConfig";
+import { Colors } from "@/constants/Colors";
 import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { Tabs } from "expo-router";
 import React from "react";
 
 export default function TabLayout() {
   const { t } = useLocalization();
   const { adsRemoved, temporaryAdRemoval } = useAds();
+  const colorScheme = useColorScheme() ?? "light";
 
   const showBannerAd = SHOW_ADS && !adsRemoved && !temporaryAdRemoval;
   const tabBarBottomPadding = showBannerAd ? BANNER_AD_HEIGHT : 0;
@@ -19,12 +22,15 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: "#AE75DA",
+        tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: {
           height: 60 + tabBarBottomPadding,
           paddingBottom: tabBarBottomPadding,
+          backgroundColor: Colors[colorScheme].background,
+          borderTopColor: colorScheme === "dark" ? "#333333" : "#E0E0E0",
         },
       }}
     >
