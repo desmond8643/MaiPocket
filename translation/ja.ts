@@ -234,6 +234,7 @@ export default {
   pause: "一時停止",
   playAudio: "音声を再生",
   loadingImages: "画像を読み込み中",
+  loadingNextImage: "次の画像を読み込み中...",
   // Performance ratings
   miss: "Miss",
   allPerfect: "All Perfect",
@@ -298,7 +299,7 @@ export default {
   youLose: "ゲームオーバー...",
   bestScore: "ベストスコア",
   newRecord: "(新記録!)",
-  crystals: "クリスタル!",
+  crystals: "クリスタル",
   total: "合計",
 
   // Registration page

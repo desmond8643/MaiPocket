@@ -239,6 +239,7 @@ export default {
   pause: "Pause",
   playAudio: "Play Audio",
   loadingImages: "Loading Images",
+  loadingNextImage: "Loading next image...",
   // Performance ratings
   miss: "Miss",
   allPerfect: "All Perfect",
@@ -302,7 +303,7 @@ export default {
   youLose: "You Lose...",
   bestScore: "Best Score",
   newRecord: "(New Record!)",
-  crystals: "Crystals!",
+  crystals: "Crystals",
   total: "Total",
 
   // Registration page

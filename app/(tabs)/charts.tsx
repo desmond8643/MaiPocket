@@ -55,7 +55,7 @@ const CATEGORIES = {
   ],
   version: [
     { display: "CiRCLE+", value: "CiRCLE+" },
-    { display: "CiRCLE", value: "CiRCLE" },
+    { display: "CiRCLE (丸)", value: "CiRCLE" },
     { display: "PRiSM+ (彩)", value: "PRiSM+" },
     { display: "PRiSM (鏡)", value: "PRiSM" },
     { display: "BUDDiES+ (宴)", value: "BUDDiES+" },

@@ -52,7 +52,7 @@ export default function RankingScreen() {
       setError(null);
 
       try {
-        const data = await ChartAPI.getPopularCharts(20);
+        const data = await ChartAPI.getPopularCharts(50);
         setCharts(data);
         setOriginalCharts(data);
       } catch (err) {
@@ -218,7 +218,11 @@ export default function RankingScreen() {
 
           {/* Ranking badge */}
           <View style={styles.rankingBadge}>
-            <ThemedText style={styles.rankingBadgeText}>#{index + 1}</ThemedText>
+            <ThemedText
+              style={[styles.rankingBadgeText, { color: getRankColor(index) }]}
+            >
+              {index + 1}
+            </ThemedText>
           </View>
 
           {/* Level badge */}
@@ -247,7 +251,23 @@ export default function RankingScreen() {
       >
         <View style={styles.topSection}>
           <View style={styles.rankingContainer}>
-            <ThemedText style={styles.rankingText}>#{index + 1}</ThemedText>
+            <ThemedText
+              style={[
+                styles.rankingText,
+                {
+                  fontSize: getRankFontSize(index),
+                  color:
+                    index < 3
+                      ? getRankColor(index)
+                      : colorScheme === "dark"
+                        ? "#FFFFFF"
+                        : "#000000",
+                },
+              ]}
+            >
+              {index + 1}
+            </ThemedText>
+
           </View>
           <Image
             source={{ uri: item.image }}
@@ -383,7 +403,7 @@ export default function RankingScreen() {
             onPress={() => {
               setLoading(true);
               setError(null);
-              ChartAPI.getPopularCharts(20)
+              ChartAPI.getPopularCharts(50)
                 .then((data) => {
                   setCharts(data);
                   setOriginalCharts(data);
@@ -514,6 +534,18 @@ export default function RankingScreen() {
   );
 }
 
+function getRankColor(index: number) {
+  if (index === 0) return "#FFD700"; // gold
+  if (index === 1) return "#C0C0C0"; // silver
+  if (index === 2) return "#CD7F32"; // bronze
+  return "#FFFFFF";
+}
+
+function getRankFontSize(index: number) {
+  if (index === 0 || index === 1 || index === 2) return 25;
+  return 20;
+}
+
 function getDifficultyColor(type: string) {
   switch (type) {
     case "basic":
@@ -605,16 +637,13 @@ const styles = StyleSheet.create({
   rankingContainer: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFD700",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
   rankingText: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#000000",
   },
   chartImage: {
     width: 80,
@@ -726,7 +755,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 12,
     left: 12,
-    backgroundColor: "#FFD700",
+    backgroundColor: "rgba(0, 0, 0, 0.65)",
     borderRadius: 12,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -734,7 +763,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   rankingBadgeText: {
-    color: "#000000",
     fontSize: 10,
     fontWeight: "bold",
   },

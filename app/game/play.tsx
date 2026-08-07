@@ -15,6 +15,10 @@ import { fetchDataImmediately } from "@/context/GameQueryProvider";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useShowAds } from "@/hooks/useShowAds";
 import { QuizQuestion } from "@/types/game";
+import {
+  isQuizImageReady,
+  prefetchQuizImages,
+} from "@/utils/preloadQuizImages";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
@@ -55,6 +59,8 @@ export default function GamePlayScreen() {
   const [preloadedImages, setPreloadedImages] = useState<{
     [key: string]: boolean;
   }>({});
+  const [pendingNextIndex, setPendingNextIndex] = useState<number | null>(null);
+  const preloadedImagesRef = useRef<{ [key: string]: boolean }>({});
   const insets = useSafeAreaInsets();
   const { showAds } = useShowAds(false);
 
@@ -109,9 +115,9 @@ export default function GamePlayScreen() {
       return; // Don't start timer yet
     }
 
-    // For visual mode, only start timer when images are loaded
-    if (mode === "visual" && isImageLoading && timeLeft === 15) {
-      return; // Don't start timer yet
+    // For visual mode, pause timer while waiting for the current/next image
+    if (mode === "visual" && isImageLoading) {
+      return;
     }
 
     const timer = setInterval(() => {
@@ -132,22 +138,7 @@ export default function GamePlayScreen() {
               const nextIndex = currentQuestionIndex + 1;
 
               if (nextIndex < questions.length) {
-                setCurrentQuestionIndex(nextIndex);
-                setTimeLeft(15);
-
-                // Update media for next question based on mode
-                if (mode === "audio" && audioUrls[nextIndex]) {
-                  setCurrentAudioUrl(audioUrls[nextIndex]);
-                } else if (mode === "visual" && carouselRef.current) {
-                  try {
-                    carouselRef.current.scrollTo({
-                      index: nextIndex,
-                      animated: true,
-                    });
-                  } catch (error) {
-                    console.log("Error scrolling carousel:", error);
-                  }
-                }
+                advanceToQuestion(nextIndex);
               } else {
                 // End of questions reached
                 handleGameOver(true, score, accumulatedScore);
@@ -204,32 +195,56 @@ export default function GamePlayScreen() {
     }
   }, [currentQuestionIndex, questions, loading, mode, audioPlayer]);
 
-  const preloadImages = async (urls: string[]) => {
+  const preloadImages = (urls: string[]) => {
     setLoadedImageCount(0);
+    setPreloadedImages({});
+    preloadedImagesRef.current = {};
 
-    // Create a promise for each image to track loading
-    const preloadPromises = urls.map((url, index) =>
-      Image.prefetch(url)
-        .then(() => {
-          setLoadedImageCount((prev) => prev + 1);
-          return { url, loaded: true };
-        })
-        .catch(() => {
-          setLoadedImageCount((prev) => prev + 1);
-          return { url, loaded: false };
-        })
+    prefetchQuizImages(
+      urls,
+      (count) => setLoadedImageCount(count),
+      (url) => {
+        setPreloadedImages((prev) => {
+          const next = { ...prev, [url]: true };
+          preloadedImagesRef.current = next;
+          return next;
+        });
+      }
     );
+  };
 
-    // Wait for all images to preload
-    const results = await Promise.all(preloadPromises);
+  const performAdvance = (nextIndex: number) => {
+    setPendingNextIndex(null);
+    setIsImageLoading(false);
+    setCurrentQuestionIndex(nextIndex);
+    setTimeLeft(15);
+    setSelectedAnswer(null);
 
-    // Update the state
-    const loadedImages = results.reduce((obj, item) => {
-      if (item.loaded) obj[item.url] = true;
-      return obj;
-    }, {} as { [key: string]: boolean });
+    if (mode === "audio" && audioUrls[nextIndex]) {
+      setCurrentAudioUrl(audioUrls[nextIndex]);
+    } else if (mode === "visual" && carouselRef.current) {
+      try {
+        carouselRef.current.scrollTo({ index: nextIndex, animated: true });
+      } catch (error) {
+        console.log("Error scrolling carousel:", error);
+      }
+    }
+  };
 
-    setPreloadedImages(loadedImages);
+  const advanceToQuestion = (nextIndex: number) => {
+    const modeStr = Array.isArray(mode) ? mode[0] : mode;
+    if (modeStr !== "visual") {
+      performAdvance(nextIndex);
+      return;
+    }
+
+    const url = imageUrls[nextIndex];
+    if (isQuizImageReady(url, preloadedImagesRef.current)) {
+      performAdvance(nextIndex);
+    } else {
+      setIsImageLoading(true);
+      setPendingNextIndex(nextIndex);
+    }
   };
 
   // Update the loadQuestions function to preload images
@@ -252,11 +267,12 @@ export default function GamePlayScreen() {
       else if (modeStr === "visual" && quizData.length > 0) {
         const urls = quizData.map((q) => q.thumbnailUrl || "");
         setImageUrls(urls);
+        setPendingNextIndex(null);
 
-        // Set loading state to true while images are preloading
+        // Set loading state to true while first image is preloading
         setIsImageLoading(true);
 
-        // Start preloading all images
+        // Prefetch all images; start game when the first is ready
         preloadImages(urls);
       }
 
@@ -293,15 +309,21 @@ export default function GamePlayScreen() {
     }
   };
 
-  // Add a new effect to track image loading status
+  // Start visual mode once the first image is ready
   useEffect(() => {
-    if (
-      imageUrls.length > 0 &&
-      Object.keys(preloadedImages).length === imageUrls.length
-    ) {
+    if (imageUrls.length === 0 || pendingNextIndex !== null) return;
+    if (isQuizImageReady(imageUrls[0], preloadedImages)) {
       setIsImageLoading(false);
     }
-  }, [preloadedImages, imageUrls]);
+  }, [preloadedImages, imageUrls, pendingNextIndex]);
+
+  // Advance when a pending next image finishes loading
+  useEffect(() => {
+    if (pendingNextIndex === null) return;
+    if (isQuizImageReady(imageUrls[pendingNextIndex], preloadedImages)) {
+      performAdvance(pendingNextIndex);
+    }
+  }, [preloadedImages, pendingNextIndex, imageUrls]);
 
   // Helper function for local storage fallback
   const fallbackToLocalStorage = async (modeStr: string) => {
@@ -342,22 +364,7 @@ export default function GamePlayScreen() {
             const nextIndex = currentQuestionIndex + 1;
 
             if (nextIndex < questions.length) {
-              setCurrentQuestionIndex(nextIndex);
-              setTimeLeft(15);
-
-              // Update media for next question based on mode
-              if (mode === "audio" && audioUrls[nextIndex]) {
-                setCurrentAudioUrl(audioUrls[nextIndex]);
-              } else if (mode === "visual" && carouselRef.current) {
-                try {
-                  carouselRef.current.scrollTo({
-                    index: nextIndex,
-                    animated: true,
-                  });
-                } catch (error) {
-                  console.log("Error scrolling carousel:", error);
-                }
-              }
+              advanceToQuestion(nextIndex);
             } else {
               // End of questions reached
               handleGameOver(true, score, accumulatedScore);
@@ -381,23 +388,7 @@ export default function GamePlayScreen() {
     setAccumulatedScore(newAccumulatedScore);
 
     if (currentQuestionIndex < questions.length - 1) {
-      const nextIndex = currentQuestionIndex + 1;
-      setCurrentQuestionIndex(nextIndex);
-      setTimeLeft(15);
-      setSelectedAnswer(null);
-
-      // Update the audio URL for the next question
-      if (mode === "audio" && audioUrls[nextIndex]) {
-        setCurrentAudioUrl(audioUrls[nextIndex]);
-      }
-      // Advance the carousel for visual mode
-      else if (mode === "visual" && carouselRef.current) {
-        try {
-          carouselRef.current.scrollTo({ index: nextIndex, animated: true });
-        } catch (error) {
-          console.log("Error scrolling carousel:", error);
-        }
-      }
+      advanceToQuestion(currentQuestionIndex + 1);
     } else {
       // Pass the correct score to handleGameOver
       handleGameOver(true, newScore, newAccumulatedScore);
@@ -446,9 +437,9 @@ export default function GamePlayScreen() {
         const savedScores = savedScoresStr
           ? JSON.parse(savedScoresStr)
           : {
-              visual: { highScore: 0, currentStreak: 0 },
-              audio: { highScore: 0, currentStreak: 0 },
-            };
+            visual: { highScore: 0, currentStreak: 0 },
+            audio: { highScore: 0, currentStreak: 0 },
+          };
 
         const modeKey = modeStr === "visual" ? "visual" : "audio";
         const updatedStreak = finalAccumulated;
@@ -487,7 +478,7 @@ export default function GamePlayScreen() {
 
     if (showAds) {
       setTimeout(() => {
-        showInterstitialAd(() => {});
+        showInterstitialAd(() => { });
       }, 1000);
     }
   };
@@ -499,6 +490,11 @@ export default function GamePlayScreen() {
     setGameOver(false);
     setSelectedAnswer(null);
     setCrystalsEarned(0);
+    setPendingNextIndex(null);
+    setIsImageLoading(false);
+    setPreloadedImages({});
+    preloadedImagesRef.current = {};
+    setLoadedImageCount(0);
     loadQuestions();
   };
 
@@ -532,7 +528,7 @@ export default function GamePlayScreen() {
   if (gameOver) {
     return (
       <ThemedView style={[styles.container, styles.centered]}>
-        <Ionicons
+        {/* <Ionicons
           name={
             score === questions.length
               ? "trophy"
@@ -548,7 +544,21 @@ export default function GamePlayScreen() {
               ? "#FF3F7F"
               : "#696FC7"
           }
-        />
+        /> */}
+        {score === questions.length ||
+          (score >= questions.length / 2 && hasThreeLifePass) ? (
+          <Ionicons
+            name={score === questions.length ? "trophy" : "happy"}
+            size={80}
+            color={score === questions.length ? "#ED3F27" : "#FF3F7F"}
+          />
+        ) : (
+          <Image
+            source={require("@/assets/images/lose.png")}
+            style={{ width: 160, height: 106 }}
+            contentFit="contain"
+          />
+        )}
         <ThemedText
           style={[
             styles.gameOverTitle,
@@ -557,16 +567,16 @@ export default function GamePlayScreen() {
                 score === questions.length
                   ? "#ED3F27"
                   : score >= questions.length / 2 && hasThreeLifePass
-                  ? "#FF3F7F"
-                  : "#696FC7",
+                    ? "#FF3F7F"
+                    : "#696FC7",
             },
           ]}
         >
           {score === questions.length
             ? t("allPerfect")
             : score >= questions.length / 2 && hasThreeLifePass
-            ? t("great")
-            : t("youLose")}
+              ? t("great")
+              : t("youLose")}
         </ThemedText>
         <ThemedText style={styles.scoreText}>
           {t("yourScore")}: {score}/{questions.length}
@@ -700,11 +710,13 @@ export default function GamePlayScreen() {
           </>
         ) : (
           <>
-            {isImageLoading && currentQuestionIndex === 0 ? (
+            {isImageLoading ? (
               <View style={styles.audioContainer}>
                 <ActivityIndicator size="large" color="#696FC7" />
                 <ThemedText style={styles.playButtonText}>
-                  {t("loadingImages")}: {loadedImageCount}/{imageUrls.length}
+                  {pendingNextIndex !== null
+                    ? t("loadingNextImage")
+                    : `${t("loadingImages")}: ${loadedImageCount}/${imageUrls.length}`}
                 </ThemedText>
               </View>
             ) : (
@@ -716,7 +728,7 @@ export default function GamePlayScreen() {
                   height={250}
                   data={questions}
                   scrollAnimationDuration={300}
-                  onSnapToItem={(index) => {}}
+                  onSnapToItem={(index) => { }}
                   defaultIndex={currentQuestionIndex}
                   enabled={false}
                   renderItem={({ item, index }) => (
@@ -744,16 +756,16 @@ export default function GamePlayScreen() {
               // Modified logic to show correct answer when time runs out or wrong answer is selected
               (selectedAnswer !== null ||
                 (timeLeft === 0 && showingCorrectAnswer)) &&
-              choice === currentQuestion.correctAnswer
+                choice === currentQuestion.correctAnswer
                 ? styles.correctAnswer
                 : selectedAnswer === choice &&
                   choice !== currentQuestion.correctAnswer
-                ? styles.wrongAnswer
-                : {},
+                  ? styles.wrongAnswer
+                  : {},
               // Add disabled style when buttons are disabled
               ((mode === "audio" && isAudioLoading) ||
                 (mode === "visual" && isImageLoading)) &&
-                styles.disabledButton,
+              styles.disabledButton,
             ]}
             onPress={() => handleAnswer(choice)}
             disabled={
@@ -768,7 +780,7 @@ export default function GamePlayScreen() {
                 styles.answerButtonText,
                 ((mode === "audio" && isAudioLoading) ||
                   (mode === "visual" && isImageLoading)) &&
-                  styles.disabledButtonText,
+                styles.disabledButtonText,
               ]}
             >
               {choice}

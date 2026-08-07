@@ -13,6 +13,10 @@ import { fetchDataImmediately } from "@/context/GameQueryProvider";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useShowAds } from "@/hooks/useShowAds";
 import { QuizQuestion } from "@/types/game";
+import {
+  isQuizImageReady,
+  prefetchQuizImages,
+} from "@/utils/preloadQuizImages";
 import { Ionicons } from "@expo/vector-icons";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { Image } from "expo-image";
@@ -47,6 +51,8 @@ export default function CasualGamePlayScreen() {
   const [preloadedImages, setPreloadedImages] = useState<{
     [key: string]: boolean;
   }>({});
+  const [pendingNextIndex, setPendingNextIndex] = useState<number | null>(null);
+  const preloadedImagesRef = useRef<{ [key: string]: boolean }>({});
   const insets = useSafeAreaInsets();
   const { showAds } = useShowAds(false);
   const { t } = useLocalization();
@@ -118,7 +124,8 @@ export default function CasualGamePlayScreen() {
   ];
 
   const versions = [
-    { display: "CiRCLE", value: "CiRCLE" },
+    { display: "CiRCLE+", value: "CiRCLE+" },
+    { display: "CiRCLE (丸)", value: "CiRCLE" },
     { display: "PRiSM+ (彩)", value: "PRiSM+" },
     { display: "PRiSM (鏡)", value: "PRiSM" },
     { display: "BUDDiES+ (宴)", value: "BUDDiES+" },
@@ -181,47 +188,71 @@ export default function CasualGamePlayScreen() {
   }, [playerStatus]);
 
   // Function to preload images
-  const preloadImages = async (urls: string[]) => {
+  const preloadImages = (urls: string[]) => {
     setLoadedImageCount(0);
+    setPreloadedImages({});
+    preloadedImagesRef.current = {};
 
-    // Instead of waiting for all promises to complete at once,
-    // track each one individually
-    const preloadPromises = urls.map((url) =>
-      Image.prefetch(url)
-        .then(() => {
-          setLoadedImageCount((prev) => prev + 1);
-          return { url, loaded: true };
-        })
-        .catch(() => {
-          // Count failed loads too, to avoid getting stuck
-          setLoadedImageCount((prev) => prev + 1);
-          return { url, loaded: false };
-        })
+    prefetchQuizImages(
+      urls,
+      (count) => setLoadedImageCount(count),
+      (url) => {
+        setPreloadedImages((prev) => {
+          const next = { ...prev, [url]: true };
+          preloadedImagesRef.current = next;
+          return next;
+        });
+      }
     );
+  };
 
-    try {
-      const results = await Promise.all(preloadPromises);
-      // Convert the results to the expected format
-      const loadedImages = results.reduce((obj, item) => {
-        if (item.loaded) obj[item.url] = true;
-        return obj;
-      }, {} as { [key: string]: boolean });
+  const performAdvance = (nextIndex: number) => {
+    setPendingNextIndex(null);
+    setIsImageLoading(false);
+    setCurrentQuestionIndex(nextIndex);
+    setSelectedAnswer(null);
 
-      setPreloadedImages(loadedImages);
-    } catch (error) {
-      console.error("Error preloading images:", error);
+    if (gameMode === "audio" && audioUrls[nextIndex]) {
+      setCurrentAudioUrl(audioUrls[nextIndex]);
+    } else if (gameMode === "visual" && carouselRef.current) {
+      try {
+        carouselRef.current.scrollTo({ index: nextIndex, animated: true });
+      } catch (error) {
+        console.log("Error scrolling carousel:", error);
+      }
     }
   };
 
-  // Update effect to track image loading status
+  const advanceToQuestion = (nextIndex: number) => {
+    if (gameMode !== "visual") {
+      performAdvance(nextIndex);
+      return;
+    }
+
+    const url = imageUrls[nextIndex];
+    if (isQuizImageReady(url, preloadedImagesRef.current)) {
+      performAdvance(nextIndex);
+    } else {
+      setIsImageLoading(true);
+      setPendingNextIndex(nextIndex);
+    }
+  };
+
+  // Start visual mode once the first image is ready
   useEffect(() => {
-    if (
-      imageUrls.length > 0 &&
-      Object.keys(preloadedImages).length === imageUrls.length
-    ) {
+    if (imageUrls.length === 0 || pendingNextIndex !== null) return;
+    if (isQuizImageReady(imageUrls[0], preloadedImages)) {
       setIsImageLoading(false);
     }
-  }, [preloadedImages, imageUrls]);
+  }, [preloadedImages, imageUrls, pendingNextIndex]);
+
+  // Advance when a pending next image finishes loading
+  useEffect(() => {
+    if (pendingNextIndex === null) return;
+    if (isQuizImageReady(imageUrls[pendingNextIndex], preloadedImages)) {
+      performAdvance(pendingNextIndex);
+    }
+  }, [preloadedImages, pendingNextIndex, imageUrls]);
 
   // Handle answer selection
   const handleAnswer = (answer: string) => {
@@ -255,22 +286,7 @@ export default function CasualGamePlayScreen() {
 
   const moveToNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      const nextIndex = currentQuestionIndex + 1;
-      setCurrentQuestionIndex(nextIndex);
-      setSelectedAnswer(null);
-
-      // Update the audio URL for the next question
-      if (gameMode === "audio" && audioUrls[nextIndex]) {
-        setCurrentAudioUrl(audioUrls[nextIndex]);
-      }
-      // Advance the carousel for visual mode
-      else if (gameMode === "visual" && carouselRef.current) {
-        try {
-          carouselRef.current.scrollTo({ index: nextIndex, animated: true });
-        } catch (error) {
-          console.log("Error scrolling carousel:", error);
-        }
-      }
+      advanceToQuestion(currentQuestionIndex + 1);
     } else {
       // Game over when we've gone through all questions
       handleGameOver();
@@ -318,6 +334,12 @@ export default function CasualGamePlayScreen() {
     setScore(0);
     setGameOver(false);
     setSelectedAnswer(null);
+    setPendingNextIndex(null);
+    setIsImageLoading(false);
+    setPreloadedImages({});
+    preloadedImagesRef.current = {};
+    setLoadedImageCount(0);
+    setImageUrls([]);
 
     // For casual mode, we go back to mode selection
     setShowModeSelection(true);
@@ -407,6 +429,7 @@ export default function CasualGamePlayScreen() {
         else if (modeParam === "visual" && quizData.length > 0) {
           const urls = quizData.map((q) => q.thumbnailUrl || "");
           setImageUrls(urls);
+          setPendingNextIndex(null);
           setIsImageLoading(true);
           preloadImages(urls);
         }
@@ -878,11 +901,13 @@ export default function CasualGamePlayScreen() {
           </>
         ) : (
           <>
-            {isImageLoading && currentQuestionIndex === 0 ? (
+            {isImageLoading ? (
               <View style={styles.audioContainer}>
                 <ActivityIndicator size="large" color="#696FC7" />
                 <ThemedText style={styles.playButtonText}>
-                  {t("loadingImages")}... {loadedImageCount}/{imageUrls.length}
+                  {pendingNextIndex !== null
+                    ? t("loadingNextImage")
+                    : `${t("loadingImages")}... ${loadedImageCount}/${imageUrls.length}`}
                 </ThemedText>
               </View>
             ) : (
