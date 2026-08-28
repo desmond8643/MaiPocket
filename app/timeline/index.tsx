@@ -10,15 +10,16 @@ import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
+import { getTimelineIconSize } from "@/utils/iconGridLayout";
 import { Image } from "expo-image";
 import { router, Stack } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -27,10 +28,13 @@ interface TimelineSection {
   charts: Chart[];
 }
 
-const ICON_SIZE = (Dimensions.get("window").width - 80) / 4; // 4 columns with margins
-
 export default function TimelineScreen() {
   const colorScheme = useColorScheme();
+  const { width: windowWidth } = useWindowDimensions();
+  const iconSize = useMemo(
+    () => getTimelineIconSize(windowWidth),
+    [windowWidth]
+  );
   const { t } = useLocalization();
   const { adsRemoved, temporaryAdRemoval } = useAds();
   const showAds = !adsRemoved && !temporaryAdRemoval;
@@ -168,7 +172,7 @@ export default function TimelineScreen() {
     >
       <Image
         source={{ uri: item.image }}
-        style={styles.chartIcon}
+        style={[styles.chartIcon, { width: iconSize, height: iconSize }]}
         contentFit="cover"
         transition={200}
       />
@@ -229,7 +233,7 @@ export default function TimelineScreen() {
                 >
                   <Image
                     source={{ uri: chart.image }}
-                    style={styles.chartIcon}
+                    style={[styles.chartIcon, { width: iconSize, height: iconSize }]}
                     contentFit="cover"
                     transition={200}
                   />
@@ -355,8 +359,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   chartIcon: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
     borderRadius: 8,
   },
   footerLoader: {

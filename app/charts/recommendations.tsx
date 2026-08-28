@@ -36,9 +36,11 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { getIconGridLayout } from "@/utils/iconGridLayout";
 
 type ViewMode = "list" | "icon";
 
@@ -75,6 +77,8 @@ function getDifficultyColor(type: string) {
 export default function RecommendationsScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+  const { width: windowWidth } = useWindowDimensions();
+  const iconGrid = useMemo(() => getIconGridLayout(windowWidth), [windowWidth]);
   const { t } = useLocalization();
   const insets = useSafeAreaInsets();
   const { adsRemoved, temporaryAdRemoval } = useAds();
@@ -282,7 +286,11 @@ export default function RecommendationsScreen() {
         <TouchableOpacity
           style={[
             styles.iconCard,
-            { backgroundColor: isDark ? "#333333" : "#FFFFFF" },
+            {
+              width: iconGrid.itemWidth,
+              maxWidth: iconGrid.itemWidth,
+              backgroundColor: isDark ? "#333333" : "#FFFFFF",
+            },
           ]}
           onPress={() => navigateToChart(item._id)}
         >
@@ -431,7 +439,8 @@ export default function RecommendationsScreen() {
     );
   };
 
-  const getNumColumns = () => (viewMode === "icon" ? 3 : 1);
+  const getNumColumns = () =>
+    viewMode === "icon" ? iconGrid.numColumns : 1;
 
   const renderLevelOption = (id: SkillCeilingOptionId) => (
     <TouchableOpacity
@@ -612,7 +621,7 @@ export default function RecommendationsScreen() {
           renderItem={({ item, index }) => renderChartItem({ item, index })}
           keyExtractor={(item) => item._id}
           numColumns={getNumColumns()}
-          key={`${viewMode}-flat`}
+          key={`${viewMode}-${iconGrid.numColumns}-flat`}
           contentContainerStyle={[
             styles.chartsList,
             showAds && { paddingBottom: 70 },
@@ -898,7 +907,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     padding: 8,
-    maxWidth: "32%",
     position: "relative",
   },
   iconImage: {

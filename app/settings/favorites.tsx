@@ -1,12 +1,13 @@
 import { Image } from "expo-image";
 import { router, Stack } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     ActivityIndicator,
     FlatList,
     StyleSheet,
     TextInput,
     TouchableOpacity,
+    useWindowDimensions,
     View,
 } from "react-native";
 
@@ -23,6 +24,7 @@ import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
+import { getIconGridLayout } from "@/utils/iconGridLayout";
 import { useFocusEffect } from "@react-navigation/native";
 import React from "react";
 
@@ -30,6 +32,8 @@ type ViewMode = "list" | "icon";
 
 export default function FavoritesScreen() {
   const colorScheme = useColorScheme();
+  const { width: windowWidth } = useWindowDimensions();
+  const iconGrid = useMemo(() => getIconGridLayout(windowWidth), [windowWidth]);
   const [searchQuery, setSearchQuery] = useState("");
   const [charts, setCharts] = useState<Chart[]>([]);
   const [originalCharts, setOriginalCharts] = useState<Chart[]>([]);
@@ -202,7 +206,11 @@ export default function FavoritesScreen() {
         <TouchableOpacity
           style={[
             styles.iconCard,
-            { backgroundColor: colorScheme === "dark" ? "#333333" : "#FFFFFF" },
+            {
+              width: iconGrid.itemWidth,
+              maxWidth: iconGrid.itemWidth,
+              backgroundColor: colorScheme === "dark" ? "#333333" : "#FFFFFF",
+            },
           ]}
           onPress={() => navigateToChart(item._id)}
         >
@@ -346,7 +354,7 @@ export default function FavoritesScreen() {
   };
 
   const getNumColumns = () => {
-    return viewMode === "icon" ? 3 : 1;
+    return viewMode === "icon" ? iconGrid.numColumns : 1;
   };
 
   const renderContent = () => {
@@ -415,7 +423,7 @@ export default function FavoritesScreen() {
         renderItem={renderChartItem}
         keyExtractor={(item) => item._id}
         numColumns={getNumColumns()}
-        key={`${viewMode}-flat`}
+        key={`${viewMode}-${iconGrid.numColumns}-flat`}
         contentContainerStyle={[styles.chartsList, { paddingBottom: 70 }]}
       />
     );
@@ -680,7 +688,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     padding: 8,
-    maxWidth: "32%",
     position: "relative",
   },
   iconImage: {
