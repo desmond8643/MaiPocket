@@ -6,11 +6,12 @@ import {
 } from "@/components/InterstitialAdComponent";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useAds } from "@/context/AdContext";
-import { ChartAPI } from "@/api/client";
+import { AuthAPI, ChartAPI } from "@/api/client";
+import { Chart } from "@/types/chart";
 import { ThumbnailCache, ThumbnailData } from "@/utils/thumbnailCache";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -23,6 +24,14 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import { SongFinderModal } from "./SongFinderModal";
+import {
+  SongJump,
+  findSongScript,
+  genreIdFromCategory,
+  genreSearchUrl,
+  isOnGenreSearchPage,
+} from "./songJump";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -240,6 +249,12 @@ const LEVEL_OPTIONS: { label: string; param: number }[] = [
 ];
 
 export default function MaimaiNetScreen() {
+  const params = useLocalSearchParams<{
+    jumpTitle?: string;
+    jumpCategory?: string;
+    jumpDx?: string;
+    jumpDiff?: string;
+  }>();
   const [defaultRegion, setDefaultRegion] = useState("international");
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
@@ -252,8 +267,19 @@ export default function MaimaiNetScreen() {
   const [showLevelSelector, setShowLevelSelector] = useState(false);
   const [isLoadingCharts, setIsLoadingCharts] = useState(false);
   const [pendingLevelExtraction, setPendingLevelExtraction] = useState<number | null>(null);
+  const [showSongFinder, setShowSongFinder] = useState(false);
+  const [favorites, setFavorites] = useState<Chart[]>([]);
+  const [favoritesLoading, setFavoritesLoading] = useState(false);
+  const [isMaiPocketLoggedIn, setIsMaiPocketLoggedIn] = useState(false);
+  const [isJumpingToSong, setIsJumpingToSong] = useState(false);
+  const [songNotFound, setSongNotFound] = useState(false);
+  const [pendingSongJump, setPendingSongJump] = useState<SongJump | null>(null);
+  const [webViewKey, setWebViewKey] = useState(0);
+  const [webViewUri, setWebViewUri] = useState<string | null>(null);
   const webViewRef = useRef<WebView>(null);
   const popupWebViewRef = useRef<WebView>(null);
+  const incomingJumpRef = useRef<SongJump | null>(null);
+  const didConsumeJumpRef = useRef(false);
   const colorScheme = useColorScheme();
   const router = useRouter();
   const { adsRemoved, temporaryAdRemoval } = useAds();
@@ -261,6 +287,11 @@ export default function MaimaiNetScreen() {
 
   // Check if on maimai domain (either Japan or International)
   const isOnMaimaiDomain = currentUrl.includes("maimaidx.jp") || currentUrl.includes("maimaidx-eng.com");
+  const homeUri =
+    defaultRegion === "japan"
+      ? "https://maimaidx.jp"
+      : "https://maimaidx-eng.com";
+  const sourceUri = webViewUri ?? homeUri;
 
   const translateX = useSharedValue(0);
   const SWIPE_THRESHOLD = 100;
@@ -276,7 +307,17 @@ export default function MaimaiNetScreen() {
     checkDefaultRegion();
   }, []);
 
+  useEffect(() => {
+    AuthAPI.isLoggedIn().then(setIsMaiPocketLoggedIn);
+  }, []);
+
   const { t } = useLocalization();
+
+  useEffect(() => {
+    if (!songNotFound) return;
+    const timer = setTimeout(() => setSongNotFound(false), 3000);
+    return () => clearTimeout(timer);
+  }, [songNotFound]);
 
   // Re-group chart data when sort mode changes
   useEffect(() => {
@@ -375,22 +416,6 @@ export default function MaimaiNetScreen() {
     };
   });
 
-  // Optional: subtle page shift effect
-  const contentStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateX: interpolate(
-            translateX.value,
-            [-SWIPE_THRESHOLD, 0, SWIPE_THRESHOLD],
-            [-20, 0, 20],
-            Extrapolation.CLAMP
-          ),
-        },
-      ],
-    };
-  });
-
   const runMaiTools = useCallback(() => {
     const script = `
       (function(d){
@@ -423,6 +448,109 @@ export default function MaimaiNetScreen() {
       true;
     `);
   }, [currentUrl]);
+
+  const openSongFinder = useCallback(async () => {
+    setShowSongFinder(true);
+    setFavoritesLoading(true);
+    try {
+      setFavorites(await ChartAPI.getFavoriteCharts());
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setFavoritesLoading(false);
+    }
+  }, []);
+
+  const injectFindSong = useCallback((jump: SongJump) => {
+    webViewRef.current?.injectJavaScript(findSongScript(jump));
+  }, []);
+
+  const netOrigin = (url: string) =>
+    url.includes("maimaidx.jp")
+      ? "https://maimaidx.jp"
+      : "https://maimaidx-eng.com";
+
+  const isNetHome = (url: string) =>
+    url.includes("/maimai-mobile/home") &&
+    !url.toLowerCase().includes("error");
+
+  const injectGenreNavigation = useCallback((jump: SongJump, fromUrl: string) => {
+    const origin = netOrigin(fromUrl);
+    const next = genreSearchUrl(
+      origin,
+      jump.diff,
+      genreIdFromCategory(jump.category)
+    );
+    webViewRef.current?.injectJavaScript(`
+      window.location.href = ${JSON.stringify(next)};
+      true;
+    `);
+  }, []);
+
+  const recoverWebView = useCallback(() => {
+    setWebViewKey((k) => k + 1);
+  }, []);
+
+  const jumpToSong = useCallback(
+    (jump: SongJump) => {
+      setShowSongFinder(false);
+      setSongNotFound(false);
+      setIsJumpingToSong(true);
+
+      const origin = netOrigin(currentUrl);
+      const genre = genreIdFromCategory(jump.category);
+
+      if (isOnGenreSearchPage(currentUrl, jump.diff, genre)) {
+        injectFindSong(jump);
+        return;
+      }
+
+      setPendingSongJump(jump);
+
+      if (isNetHome(currentUrl)) {
+        injectGenreNavigation(jump, currentUrl);
+        return;
+      }
+
+      const homeUrl = `${origin}/maimai-mobile/home/`;
+      if (webViewUri !== homeUrl) {
+        setWebViewUri(homeUrl);
+      }
+    },
+    [currentUrl, injectFindSong, injectGenreNavigation, webViewUri]
+  );
+
+  useEffect(() => {
+    if (!params.jumpTitle) return;
+    const diff = Number(params.jumpDiff);
+    if (Number.isNaN(diff)) return;
+    didConsumeJumpRef.current = false;
+    incomingJumpRef.current = {
+      title: String(params.jumpTitle),
+      category: String(params.jumpCategory ?? ""),
+      wantDx: params.jumpDx === "1",
+      diff,
+    };
+  }, [params.jumpTitle, params.jumpCategory, params.jumpDx, params.jumpDiff]);
+
+  const loggedIntoNet =
+    currentUrl.includes("/maimai-mobile/") &&
+    !currentUrl.toLowerCase().includes("error") &&
+    !currentUrl.includes("login");
+
+  useEffect(() => {
+    const jump = incomingJumpRef.current;
+    if (!jump || !loggedIntoNet || didConsumeJumpRef.current) return;
+    didConsumeJumpRef.current = true;
+    incomingJumpRef.current = null;
+    jumpToSong(jump);
+    router.setParams({
+      jumpTitle: "",
+      jumpCategory: "",
+      jumpDx: "",
+      jumpDiff: "",
+    });
+  }, [loggedIntoNet, jumpToSong, router]);
 
   // Run extraction after level page has loaded
   const runChartExtraction = useCallback(() => {
@@ -580,6 +708,15 @@ export default function MaimaiNetScreen() {
   const handleMainWebViewMessage = useCallback(async (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
+
+      if (data.type === "SONG_FOUND" || data.type === "SONG_NOT_FOUND") {
+        setIsJumpingToSong(false);
+        setPendingSongJump(null);
+        if (data.type === "SONG_NOT_FOUND") {
+          setSongNotFound(true);
+        }
+        return;
+      }
 
       if (data.type === "CHART_DATA_ERROR") {
         console.error("Error fetching chart data:", data.payload?.error);
@@ -823,11 +960,35 @@ export default function MaimaiNetScreen() {
     <ThemedView style={styles.container}>
       <Stack.Screen
         options={{
-          title: "",
+          title: isJumpingToSong
+            ? t("findingSong")
+            : songNotFound
+              ? t("songNotFoundTitle")
+              : "",
           headerBackButtonDisplayMode: "minimal",
           gestureEnabled: false,
           headerRight: () => (
             <View style={styles.headerButtons}>
+              {isJumpingToSong && (
+                <ActivityIndicator
+                  size="small"
+                  color={colorScheme === "dark" ? "white" : "black"}
+                />
+              )}
+              {isOnMaimaiDomain && isMaiPocketLoggedIn && (
+                <Pressable
+                  onPress={openSongFinder}
+                  style={({ pressed }) => ({
+                    opacity: pressed ? 0.5 : 1,
+                  })}
+                >
+                  <Ionicons
+                    name="search"
+                    size={24}
+                    color={colorScheme === "dark" ? "white" : "black"}
+                  />
+                </Pressable>
+              )}
               {isOnMaimaiDomain && (
                 <Pressable
                   onPress={() => setShowLevelSelector(true)}
@@ -890,16 +1051,12 @@ export default function MaimaiNetScreen() {
             </Animated.View>
           )}
 
-          <Animated.View style={[styles.webViewContainer, contentStyle]}>
+          <View collapsable={false} style={styles.webViewContainer}>
             <WebView
+              key={webViewKey}
               ref={webViewRef}
-              source={{
-                uri:
-                  defaultRegion === "japan"
-                    ? "https://maimaidx.jp"
-                    : "https://maimaidx-eng.com",
-              }}
-              style={styles.webView}
+              source={{ uri: sourceUri }}
+              style={[styles.webView, { opacity: 0.99 }]}
               userAgent="Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"
               javaScriptEnabled={true}
               domStorageEnabled={true}
@@ -909,6 +1066,8 @@ export default function MaimaiNetScreen() {
               onOpenWindow={handleOpenWindow}
               onMessage={handleMainWebViewMessage}
               injectedJavaScript={mainBridgeScript}
+              onContentProcessDidTerminate={recoverWebView}
+              onRenderProcessGone={recoverWebView}
               onNavigationStateChange={(navState) => {
                 setCanGoBack(navState.canGoBack);
                 setCanGoForward(navState.canGoForward);
@@ -918,6 +1077,14 @@ export default function MaimaiNetScreen() {
                 if (pendingLevelExtraction !== null && !navState.loading && !navState.url?.includes("musicLevel/search/?level=")) {
                   setPendingLevelExtraction(null);
                   setIsLoadingCharts(false);
+                }
+                if (
+                  pendingSongJump &&
+                  !navState.loading &&
+                  navState.url?.toLowerCase().includes("error")
+                ) {
+                  setPendingSongJump(null);
+                  setIsJumpingToSong(false);
                 }
               }}
               onLoadEnd={(syntheticEvent) => {
@@ -933,13 +1100,27 @@ export default function MaimaiNetScreen() {
                     }, 300);
                   }
                 }
+                if (pendingSongJump) {
+                  const { nativeEvent } = syntheticEvent;
+                  const url = nativeEvent.url || "";
+                  if (url.includes("musicGenre/search/")) {
+                    const jump = pendingSongJump;
+                    setPendingSongJump(null);
+                    setTimeout(() => injectFindSong(jump), 400);
+                  } else if (
+                    url.includes("/maimai-mobile/home") &&
+                    !url.toLowerCase().includes("error")
+                  ) {
+                    injectGenreNavigation(pendingSongJump, url);
+                  }
+                }
               }}
               onError={(syntheticEvent) => {
                 const { nativeEvent } = syntheticEvent;
                 console.error("WebView error:", nativeEvent);
               }}
             />
-          </Animated.View>
+          </View>
         </View>
       </GestureDetector>
 
@@ -1273,6 +1454,14 @@ export default function MaimaiNetScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <SongFinderModal
+        visible={showSongFinder}
+        loading={favoritesLoading}
+        charts={favorites}
+        onJump={jumpToSong}
+        onClose={() => setShowSongFinder(false)}
+      />
     </ThemedView>
   );
 }

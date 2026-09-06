@@ -24,12 +24,14 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
+import { DISCORD_INVITE } from "@/constants/discord";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -426,6 +428,25 @@ export default function HomeScreen() {
           </ThemedView>
         )}
         <ThemedView style={styles.copyrightContainer}>
+          <TouchableOpacity
+            style={[
+              styles.copyrightButton,
+              {
+                backgroundColor: Colors[colorScheme ?? "light"].background,
+                borderColor: "#5865F2",
+                marginBottom: 12,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+              },
+            ]}
+            onPress={() => Linking.openURL(DISCORD_INVITE)}
+          >
+            <Ionicons name="logo-discord" size={16} color="#5865F2" />
+            <ThemedText style={styles.copyrightButtonText}>
+              {t("joinUsOnDiscord")}
+            </ThemedText>
+          </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.copyrightButton,

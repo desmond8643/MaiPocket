@@ -76,6 +76,8 @@ export default {
   openInMail: "メールで開く",
   emailCopiedToClipboard: "メールアドレスをコピーしました。",
   contactUsOpenMailFailed: "メールアプリを開けませんでした。",
+  joinUsOnDiscord: "Discord に参加",
+  discord: "Discord",
   appLanguage: "アプリの言語",
   blockedUsers: "ブロックしたユーザー",
   deleteAccount: "アカウント削除",
@@ -373,6 +375,7 @@ export default {
   noResultsFound: '"{{query}}"の検索結果はありません',
   resultsCount: "{{count}}件見つかりました",
   unknownArtist: "アーティスト不明",
+  charter: "譜面作者",
 
   // Edit Profile page
   accountInformation: "アカウント情報",
@@ -468,6 +471,12 @@ export default {
   selectRegionDescription: 'アクセスするmaimaiでらっくすNETサイトを選択してください',
   chartData: "譜面まとめ",
   selectLevel: "レベルを選択",
+  findSong: "曲を探す",
+  findingSong: "曲を探しています...",
+  filterFavorites: "お気に入りを絞り込み",
+  songNotFoundTitle: "見つかりません",
+  songNotFound: "このページでその曲が見つかりませんでした。",
+  openInMaimaiNet: "maimaiでらっくすNETで開く",
 
   // Cache
   clearCache: "キャッシュをクリア",

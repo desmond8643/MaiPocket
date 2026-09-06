@@ -2,19 +2,19 @@ import { Image } from "expo-image";
 import { router, Stack } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from "react-native";
 
 import { ChartAPI } from "@/api/client";
 import {
-    preloadInterstitialAd,
-    showInterstitialAd,
+  preloadInterstitialAd,
+  showInterstitialAd,
 } from "@/components/InterstitialAdComponent";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -27,6 +27,7 @@ import { Chart } from "@/types/chart";
 import { getIconGridLayout } from "@/utils/iconGridLayout";
 import { useFocusEffect } from "@react-navigation/native";
 import React from "react";
+import { chartMatchesQuery } from "@/lib/chartSearch";
 
 type ViewMode = "list" | "icon";
 
@@ -81,11 +82,14 @@ export default function FavoritesScreen() {
       return;
     }
 
-    const filtered = originalCharts.filter(
-      (chart) =>
-        chart.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (chart.artist &&
-          chart.artist.toLowerCase().includes(searchQuery.toLowerCase()))
+    // const filtered = originalCharts.filter(
+    //   (chart) =>
+    //     chart.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    //     (chart.artist &&
+    //       chart.artist.toLowerCase().includes(searchQuery.toLowerCase()))
+    // );
+    const filtered = originalCharts.filter((chart) =>
+      chartMatchesQuery(chart, searchQuery)
     );
 
     setCharts(filtered);

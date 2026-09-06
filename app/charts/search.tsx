@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -22,6 +22,7 @@ import { useAds } from "@/context/AdContext";
 import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
+import { matchingCharters } from "@/lib/chartSearch";
 
 export default function ChartSearchScreen() {
   const { query } = useLocalSearchParams();
@@ -32,27 +33,63 @@ export default function ChartSearchScreen() {
   const [charts, setCharts] = useState<Chart[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const fetching = useRef(false);
 
   // Search for charts
-  useEffect(() => {
-    const searchCharts = async () => {
-      if (!query) return;
+  // useEffect(() => {
+  //   const searchCharts = async () => {
+  //     if (!query) return;
 
-      setLoading(true);
+  //     setLoading(true);
+  //     setError(null);
+
+  //     try {
+  //       const data = await ChartAPI.searchCharts(query.toString());
+  //       setCharts(data);
+  //     } catch (err) {
+  //       console.error(`Error searching charts for "${query}":`, err);
+  //       setError(t("failedToSearchCharts"));
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   searchCharts();
+  // }, [query]);
+  const fetchPage = async (pageNum: number) => {
+    if (!query || fetching.current) return;
+    fetching.current = true;
+    if (pageNum === 1) setLoading(true);
+    else setLoadingMore(true);
+
+    try {
+      const data = await ChartAPI.searchCharts(query.toString(), pageNum, 20);
+      setCharts((prev) =>
+        pageNum === 1 ? data.charts : [...prev, ...data.charts]
+      );
+      setTotal(data.pagination.total);
+      setHasMore(data.pagination.hasMore);
+      setPage(pageNum);
       setError(null);
+    } catch (err) {
+      console.error(`Error searching charts for "${query}":`, err);
+      if (pageNum === 1) setError(t("failedToSearchCharts"));
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+      fetching.current = false;
+    }
+  };
 
-      try {
-        const data = await ChartAPI.searchCharts(query.toString());
-        setCharts(data);
-      } catch (err) {
-        console.error(`Error searching charts for "${query}":`, err);
-        setError(t("failedToSearchCharts"));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    searchCharts();
+  useEffect(() => {
+    fetching.current = false;
+    setCharts([]);
+    setTotal(0);
+    fetchPage(1);
   }, [query]);
 
   useEffect(() => {
@@ -84,20 +121,38 @@ export default function ChartSearchScreen() {
       deluxe: [],
     };
 
-    // Get difficulties from standard version
+    const sortByDifficultyOrder = (
+      difficulties: Array<{ type: string; level: any }>
+    ) => {
+      const difficultyOrder = [
+        "basic",
+        "advanced",
+        "expert",
+        "master",
+        "remaster",
+      ];
+      return difficulties.sort(
+        (a, b) =>
+          difficultyOrder.indexOf(a.type) - difficultyOrder.indexOf(b.type)
+      );
+    };
+
     if (chart.standard && chart.standard.difficulties) {
-      result.standard = chart.standard.difficulties.map((diff) => ({
-        type: diff.type,
-        level: diff.level,
-      }));
+      result.standard = sortByDifficultyOrder(
+        chart.standard.difficulties.map((diff) => ({
+          type: diff.type,
+          level: diff.level,
+        }))
+      );
     }
 
-    // Get difficulties from deluxe version
     if (chart.deluxe && chart.deluxe.difficulties) {
-      result.deluxe = chart.deluxe.difficulties.map((diff) => ({
-        type: diff.type,
-        level: diff.level,
-      }));
+      result.deluxe = sortByDifficultyOrder(
+        chart.deluxe.difficulties.map((diff) => ({
+          type: diff.type,
+          level: diff.level,
+        }))
+      );
     }
 
     return result;
@@ -147,6 +202,14 @@ export default function ChartSearchScreen() {
             <ThemedText numberOfLines={1} style={styles.artistText}>
               {item.artist || t("unknownArtist")}
             </ThemedText>
+            {matchingCharters(item, query?.toString() ?? "").map((hit) => (
+              <ThemedText
+                key={`${hit.version}-${hit.type}`}
+                style={{ color: getDifficultyColor(hit.type), fontSize: 13 }}
+              >
+                {hit.version === "deluxe" ? "DX" : "STD"} {hit.name}
+              </ThemedText>
+            ))}
           </View>
         </View>
 
@@ -259,20 +322,21 @@ export default function ChartSearchScreen() {
           <ThemedText style={styles.errorText}>{error}</ThemedText>
           <TouchableOpacity
             style={styles.retryButton}
-            onPress={() => {
-              setLoading(true);
-              setError(null);
-              ChartAPI.searchCharts(query.toString())
-                .then((data) => {
-                  setCharts(data);
-                  setLoading(false);
-                })
-                .catch((err) => {
-                  console.error(`Error searching charts for "${query}":`, err);
-                  setError(t("failedToSearchCharts"));
-                  setLoading(false);
-                });
-            }}
+            // onPress={() => {
+            //   setLoading(true);
+            //   setError(null);
+            //   ChartAPI.searchCharts(query.toString())
+            //     .then((data) => {
+            //       setCharts(data);
+            //       setLoading(false);
+            //     })
+            //     .catch((err) => {
+            //       console.error(`Error searching charts for "${query}":`, err);
+            //       setError(t("failedToSearchCharts"));
+            //       setLoading(false);
+            //     });
+            // }}
+            onPress={() => fetchPage(1)}
           >
             <ThemedText style={styles.retryButtonText}>{t("retry")}</ThemedText>
           </TouchableOpacity>
@@ -285,6 +349,18 @@ export default function ChartSearchScreen() {
           </ThemedText>
         </ThemedView>
       ) : (
+        // <FlatList
+        //   data={charts}
+        //   renderItem={({ item }) => renderChartItem({ item })}
+        //   keyExtractor={(item) => item._id}
+        //   numColumns={1}
+        //   contentContainerStyle={[styles.chartsList, showAds && { paddingBottom: 70 }]}
+        //   ListHeaderComponent={
+        //     <ThemedText style={styles.resultsCount}>
+        //       {t("resultsCount", { count: charts.length })}
+        //     </ThemedText>
+        //   }
+        // />
         <FlatList
           data={charts}
           renderItem={({ item }) => renderChartItem({ item })}
@@ -293,8 +369,19 @@ export default function ChartSearchScreen() {
           contentContainerStyle={[styles.chartsList, showAds && { paddingBottom: 70 }]}
           ListHeaderComponent={
             <ThemedText style={styles.resultsCount}>
-              {t("resultsCount", { count: charts.length })}
+              {t("resultsCount", { count: total })}
             </ThemedText>
+          }
+          onEndReached={() => {
+            if (!loading && !loadingMore && hasMore) {
+              fetchPage(page + 1);
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator style={{ marginVertical: 16 }} />
+            ) : null
           }
         />
       )}

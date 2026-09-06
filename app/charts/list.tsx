@@ -26,6 +26,7 @@ import { useLocalization } from "@/context/LocalizationContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Chart } from "@/types/chart";
 import { getIconGridLayout } from "@/utils/iconGridLayout";
+import { chartMatchesQuery } from "@/lib/chartSearch";
 
 type ViewMode = "list" | "icon";
 type GroupMode = "none" | "level" | "version";
@@ -217,11 +218,14 @@ export default function ChartListScreen() {
       return;
     }
 
-    const filtered = originalCharts.filter(
-      (chart) =>
-        chart.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (chart.artist &&
-          chart.artist.toLowerCase().includes(searchQuery.toLowerCase()))
+    // const filtered = originalCharts.filter(
+    //   (chart) =>
+    //     chart.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    //     (chart.artist &&
+    //       chart.artist.toLowerCase().includes(searchQuery.toLowerCase()))
+    // );
+    const filtered = originalCharts.filter((chart) =>
+      chartMatchesQuery(chart, searchQuery)
     );
 
     setCharts(filtered);

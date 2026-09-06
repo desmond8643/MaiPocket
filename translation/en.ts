@@ -76,6 +76,8 @@ export default {
   openInMail: "Open in Mail",
   emailCopiedToClipboard: "Email address copied to clipboard.",
   contactUsOpenMailFailed: "Could not open the mail app.",
+  joinUsOnDiscord: "Join us on Discord",
+  discord: "Discord",
   appLanguage: "App Language",
   blockedUsers: "Blocked Users",
   deleteAccount: "Delete Account",
@@ -377,6 +379,7 @@ export default {
     other: "{{count}} results found"
   },
   unknownArtist: "Unknown Artist",
+  charter: "Note Designer",
 
   // Edit Profile page
   accountInformation: "Account Information",
@@ -473,6 +476,12 @@ export default {
   selectRegionDescription: 'Choose which maimai DX NET site to access',
   chartData: "Chart Summary",
   selectLevel: "Select Level",
+  findSong: "Find song",
+  findingSong: "Finding song...",
+  filterFavorites: "Filter favorites",
+  songNotFoundTitle: "Not found",
+  songNotFound: "Could not find that song on this page.",
+  openInMaimaiNet: "Open in maimai DX NET",
 
   // Cache
   clearCache: "Clear Cache",

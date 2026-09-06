@@ -32,6 +32,7 @@ import { recordChartView } from "@/lib/recommendations/recordChartView";
 import { Chart, Post } from "@/types/chart";
 import { User } from "@/types/user";
 import { extractYouTubeVideoId } from "@/utils/youtubeUtils";
+import { DIFF_PARAM } from "@/app/maimainet/songJump";
 import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 
@@ -97,6 +98,22 @@ export default function ChartDetailScreen() {
     if (!chart) return;
     setShowDropdown(false);
     copyToClipboard(chart.title);
+  };
+
+  const openInMaimaiNet = () => {
+    if (!chart || !selectedDifficulty) return;
+    const diff =
+      DIFF_PARAM[selectedDifficulty as keyof typeof DIFF_PARAM];
+    if (diff === undefined) return;
+    router.push({
+      pathname: "/maimainet",
+      params: {
+        jumpTitle: chart.title,
+        jumpCategory: chart.category ?? "",
+        jumpDx: selectedType === "deluxe" ? "1" : "0",
+        jumpDiff: String(diff),
+      },
+    });
   };
 
   const openDropdown = () => {
@@ -492,6 +509,14 @@ export default function ChartDetailScreen() {
       (d) => d.type === selectedDifficulty
     );
     return currentDifficulty?.simai || null;
+  };
+
+  const getCurrentCharter = (): string | null => {
+    if (!chart || !selectedDifficulty) return null;
+    return (
+      chart[selectedType]?.difficulties.find((d) => d.type === selectedDifficulty)
+        ?.charter || null
+    );
   };
 
   // Format simai with combo numbers for easier pattern tracking
@@ -891,6 +916,28 @@ export default function ChartDetailScreen() {
                 <ThemedText style={styles.bpm}>
                   BPM: {chart.bpm || "N/A"}
                 </ThemedText>
+                {(() => {
+                  const charter = getCurrentCharter();
+                  return charter ? (
+                    <TouchableOpacity
+                      onPress={() =>
+                        router.push({
+                          pathname: "/charts/search",
+                          params: { query: charter },
+                        })
+                      }
+                    >
+                      <ThemedText
+                        style={[
+                          styles.bpm,
+                          // { textDecorationLine: "underline" },
+                        ]}
+                      >
+                        {t("charter")}: {charter}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  ) : null;
+                })()}
               </View>
             </View>
 
@@ -1019,6 +1066,28 @@ export default function ChartDetailScreen() {
               </ThemedText>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={[
+                styles.favoriteButton,
+                {
+                  backgroundColor:
+                    colorScheme === "dark" ? "#333333" : "#F5F5F5",
+                  borderColor: "transparent",
+                  marginBottom: 24,
+                },
+              ]}
+              onPress={openInMaimaiNet}
+            >
+              <Ionicons
+                name="open-outline"
+                size={20}
+                color={Colors[colorScheme ?? "light"].text}
+              />
+              <ThemedText style={styles.favoriteButtonText}>
+                {t("openInMaimaiNet")}
+              </ThemedText>
+            </TouchableOpacity>
+
             {/* Simai Chart Section */}
             {getCurrentSimai() && (
               <View style={styles.simaiSection}>
@@ -1131,7 +1200,7 @@ export default function ChartDetailScreen() {
                       multiline={true}
                       scrollEnabled={false}
                     />*/}
-                    
+
                     <Text
                       selectable={false}
                       style={[
@@ -1556,7 +1625,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    marginBottom: 24,
+    marginBottom: 8,
     borderWidth: 1,
   },
   favoriteButtonText: {

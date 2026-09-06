@@ -198,10 +198,10 @@ export default function ChartsScreen() {
           backgroundColor:
             activeFilterType === item.id
               ? // ? Colors[colorScheme ?? "dark"].tint
-                "#9944DD"
+              "#9944DD"
               : colorScheme === "dark"
-              ? "#333333"
-              : "#F0F0F0",
+                ? "#333333"
+                : "#F0F0F0",
         },
       ]}
       onPress={() =>
@@ -215,8 +215,8 @@ export default function ChartsScreen() {
           activeFilterType === item.id
             ? "#FFFFFF"
             : colorScheme === "dark"
-            ? "#CCCCCC"
-            : "#666666"
+              ? "#CCCCCC"
+              : "#666666"
         }
       />
       <ThemedText
@@ -272,7 +272,7 @@ export default function ChartsScreen() {
                   if (searchQuery.trim()) {
                     router.push({
                       pathname: `/charts/search`,
-                      params: { query: searchQuery },
+                      params: { query: searchQuery.trim() },
                     });
                   }
                 }}

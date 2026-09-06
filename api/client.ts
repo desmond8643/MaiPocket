@@ -77,11 +77,14 @@ export const ChartAPI = {
   },
 
   // Search charts
-  searchCharts: async (query: string) => {
+  searchCharts: async (query: string, page?: number, limit: number = 20) => {
     try {
-      const response = await apiClient.get(
-        `/charts/search?q=${encodeURIComponent(query)}`
-      );
+      const params = new URLSearchParams({ q: query });
+      if (page) {
+        params.append("page", String(page));
+        params.append("limit", String(limit));
+      }
+      const response = await apiClient.get(`/charts/search?${params}`);
       return response.data;
     } catch (error) {
       console.error("Error searching charts:", error);
@@ -431,9 +434,9 @@ export const ChartAPI = {
   getThumbnailsWithIds: async (
     titles: string[],
     ids: string[]
-  ): Promise<{ 
-    byTitle: Record<string, { image: string; id: string }>; 
-    byId: Record<string, { image: string; id: string }> 
+  ): Promise<{
+    byTitle: Record<string, { image: string; id: string }>;
+    byId: Record<string, { image: string; id: string }>
   }> => {
     try {
       const response = await apiClient.post("/charts/thumbnails", { titles, ids });

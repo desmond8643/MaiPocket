@@ -2,6 +2,7 @@ import { showRewardedAdImpl } from "@/components/RewardedAdImpl";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { ADMIN_CURATOR_USER_ID } from "@/constants/adminCurator";
+import { DISCORD_INVITE } from "@/constants/discord";
 import { useLocalization } from "@/context/LocalizationContext";
 import { ThumbnailCache } from "@/utils/thumbnailCache";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,6 +14,7 @@ import React, { useEffect, useState } from "react";
 import {
   Alert,
   Linking,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
   Vibration,
@@ -59,6 +61,10 @@ export default function SettingsScreen() {
         },
       },
     ]);
+  };
+
+  const openDiscord = () => {
+    Linking.openURL(DISCORD_INVITE);
   };
 
   // Load cache info
@@ -252,122 +258,123 @@ export default function SettingsScreen() {
           <ThemedText style={styles.headerTitle}>{t("settings")}</ThemedText>
         </View>
 
-        <View style={styles.content}>
-          <View style={styles.optionsContainer}>
-            {/* Ad Watch Count Display */}
-            {isLoggedIn && userId === ADMIN_CURATOR_USER_ID && (
-              <ThemedView style={styles.statsCard}>
-                <View style={styles.statsRow}>
-                  <Ionicons name="eye-outline" size={24} color="#AE75DA" />
-                  <ThemedText style={styles.statsLabel}>
-                    {t("rewardedAdsWatched")}
-                  </ThemedText>
-                  <ThemedText style={styles.statsValue}>
-                    {adWatchCount}
-                  </ThemedText>
-                </View>
-                <ThemedText style={styles.statsSubtext}>
-                  {t("resetsAtTime", { time: "4:00 AM (GMT+8)" })} •{" "}
-                  {formatRemainingTime()}
+        {/* <View style={styles.content}>
+          <View style={styles.optionsContainer}> */}
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.optionsContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Ad Watch Count Display */}
+          {isLoggedIn && userId === ADMIN_CURATOR_USER_ID && (
+            <ThemedView style={styles.statsCard}>
+              <View style={styles.statsRow}>
+                <Ionicons name="eye-outline" size={24} color="#AE75DA" />
+                <ThemedText style={styles.statsLabel}>
+                  {t("rewardedAdsWatched")}
                 </ThemedText>
-              </ThemedView>
-            )}
-            <TouchableOpacity
-              style={styles.optionItem}
-              onPress={() => router.push("/settings/social-preferences")}
-            >
-              <Ionicons name="share-social-outline" size={24} color="#AE75DA" />
-              <ThemedText style={styles.optionText}>
-                {t("socialPreferences")}
+                <ThemedText style={styles.statsValue}>
+                  {adWatchCount}
+                </ThemedText>
+              </View>
+              <ThemedText style={styles.statsSubtext}>
+                {t("resetsAtTime", { time: "4:00 AM (GMT+8)" })} •{" "}
+                {formatRemainingTime()}
               </ThemedText>
-              <Ionicons name="chevron-forward" size={24} color="#999" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.optionItem} onPress={openFeedback}>
-              <Ionicons name="mail-outline" size={24} color="#AE75DA" />
-              <ThemedText style={styles.optionText}>{t("contactUs")}</ThemedText>
-              <Ionicons name="chevron-forward" size={24} color="#999" />
-            </TouchableOpacity>
-            {/* <TouchableOpacity
-              style={styles.optionItem}
-              onPress={() => router.push("/settings/sensor")}
-            >
-              <Ionicons name="radio-outline" size={24} color="#AE75DA" />
-              <ThemedText style={styles.optionText}>{t("sensor")}</ThemedText>
-              <Ionicons name="chevron-forward" size={24} color="#999" />
-            </TouchableOpacity> */}
-            <TouchableOpacity
-              style={styles.optionItem}
-              onPress={() => router.push("/settings/language")}
-            >
-              <Ionicons name="language" size={24} color="#AE75DA" />
-              <ThemedText style={styles.optionText}>
-                {t("appLanguage")}
-              </ThemedText>
-              <Ionicons name="chevron-forward" size={24} color="#999" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.optionItem}
-              onPress={() => router.push("/settings/maimai-region")}
-            >
-              <Ionicons name="globe-outline" size={24} color="#AE75DA" />
-              <ThemedText style={styles.optionText}>
-                {t("maimaiRegion")}
-              </ThemedText>
-              <Ionicons name="chevron-forward" size={24} color="#999" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.optionItem}
-              onPress={handleClearCache}
-            >
-              <Ionicons name="trash-bin-outline" size={24} color="#AE75DA" />
-              <ThemedText style={styles.optionText}>
-                {t("clearCache")}
-              </ThemedText>
-              <ThemedText style={{ color: "#999", marginRight: 8 }}>
-                {cacheCount > 0 ? `${cacheCount} ${t("items")}` : ""}
-              </ThemedText>
-              <Ionicons name="chevron-forward" size={24} color="#999" />
-            </TouchableOpacity>
-            {isLoggedIn && (
-              <>
+            </ThemedView>
+          )}
+          <TouchableOpacity
+            style={styles.optionItem}
+            onPress={() => router.push("/settings/social-preferences")}
+          >
+            <Ionicons name="share-social-outline" size={24} color="#AE75DA" />
+            <ThemedText style={styles.optionText}>
+              {t("socialPreferences")}
+            </ThemedText>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.optionItem} onPress={openFeedback}>
+            <Ionicons name="mail-outline" size={24} color="#AE75DA" />
+            <ThemedText style={styles.optionText}>{t("contactUs")}</ThemedText>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.optionItem} onPress={openDiscord}>
+            <Ionicons name="logo-discord" size={24} color="#AE75DA" />
+            <ThemedText style={styles.optionText}>{t("discord")}</ThemedText>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.optionItem}
+            onPress={() => router.push("/settings/language")}
+          >
+            <Ionicons name="language" size={24} color="#AE75DA" />
+            <ThemedText style={styles.optionText}>
+              {t("appLanguage")}
+            </ThemedText>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.optionItem}
+            onPress={() => router.push("/settings/maimai-region")}
+          >
+            <Ionicons name="globe-outline" size={24} color="#AE75DA" />
+            <ThemedText style={styles.optionText}>
+              {t("maimaiRegion")}
+            </ThemedText>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.optionItem}
+            onPress={handleClearCache}
+          >
+            <Ionicons name="trash-bin-outline" size={24} color="#AE75DA" />
+            <ThemedText style={styles.optionText}>
+              {t("clearCache")}
+            </ThemedText>
+            <ThemedText style={{ color: "#999", marginRight: 8 }}>
+              {cacheCount > 0 ? `${cacheCount} ${t("items")}` : ""}
+            </ThemedText>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
+          {isLoggedIn && (
+            <>
+              <TouchableOpacity
+                style={styles.optionItem}
+                onPress={() => router.push("/settings/blocked-user")}
+              >
+                <Ionicons name="person-remove" size={24} color="#AE75DA" />
+                <ThemedText style={styles.optionText}>
+                  {t("blockedUsers")}
+                </ThemedText>
+                <Ionicons name="chevron-forward" size={24} color="#999" />
+              </TouchableOpacity>
+              {userId === ADMIN_CURATOR_USER_ID && (
                 <TouchableOpacity
                   style={styles.optionItem}
-                  onPress={() => router.push("/settings/blocked-user")}
+                  onPress={handleShowRewardAd}
                 >
-                  <Ionicons name="person-remove" size={24} color="#AE75DA" />
+                  <Ionicons name="gift-outline" size={24} color="#AE75DA" />
                   <ThemedText style={styles.optionText}>
-                    {t("blockedUsers")}
+                    {t("watchRewardAd")}
                   </ThemedText>
                   <Ionicons name="chevron-forward" size={24} color="#999" />
                 </TouchableOpacity>
-                {userId === ADMIN_CURATOR_USER_ID && (
-                  <TouchableOpacity
-                    style={styles.optionItem}
-                    onPress={handleShowRewardAd}
-                  >
-                    <Ionicons name="gift-outline" size={24} color="#AE75DA" />
-                    <ThemedText style={styles.optionText}>
-                      {t("watchRewardAd")}
-                    </ThemedText>
-                    <Ionicons name="chevron-forward" size={24} color="#999" />
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  style={styles.dangerOptionItem}
-                  onPress={() => router.push("/settings/delete-account")}
-                >
-                  <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
-                  <ThemedText style={styles.dangerOptionText}>
-                    {t("deleteAccount")}
-                  </ThemedText>
-                  <Ionicons name="chevron-forward" size={24} color="#999" />
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-        </View>
-      </SafeAreaView>
-    </ThemedView>
+              )}
+              <TouchableOpacity
+                style={styles.dangerOptionItem}
+                onPress={() => router.push("/settings/delete-account")}
+              >
+                <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
+                <ThemedText style={styles.dangerOptionText}>
+                  {t("deleteAccount")}
+                </ThemedText>
+                <Ionicons name="chevron-forward" size={24} color="#999" />
+              </TouchableOpacity>
+            </>
+          )}
+        </ScrollView>
+      </SafeAreaView >
+    </ThemedView >
   );
 }
 
@@ -387,10 +394,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   content: {
-    padding: 20,
+    // padding: 20,
+    flex: 1,
+    paddingHorizontal: 20,
   },
   optionsContainer: {
     gap: 16,
+    paddingBottom: 24,
   },
   optionItem: {
     flexDirection: "row",
